@@ -67,5 +67,8 @@ generation:
   model: claude-sonnet-5                    # config-driven, not hardcoded
   max_tokens: 4096
 
-# eval:
-#   judge_model: claude-sonnet-5
+eval:
+  judge_model: claude-sonnet-5              # config-driven, not hardcoded
+  judge_max_tokens: 1024
+  dataset_path: data/eval/qa_pairs.json
+  output_path: results/eval_report.json

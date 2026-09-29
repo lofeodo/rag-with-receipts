@@ -1,0 +1,42 @@
+[
+  {
+    "id": "q001",
+    "question": "What items are required to start Monkey Madness I?",
+    "type": "single_hop",
+    "answerable": true,
+    "gold_chunk_ids": ["Monkey_Madness_I__002"],
+    "gold_answer": "A gold bar, five empty inventory slots, a ball of wool, monkey bones or a corpse from Karamja (obtainable during the quest), and five bananas (also obtainable during the quest)."
+  },
+  {
+    "id": "q002",
+    "question": "What is the Abyssal whip's special attack?",
+    "type": "single_hop",
+    "answerable": true,
+    "gold_chunk_ids": ["Special_attacks__014"],
+    "gold_answer": "Energy Drain: uses 50% special attack energy, deals an attack with 25% increased accuracy, and transfers 10% of the target's run energy to the user in PvP. Requires level 70."
+  },
+  {
+    "id": "q003",
+    "question": "How do you defeat Zooknock in Monkey Madness I?",
+    "type": "multi_hop",
+    "answerable": true,
+    "gold_chunk_ids": ["Monkey_Madness_I__011", "Monkey_Madness_I_Quick_guide__010"],
+    "gold_answer": "Zooknock is not fought in combat - he is a gnome mage NPC at the end of the Ape Atoll dungeon tunnel. You talk to him and use the m'amulet mould, gold bar, and monkey dentures on him to receive an enchanted bar. Separately, you give him monkey talismans and monkey bones to receive Greegrees, repeating for each of the four types (Karamjan, Ninja, Zombie, Gorilla)."
+  },
+  {
+    "id": "q004",
+    "question": "What are the steps to complete the Cook's Assistant quest?",
+    "type": "single_hop",
+    "answerable": false,
+    "gold_chunk_ids": [],
+    "gold_answer": null
+  },
+  {
+    "id": "q005",
+    "question": "What potions require Herblore level 78?",
+    "type": "single_hop",
+    "answerable": false,
+    "gold_chunk_ids": [],
+    "gold_answer": null
+  }
+]
