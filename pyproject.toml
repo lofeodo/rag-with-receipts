@@ -43,3 +43,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "slow: tests that load a real ML model (e.g. bge-large-en-v1.5); excluded by default",
+]
+addopts = '-m "not slow"'
