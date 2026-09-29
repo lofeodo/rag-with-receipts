@@ -10,7 +10,7 @@ from pathlib import Path
 
 import typer
 
-from rag_receipts.ingestion.config import load_config
+from rag_receipts.config import load_config
 from rag_receipts.ingestion.output import write_chunks, write_sample, write_stats
 from rag_receipts.ingestion.pipeline import run_ingest
 

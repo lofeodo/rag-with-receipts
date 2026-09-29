@@ -31,7 +31,7 @@ quantified comparison against the managed alternative.
 
 - [x] **Step 0 — Repo scaffold + CLAUDE.md** (this file, package skeleton, config, README stub)
 - [x] **Step 1 — Ingestion & chunking** ← 110 pages, 955 chunks. See status note below.
-- [ ] Step 2 — Embedding & indexing (FAISS build, persisted artifacts)
+- [x] **Step 2 — Embedding & indexing** ← 955/955 chunks embedded, FAISS flat-IP index built. See status note below.
 - [ ] Step 3 — Retrieval pipeline (dense top-k + cross-encoder reranking)
 - [ ] Step 4 — Generation (grounded answers with chunk citations)
 - [ ] Step 5 — Eval harness (retrieval precision + LLM-as-judge correctness, results report)
@@ -184,3 +184,53 @@ separator's own tokens weren't budgeted for (fixed with a verify-and-shrink loop
 a precomputed budget). All three are covered by the real-page fixture tests.
 
 _Status: complete on `feat/ingestion`. Tell the user before starting Step 2's in-depth plan._
+
+### Step 2 — Embedding & indexing (complete)
+
+**Goal:** embed all 955 chunks with local `BAAI/bge-large-en-v1.5` and build a FAISS flat
+index (cosine similarity via `IndexFlatIP` over normalized vectors), persisted as file
+artifacts ready for Step 3's retrieval pipeline.
+
+**Design decisions actually implemented:**
+- `rag_receipts/indexing/embedder.py::Embedder` wraps `SentenceTransformer`, with
+  `encode_passages` (no prefix) and `encode_queries` (BGE's retrieval instruction prefix,
+  config-driven) as separate methods — only `encode_passages` is exercised by Step 2, but
+  Step 3 can reuse this wrapper as-is for query encoding without duplicating model-loading
+  logic. `Encoder` is a structural `Protocol`, letting unit tests inject a deterministic
+  `FakeEncoder` instead of loading the real model.
+- Embedding text = `breadcrumb(page_title, section_path) + "\n\n" + text`, using the hook
+  already left in `ingestion/utils.py::breadcrumb` for exactly this purpose.
+- Per-vector metadata persisted as a row-order-aligned `index_metadata.parquet` (FAISS row
+  `i` ↔ metadata row `i`), since FAISS flat indices only support int64 IDs, not string
+  `chunk_id`s. No separate raw-embeddings artifact — the flat index already stores vectors
+  contiguously and supports `.reconstruct(i)`.
+- Extracted `AppConfig`/`load_config` out of `ingestion/config.py` into a new top-level
+  `rag_receipts/config.py` (small mechanical refactor, commit 1 of this branch) so the
+  completed Step 1 package didn't need to import forward into Step 2's package to gain an
+  `indexing:` field — same pattern will apply cleanly to every future step's config.
+- Test suite keeps the real ~1.3GB model out of the default `pytest -q` run: one file,
+  `test_embedder_integration.py`, is marked `slow` (registered in `pyproject.toml`,
+  `addopts = -m "not slow"`) and is the only place the real model loads.
+
+**What actually happened running against the full corpus:**
+- Environment: this machine's default `pip install torch` on Windows resolves a CPU-only
+  wheel (confirmed empirically: `torch==2.10.0+cpu`, `cuda.is_available() == False`) —
+  Windows does not get CUDA by default from PyPI the way Linux does. Fixed by installing
+  torch explicitly first: `pip install torch --index-url https://download.pytorch.org/whl/cu121`,
+  *then* `pip install -e ".[index]"` so `sentence-transformers` didn't pull the CPU wheel
+  transitively. Confirmed working: `torch.cuda.is_available() == True` on the RTX 3060 (12GB).
+- `python scripts/build_index.py --config config/config.yaml` embedded all 955 chunks and
+  built the index in ~35s wall-clock on GPU (`device=cuda` in the resulting stats).
+- Artifacts: `data/index/faiss.index` (955 vectors × 1024 dims, ~3.9MB), `data/index/
+  index_metadata.parquet` (955 rows, full `Chunk` schema), both gitignored (pulled from GCS
+  on cold start per the Step 8 deploy plan, not committed). `data/processed/index_stats.json`
+  is committed (small, like `ingest_stats.json`): `chunk_count: 955`, `embedding_dim: 1024`,
+  `device: cuda`, `source_type_breakdown: {table: 512, prose: 376, infobox: 67}`.
+- Manual verification: reloading the saved index and searching with its own row 0 as the
+  query returned row 0 as top-1 with score `0.9999998` (≈1.0, as expected for exact
+  self-similarity under cosine), confirming the flat-IP + normalized-embeddings pairing
+  behaves correctly end-to-end on real data.
+- `pytest -q`: 42 passed (existing 21 ingestion tests + 21 new indexing unit tests), the one
+  `slow` real-model test deselected by default and passing separately when run explicitly.
+
+_Status: complete on `feat/indexing`. Tell the user before starting Step 3's in-depth plan._
