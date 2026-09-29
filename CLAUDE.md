@@ -32,7 +32,7 @@ quantified comparison against the managed alternative.
 - [x] **Step 0 — Repo scaffold + CLAUDE.md** (this file, package skeleton, config, README stub)
 - [x] **Step 1 — Ingestion & chunking** ← 110 pages, 955 chunks. See status note below.
 - [x] **Step 2 — Embedding & indexing** ← 955/955 chunks embedded, FAISS flat-IP index built. See status note below.
-- [ ] Step 3 — Retrieval pipeline (dense top-k + cross-encoder reranking)
+- [x] **Step 3 — Retrieval pipeline** ← dense top-k + cross-encoder reranking, verified against the real corpus. See status note below.
 - [ ] Step 4 — Generation (grounded answers with chunk citations)
 - [ ] Step 5 — Eval harness (retrieval precision + LLM-as-judge correctness, results report)
 - [ ] Step 6 — Grounding / hallucination check (entailment/overlap flag on cited chunks)
@@ -234,3 +234,63 @@ artifacts ready for Step 3's retrieval pipeline.
   `slow` real-model test deselected by default and passing separately when run explicitly.
 
 _Status: complete on `feat/indexing`. Tell the user before starting Step 3's in-depth plan._
+
+### Step 3 — Retrieval pipeline (complete)
+
+**Goal:** turn the static Step 2 index into an actual retrieval pipeline — dense FAISS
+top-k search, then local cross-encoder reranking (`BAAI/bge-reranker-base` baseline) —
+as a clean, importable component Step 4 (generation) and Step 5 (eval) can call once per
+question, with expensive loading (index, metadata, embedding model, reranker model)
+separated from cheap per-query retrieval.
+
+**Design decisions actually implemented:**
+- New package `rag_receipts/retrieval/`: `config.py` (`RetrievalConfig`/`RerankerConfig`,
+  same flat-YAML-to-nested-dataclass convention as `indexing/config.py`), `models.py`
+  (`RetrievedChunk` — every citation field plus `dense_score`/`rerank_score`/`dense_rank`/
+  `final_rank`), `reranker.py` (`Reranker` wraps `sentence_transformers.CrossEncoder`,
+  mirroring `Embedder`'s `Protocol` + `from_config` + `lru_cache`d loader shape), and
+  `pipeline.py` (`dense_search`, `run_retrieval`, `Retriever`).
+- The reranker scores `breadcrumb(page_title, section_path) + "\n\n" + text` — the exact
+  text form embedded in Step 2 — not bare `text`, since OSRS wiki chunks are frequently
+  terse out of page/section context (a drop-table row, an infobox stat line).
+- `Retriever.from_config(AppConfig)` loads the index/metadata/embedder/reranker once;
+  `.retrieve(query)` does zero I/O or model loading per call, delegating to the pure
+  `run_retrieval(...)` function. This is the load-once/query-cheap pattern Step 4/5/8 will
+  reuse. `dense_search` is a thin pass-through to `index.search`, returning raw FAISS
+  output (including `-1` padding when `top_k > index.ntotal`); `run_retrieval` is the one
+  place that filters `-1` ids before any metadata lookup.
+- `AppConfig.retrieval` defaults via `field(default_factory=RetrievalConfig)` so existing
+  direct `AppConfig(...)` construction (e.g. in `tests/indexing/test_pipeline.py`) keeps
+  working without every call site needing to pass a `retrieval` kwarg.
+
+**Bug found and fixed while adding Step 3's own tests (unrelated to retrieval logic
+itself):** pytest's default "prepend" import mode collides when two test directories
+have identically-named files without `__init__.py` — `tests/indexing/test_config.py` and
+the new `tests/retrieval/test_config.py` (and `test_pipeline.py`, and `helpers.py`)
+registered under the same bare module name, so pytest errored on collection
+("import file mismatch"). Fixed by giving each step's test directory an `__init__.py`
+(`tests/indexing/`, `tests/ingestion/`, `tests/retrieval/`), which qualifies module names
+by directory, and converting the existing bare `from helpers import X` /
+`from conftest import X` imports in `tests/indexing/` and `tests/ingestion/` to relative
+imports (`from .helpers import X`). This is a one-time fix — it will not recur for future
+steps' test directories.
+
+**What actually happened running against the full corpus:**
+- `pytest -q`: 60 passed (42 existing + 18 new retrieval unit tests), 3 deselected (`slow`:
+  `test_embedder_integration`, `test_reranker_integration`, `test_retrieval_integration`).
+- `pytest -q -m slow tests/retrieval/test_reranker_integration.py`: real `bge-reranker-base`
+  scores a relevant `(query, passage)` pair higher than an irrelevant one. ✅
+- `pytest -q -m slow tests/retrieval/test_retrieval_integration.py`: real 955-chunk corpus,
+  a Monkey Madness question surfaces a Monkey Madness page in the top 3. ✅
+- `python scripts/retrieve.py "How do you start the Monkey Madness quest?"` — runs
+  end-to-end; reranking visibly reorders results (e.g. `Monkey (Monkey Madness I)` has a
+  higher dense score than `Monkey Madness I > Introduction` but a lower rerank score, and
+  drops below it in the final ranking).
+- `results/sample_retrievals.json` (committed, via `scripts/sample_retrievals.py`) — 5
+  hand-picked queries. Clear evidence reranking does real work, not a no-op: for "What items
+  are required to start Monkey Madness I?", the chunk literally containing "Items required |
+  A gold bar..." had `dense_rank=15` (score 0.689) but reranks to `final_rank=1`
+  (rerank score 0.9996), while the `dense_rank=1` chunk (score 0.746, a different section of
+  the same page) drops to `final_rank=3`.
+
+_Status: complete on `feat/retrieval`. Tell the user before starting Step 4's in-depth plan._
