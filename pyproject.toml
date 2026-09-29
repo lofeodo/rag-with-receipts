@@ -1,0 +1,42 @@
+[project]
+name = "rag-with-receipts"
+version = "0.1.0"
+description = "Grounded, cited, latency-instrumented RAG over the OSRS Wiki"
+requires-python = ">=3.11"
+readme = "README.md"
+
+[project.optional-dependencies]
+ingest = [
+    "beautifulsoup4",
+    "lxml",
+    "httpx",
+    "transformers",
+    "pandas",
+    "pyarrow",
+    "pyyaml",
+    "typer",
+    "tqdm",
+]
+index = [
+    "sentence-transformers",
+    "faiss-cpu",
+]
+serve = [
+    "fastapi",
+    "uvicorn",
+    "anthropic",
+]
+eval = [
+    "anthropic",
+]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

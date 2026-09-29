@@ -1,0 +1,27 @@
+# RAG With Receipts — pipeline configuration
+# Filled in incrementally as each step is implemented. Unimplemented sections are
+# stubbed with the locked decision so intent is visible ahead of the code.
+
+corpus:
+  source: osrs_wiki
+  api_base: https://oldschool.runescape.wiki/api.php
+  license: CC BY-NC-SA 3.0
+  user_agent: "rag-with-receipts/0.1 (portfolio project; contact: daniel.lofeodo@gmail.com)"
+
+# ingestion: filled in during Step 1
+
+# indexing:
+#   embedding_model: BAAI/bge-large-en-v1.5   # local, sentence-transformers
+#   vector_index: faiss                       # flat index, file artifact
+
+# retrieval:
+#   top_k_dense: 30
+#   top_k_final: 5
+#   reranker_model: BAAI/bge-reranker-base
+
+# generation:
+#   provider: anthropic
+#   model: claude-sonnet-5                    # config-driven, not hardcoded
+
+# eval:
+#   judge_model: claude-sonnet-5
