@@ -1,0 +1,14 @@
+{
+  "chunk_count": 955,
+  "embedding_dim": 1024,
+  "embedding_model": "BAAI/bge-large-en-v1.5",
+  "device": "cuda",
+  "index_type": "flat_ip",
+  "batch_size": 32,
+  "normalize_embeddings": true,
+  "source_type_breakdown": {
+    "table": 512,
+    "prose": 376,
+    "infobox": 67
+  }
+}
