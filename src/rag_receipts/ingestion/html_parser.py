@@ -172,10 +172,11 @@ def build_section_tree(html: str, page_title: str) -> ParsedPage:
         current = stack[-1]
         if element.name == "table":
             rows = flatten_table(element)
-            if rows:
-                text = "\n".join(rows)
-                current.own_blocks.append(text)
-                current.table_chars += len(text)
+            # each row is its own block, so the chunker can split a long table
+            # at row boundaries rather than treating it as one unsplittable blob
+            for row in rows:
+                current.own_blocks.append(row)
+                current.table_chars += len(row)
             continue
 
         text = element.get_text(" ", strip=True)
