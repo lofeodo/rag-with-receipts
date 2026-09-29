@@ -28,6 +28,7 @@ serve = [
 ]
 eval = [
     "anthropic",
+    "tqdm",
 ]
 generation = [
     "anthropic",
