@@ -156,15 +156,23 @@ def split_oversized(section: Section, params: ChunkParams, tokenizer) -> list[Se
     result: list[Section] = []
     prev_text: str | None = None
     for parts in packed:
-        text = "\n\n".join(parts)
+        base_text = "\n\n".join(parts)
+        text = base_text
         if prev_text is not None and params.overlap_tokens > 0:
-            # cap overlap to whatever budget remains so the max_tokens
-            # invariant holds even after prepending overlap text
-            budget = params.max_tokens - count_tokens(tokenizer, text)
-            overlap_len = max(0, min(params.overlap_tokens, budget))
-            overlap = _tail_by_tokens(tokenizer, prev_text, overlap_len) if overlap_len else ""
-            if overlap:
-                text = f"{overlap}\n\n{text}"
+            # verify-and-shrink rather than a precomputed budget: the "\n\n"
+            # separator and the decode round-trip in _tail_by_tokens can each
+            # add a token or two beyond what a naive budget subtraction
+            # predicts, so shrink until the assembled text actually fits
+            overlap_len = params.overlap_tokens
+            while overlap_len > 0:
+                overlap = _tail_by_tokens(tokenizer, prev_text, overlap_len)
+                candidate = f"{overlap}\n\n{base_text}" if overlap else base_text
+                if count_tokens(tokenizer, candidate) <= params.max_tokens:
+                    text = candidate
+                    break
+                overlap_len -= 5
+            else:
+                text = base_text
         result.append(
             Section(
                 heading_path=section.heading_path,

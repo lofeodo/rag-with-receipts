@@ -1,0 +1,552 @@
+[
+  {
+    "title": "Combat",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Aggressiveness",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Attack",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Attack range",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Attack types",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Auto Retaliate",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Autocast",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Buffs",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Combat level",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Calculator:Combat level",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Combat milestones",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Combat Options",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Combat triangle",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Degradation",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Dragonfire",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Drops",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Hitpoints",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Life leech",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Life leech/Sources",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Magical melee",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Maximum damage cap",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Maximum melee hit",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Melee",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Monster",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Monster killing",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Non-degradable",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "User:Olligobber/Drops",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Pile jumping",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Player killing",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Player killing/Mechanics",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Poison",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Prayer",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Ranged",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Ranged magic",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Retaliation",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Rushing",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Safespot",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Skills",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Special attacks",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Strength",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Successful hit",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Tolerance",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Unarmed",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Venom",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Weapon style",
+    "category": "combat_mechanics",
+    "source_reason": "category:Category:Combat"
+  },
+  {
+    "title": "Slayer training",
+    "category": "slayer_training",
+    "source_reason": "manual"
+  },
+  {
+    "title": "Herblore training",
+    "category": "herblore_training",
+    "source_reason": "manual"
+  },
+  {
+    "title": "Monkey Madness I",
+    "category": "questline",
+    "source_reason": "questline:questline"
+  },
+  {
+    "title": "Monkey Madness I/Quick guide",
+    "category": "questline",
+    "source_reason": "questline:questline"
+  },
+  {
+    "title": "10th squad sigil",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Antidote++",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Antipoison",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Ardougne cloak 1",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Ball of wool",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Banana",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Banana stew",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Bananas",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Bird",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Clue scroll (medium)",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Coins",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Diamond",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Dragon scimitar",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Enchanted bar",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Energy potion",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Explorer's ring 1",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Eye of gnome",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Glough",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Gnome royal seal",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Gold bar",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Gorilla bones",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Gorilla greegree",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Jungle Demon",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Jungle spider (Ape Atoll)",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Karamjan monkey greegree",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Knife",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Kruk",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Lockpick",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "M'amulet mould",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "M'speak amulet",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "M'speak amulet (unstrung)",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Mithril seeds",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Monkey (Monkey Madness I)",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Monkey Archer",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Monkey Guard",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Monkey Zombie",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Monkey bar",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Monkey bones",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Monkey corpse",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Monkey dentures",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Monkey nuts",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Monkey talisman",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Narnode's orders",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Ninja monkey greegree (small)",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Plank",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Prayer potion",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Puzzle box",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Ring of dueling",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Ring of life",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Scorpion",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Skeleton (Ape Atoll)",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Small ninja monkey bones",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Small zombie monkey bones",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Snake",
+    "category": "linked_monster",
+    "source_reason": "linked, category:Category:Monsters"
+  },
+  {
+    "title": "Spare controls",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Stamina potion",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Strange fruit",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Stuffed monkey",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Summer pie",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Tinderbox",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  },
+  {
+    "title": "Zombie monkey greegree (small)",
+    "category": "linked_item",
+    "source_reason": "linked, category:Category:Items"
+  }
+]

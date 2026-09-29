@@ -129,6 +129,12 @@ def resolve_page_list(
 
     Link-following requires the rendered HTML of seed pages, so seed pages are
     fetched here as a side effect before their links can be extracted.
+
+    Link-following runs only from the questline's pages, not from every seed:
+    the combat/skill-training category pages are broad hub articles (e.g.
+    "Monster", "Drops") whose "see also"-style links number in the thousands
+    and would blow far past the corpus's 200-300 page budget, whereas a quest
+    walkthrough references a naturally bounded set of items/monsters.
     """
     raw_dir = Path(config.raw_dir)
     list_path = raw_dir / "page_list.json"
@@ -139,8 +145,9 @@ def resolve_page_list(
     fetch_and_cache(seeds, client, raw_dir)
 
     seed_titles = {p.title for p in seeds}
+    link_sources = [s for s in seeds if s.category == config.questline.label]
     candidates: set[str] = set()
-    for seed in seeds:
+    for seed in link_sources:
         html = load_cached_html(raw_dir, seed.title)
         if html is None:
             continue

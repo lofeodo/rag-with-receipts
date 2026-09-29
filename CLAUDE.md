@@ -8,7 +8,7 @@ Cloud Run.
 
 | Area | Decision |
 |---|---|
-| Corpus | OSRS Wiki (CC BY-NC-SA 3.0 — attribute in README, non-commercial use only). Scope: combat mechanics pages + 2 skill training guides with XP tables (Slayer, Herblore) + one bounded questline (requirements/rewards/walkthroughs) + the item/monster infobox pages those reference. ~200–300 pages. |
+| Corpus | OSRS Wiki (CC BY-NC-SA 3.0 — attribute in README, non-commercial use only). Scope: `Category:Combat` (45 pages) + 2 skill training guides with XP tables (Slayer training, Herblore training) + one bounded questline, **Monkey Madness I** (main article + Quick guide walkthrough) + one-hop-linked item/monster pages the questline references, filtered to `Category:Items`/`Category:Monsters`. Resolved to **110 pages / 955 chunks** — below the original ~200–300 estimate (see Step 1 status note: link-following from the broad combat/skill-training hub pages was found to explode past budget, so it was scoped to the questline only). |
 | Embeddings | Local `BAAI/bge-large-en-v1.5` via sentence-transformers, in-process. **Stretch:** benchmark against hosted Vertex `gemini-embedding-001` on the eval set; swap default only if it wins by a real margin. |
 | Vector index | **FAISS** (flat index, file artifact) as the default — in-process, zero recurring cost, most technically substantive choice for the job-market signal the user wants. **Stretch:** add pgvector on Cloud SQL as a swappable second backend (config-driven) — strong "managed vector DB on GCP" resume line, done after the core pipeline works. |
 | Reranker | Local cross-encoder, `BAAI/bge-reranker-base` baseline. Latency-optimization step compares a stronger (`bge-reranker-v2-m3`) and a faster (`ms-marco-MiniLM-L-6-v2`) variant on precision vs p95, and picks a point on that curve. |
@@ -30,7 +30,7 @@ quantified comparison against the managed alternative.
 ## Step sequence
 
 - [x] **Step 0 — Repo scaffold + CLAUDE.md** (this file, package skeleton, config, README stub)
-- [ ] **Step 1 — Ingestion & chunking** ← in-depth plan below, ready to start
+- [x] **Step 1 — Ingestion & chunking** ← 110 pages, 955 chunks. See status note below.
 - [ ] Step 2 — Embedding & indexing (FAISS build, persisted artifacts)
 - [ ] Step 3 — Retrieval pipeline (dense top-k + cross-encoder reranking)
 - [ ] Step 4 — Generation (grounded answers with chunk citations)
@@ -59,7 +59,7 @@ quantified comparison against the managed alternative.
 
 ## Step detail
 
-### Step 1 — Ingestion & chunking (current)
+### Step 1 — Ingestion & chunking (complete)
 
 **Goal:** turn the scoped OSRS Wiki slice into clean, header-aware, size-bounded chunks with
 citation-ready metadata, ready for embedding in Step 2.
@@ -141,12 +141,46 @@ agent, rate limit delay.
 5. `feat(ingestion): run against full scoped corpus, commit ingest_stats.json + sample_chunks.jsonl, update CLAUDE.md status`
 
 **12. Verification**
-- `python scripts/fetch_corpus.py --config config/config.yaml` populates `data/raw/pages/`.
+- `python scripts/fetch_corpus.py --config config/config.yaml` populates `data/raw/pages/`. ✅
 - `python scripts/ingest.py --config config/config.yaml` produces `chunks.parquet`; assert
-  every chunk is ≤450 tokens by the bge tokenizer.
-- `pytest tests/ingestion -q` green.
-- Manual spot-check of 5 chunks in `chunks.jsonl` for `section_path` correctness and no
-  boilerplate leakage.
+  every chunk is ≤450 tokens by the bge tokenizer. ✅ (max observed: 450)
+- `pytest tests/ingestion -q` green. ✅ (21 tests)
+- Manual spot-check of 5+ chunks in `chunks.jsonl` for `section_path` correctness and no
+  boilerplate leakage. ✅ (0 boilerplate leaks across the full 955-chunk corpus)
 - `ingest_stats.json` shows page count in [200, 300] and roughly 1500–3000 total chunks.
+  ⚠️ **Deviation, deliberate**: 110 pages / 955 chunks — see status note below.
 
-_Status: planned, not started. Ready to begin on `feat/ingestion` when you say go._
+**13. What actually happened during the full-corpus run (deviation from plan)**
+
+The initial run link-followed from *all* 49 seed pages (45 `Category:Combat` pages +
+Slayer training + Herblore training + the 2 questline pages). `Category:Combat` includes
+broad hub/concept articles (`Monster`, `Drops`, `Skills`, `Attack`, ...) whose "see also"
+sections link to **4,530 distinct pages** — checking categories on all of them (one API
+call each) would have taken ~55 minutes and pulled in well over 1,000 pages, blowing past
+the 200–300 budget by a wide margin. This was caught live (mid-run) by comparing observed
+process CPU/network activity against expected request rates, not by guessing.
+
+Fix: link-following now runs only from the questline's pages (`Monkey Madness I` +
+`Monkey Madness I/Quick guide`), not from every seed — a walkthrough naturally references
+a bounded set of items/monsters, unlike a generic combat-mechanics hub article. This
+dropped the candidate set to 309 links, of which 61 matched `Category:Items`/
+`Category:Monsters` after filtering. See `resolve_page_list` in
+`src/rag_receipts/ingestion/page_list.py` for the implementation and reasoning.
+
+Result: **110 pages, 955 chunks** — smaller than the original ~200–300/1500–3000 estimate.
+Extending link-following to the two training-guide pages as well (704 + 392 raw candidate
+links) was considered and would likely have landed nearer 250–330 pages, but was declined
+in favor of keeping the corpus at its current size rather than spending another ~13 minutes
+of API calls. Per-category breakdown (`data/processed/ingest_stats.json`):
+combat_mechanics 45 pages/419 chunks, slayer_training 1/56, herblore_training 1/35,
+questline 2/41, linked_item 50/353, linked_monster 11/51.
+
+Also found and fixed during the full-corpus run: table rows were being flattened into one
+unsplittable block per table (fixed to one block per row, so oversized tables can be split
+at row boundaries); a single oversized block/sentence with no natural split point could
+still exceed `max_tokens` (fixed with a hard token-window fallback); and the overlap text
+prepended to a split chunk could push it 1–3 tokens over `max_tokens` because the `\n\n`
+separator's own tokens weren't budgeted for (fixed with a verify-and-shrink loop instead of
+a precomputed budget). All three are covered by the real-page fixture tests.
+
+_Status: complete on `feat/ingestion`. Tell the user before starting Step 2's in-depth plan._
