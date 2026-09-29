@@ -4,6 +4,31 @@ import numpy as np
 import pandas as pd
 
 
+class FakeEncoder:
+    """Deterministic fake standing in for SentenceTransformer.encode in unit tests.
+
+    Duplicated from tests/indexing/helpers.py rather than cross-imported - this
+    repo's no-__init__.py-across-package pytest layout keeps each test package's
+    imports self-contained.
+    """
+
+    def __init__(self, dim: int = 8):
+        self.dim = dim
+        self.calls: list[list[str]] = []
+
+    def encode(self, sentences, *, batch_size, normalize_embeddings, show_progress_bar):
+        self.calls.append(list(sentences))
+        vecs = np.array(
+            [[float((hash(s) >> (i * 4)) % 97) for i in range(self.dim)] for s in sentences],
+            dtype="float32",
+        )
+        if normalize_embeddings:
+            norms = np.linalg.norm(vecs, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            vecs = vecs / norms
+        return vecs
+
+
 class FakeCrossEncoder:
     """Deterministic fake standing in for CrossEncoder.predict in unit tests.
 
