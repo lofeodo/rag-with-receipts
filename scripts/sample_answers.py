@@ -29,7 +29,7 @@ QUERIES = [
     "What is the Abyssal whip's special attack?",
     "What potions require Herblore level 78?",
     "How do you defeat Zooknock in Monkey Madness I?",
-    "What are the requirements to start Dragon Slayer II?",  # out of corpus scope
+    "What are the steps to complete the Cook's Assistant quest?",  # out of corpus scope
 ]
 
 OUTPUT_PATH = Path("results/sample_answers.json")

@@ -1,0 +1,185 @@
+[
+  {
+    "query": "What items are required to start Monkey Madness I?",
+    "answer": {
+      "query": "What items are required to start Monkey Madness I?",
+      "answer": "To start Monkey Madness I, you need the following items: a gold bar, five empty inventory slots, a ball of wool, monkey bones or a corpse from Karamja (obtainable during the quest), and five bananas (also obtainable during the quest).",
+      "citations": [
+        {
+          "chunk_id": "Monkey_Madness_I__002",
+          "claim": "Items required for Monkey Madness I include a gold bar, five empty inventory slots, a ball of wool, monkey bones or corpse from Karamja, and five bananas.",
+          "chunk": {
+            "chunk_id": "Monkey_Madness_I__002",
+            "page_title": "Monkey Madness I",
+            "url": "https://oldschool.runescape.wiki/w/Monkey_Madness_I",
+            "section_path": "Details",
+            "heading_anchor": "Details",
+            "source_type": "table",
+            "text": "Start point | Talk to King Narnode Shareen in the Grand Tree . Show on map\n\nOfficial difficulty | Master\n\nOfficial length | Long\n\nDescription | The King of the northern Gnomes, Narnode Shareen, is once again in need of your help. He recently decided to send an envoy of his Royal Guard, the 10th squad, to oversee the decommissioning of the Gnome owned ship-building facilities on the eastern coast of Karamja . It has been quite some time since the 10th squad were dispatched and they have been deemed missing in action. It will be up to you, should you decide to help, to find out what fate befell the 10th squad and if possible, track them down. If only it were so simple. Sinister forces have begun to spread through the Gnome hierarchy and threaten to unleash an unknown terror upon the world. Far across the land, the fires of vengeance are being stoked once again. Can you unravel the mystery behind the deception? Can you separate the truth from the lies? Can you decide for yourself what is real and what is not?\n\nRequirements | Completion of the following quests: The Grand Tree Tree Gnome Village The ability to defeat a level 195 Jungle Demon\n\nItems required | A gold bar Five empty inventory slots A ball of wool Monkey bones or corpse from Karamja (obtainable during quest) Five bananas (obtainable during quest)",
+            "token_count": 284,
+            "dense_score": 0.6890136003494263,
+            "rerank_score": 0.9995875954627991,
+            "dense_rank": 15,
+            "final_rank": 1
+          }
+        },
+        {
+          "chunk_id": "Monkey_Madness_I_Quick_guide__000",
+          "claim": "Items required for Monkey Madness I include a gold bar, five empty inventory slots, a ball of wool, monkey bones or corpse from Karamja, and five bananas.",
+          "chunk": {
+            "chunk_id": "Monkey_Madness_I_Quick_guide__000",
+            "page_title": "Monkey Madness I/Quick guide",
+            "url": "https://oldschool.runescape.wiki/w/Monkey_Madness_I/Quick_guide",
+            "section_path": "Details",
+            "heading_anchor": "Details",
+            "source_type": "table",
+            "text": "Start point | Talk to King Narnode Shareen in the Grand Tree . Show on map\n\nOfficial difficulty | Master\n\nOfficial length | Long\n\nDescription | The King of the northern Gnomes, Narnode Shareen, is once again in need of your help. He recently decided to send an envoy of his Royal Guard, the 10th squad, to oversee the decommissioning of the Gnome owned ship-building facilities on the eastern coast of Karamja . It has been quite some time since the 10th squad were dispatched and they have been deemed missing in action. It will be up to you, should you decide to help, to find out what fate befell the 10th squad and if possible, track them down. If only it were so simple. Sinister forces have begun to spread through the Gnome hierarchy and threaten to unleash an unknown terror upon the world. Far across the land, the fires of vengeance are being stoked once again. Can you unravel the mystery behind the deception? Can you separate the truth from the lies? Can you decide for yourself what is real and what is not?\n\nRequirements | Completion of the following quests: The Grand Tree Tree Gnome Village The ability to defeat a level 195 Jungle Demon\n\nItems required | A gold bar Five empty inventory slots A ball of wool Monkey bones or corpse from Karamja (obtainable during quest) Five bananas (obtainable during quest)",
+            "token_count": 284,
+            "dense_score": 0.6723860502243042,
+            "rerank_score": 0.9990414977073669,
+            "dense_rank": 25,
+            "final_rank": 2
+          }
+        }
+      ],
+      "answerable": true,
+      "hallucinated_citation_ids": [],
+      "has_hallucinated_citations": false,
+      "model": "claude-sonnet-5",
+      "input_tokens": 3393,
+      "output_tokens": 334,
+      "stop_reason": "tool_use"
+    }
+  },
+  {
+    "query": "How much Slayer experience is needed for level 70?",
+    "answer": {
+      "query": "How much Slayer experience is needed for level 70?",
+      "answer": "The retrieved chunks don't contain the Slayer experience table showing XP required to reach level 70 (or any specific level). They only cover quest experience rewards, task assignment details, and Slayer master access requirements—not the level-to-XP conversion needed to answer this question.",
+      "citations": [],
+      "answerable": false,
+      "hallucinated_citation_ids": [],
+      "has_hallucinated_citations": false,
+      "model": "claude-sonnet-5",
+      "input_tokens": 4038,
+      "output_tokens": 165,
+      "stop_reason": "tool_use"
+    }
+  },
+  {
+    "query": "What is the Abyssal whip's special attack?",
+    "answer": {
+      "query": "What is the Abyssal whip's special attack?",
+      "answer": "The Abyssal whip's special attack is called \"Energy Drain.\" It uses 50% special attack energy and, in PvP, transfers 10% of the target's run energy to the user. Its effect is described as an attack with 25% increased accuracy that siphons 10% of the target's run energy. It uses a Slash defence roll, has a 25% attack roll modifier, no damage roll modifier, and requires level 70 to use.",
+      "citations": [
+        {
+          "chunk_id": "Special_attacks__014",
+          "claim": "The Abyssal whip's special attack is called 'Energy Drain,' uses 50% special attack energy, transfers 10% of the target's run energy to the user in PvP, deals an attack with 25% increased accuracy that siphons run energy, uses a Slash defence roll, has a 25% attack roll modifier, no damage roll modifier, and requires level 70.",
+          "chunk": {
+            "chunk_id": "Special_attacks__014",
+            "page_title": "Special attacks",
+            "url": "https://oldschool.runescape.wiki/w/Special_attacks",
+            "section_path": "Combat special attacks > Stat-draining",
+            "heading_anchor": "Stat-draining",
+            "source_type": "table",
+            "text": "These attacks will drain the target's stats based on the amount of damage done, sometimes restoring a fraction of the drained levels to the attacker.\n\nAbyssal whip:  | Name | Energy Drain\n\nAbyssal whip: Energy used | 50%\n\nAbyssal whip: Description | Transfers 10% of the target's run energy to the user in PvP.\n\nAbyssal whip: Tooltip | Deal an attack with 25% increased accuracy that siphons 10% of your target's run energy.\n\nAbyssal whip: Defence roll | Slash\n\nAbyssal whip: Attack roll modifier | 25%\n\nAbyssal whip: Damage roll modifier | None\n\nAbyssal whip: Level | 70\n\nAccursed sceptre:  | Name | Condemn\n\nAccursed sceptre: Energy used | 50%\n\nAccursed sceptre: Description | If damage is dealt, the target's Defence and Magic are reduced by up to 15%.\n\nAccursed sceptre: Tooltip | Fire a powerful spell with increased accuracy and damage, lowering your target's magic and defence levels by up to 15%.\n\nAccursed sceptre: Attack roll modifier | 50%\n\nAccursed sceptre: Damage roll modifier | None\n\nAccursed sceptre: Level | 70\n\nAncient mace:  | Name | Favour of the War God\n\nAncient mace: Energy used | 100%\n\nAncient mace: Description | Drains the Prayer points of the target by 100% of the amount hit Recharges or boosts the user's prayer points by the amount drained. Hits through Protect from Melee.\n\nAncient mace: Tooltip | Deal an attack which hits through Protect from Melee and siphons Prayer points equal to the damage dealt.\n\nAncient mace: Defence roll | Crush\n\nAncient mace: Attack roll modifier | None\n\nAncient mace: Damage roll modifier | None\n\nAncient mace: Level | 15\n\nAncient mace: Quest | Another Slice of H.A.M.\n\nBandos godsword:  | Name | Warstrike\n\nBandos godsword: Energy used | 50%",
+            "token_count": 413,
+            "dense_score": 0.7254506349563599,
+            "rerank_score": 0.9720132946968079,
+            "dense_rank": 1,
+            "final_rank": 1
+          }
+        }
+      ],
+      "answerable": true,
+      "hallucinated_citation_ids": [],
+      "has_hallucinated_citations": false,
+      "model": "claude-sonnet-5",
+      "input_tokens": 4548,
+      "output_tokens": 357,
+      "stop_reason": "tool_use"
+    }
+  },
+  {
+    "query": "What potions require Herblore level 78?",
+    "answer": {
+      "query": "What potions require Herblore level 78?",
+      "answer": "The retrieved chunks do not contain information about any potion requiring Herblore level 78. The available data mentions potions requiring levels such as 66, 67, 69, 72, 76, and 77 (e.g., stamina potion at 77), but none specifically list a level 78 requirement. I cannot determine what potions require Herblore level 78 from the given context.",
+      "citations": [],
+      "answerable": false,
+      "hallucinated_citation_ids": [],
+      "has_hallucinated_citations": false,
+      "model": "claude-sonnet-5",
+      "input_tokens": 4152,
+      "output_tokens": 192,
+      "stop_reason": "tool_use"
+    }
+  },
+  {
+    "query": "How do you defeat Zooknock in Monkey Madness I?",
+    "answer": {
+      "query": "How do you defeat Zooknock in Monkey Madness I?",
+      "answer": "You don't actually \"defeat\" Zooknock in combat during Monkey Madness I — he is a gnome mage NPC you interact with peacefully, not an enemy to fight. Zooknock is found at the end of the dangerous Ape Atoll dungeon tunnel (a journey full of hazards like floor spikes, rock traps, and falling rocks that you must navigate, taking at least three minutes of running while using Protect from Melee and eating food/drinking potions as needed). Once you reach him along with the gnomes Waymottin and Bunkwicket, you simply talk to him, then use the m'amulet mould, gold bar, and monkey dentures on him and speak to him again to receive an enchanted bar. Later in the quest, you also give him Monkey talismans and monkey bones (using the \"use\" option, not burying them) to receive Greegrees, one for each type of bones you provide (Karamjan, Ninja, Zombie, and Gorilla).",
+      "citations": [
+        {
+          "chunk_id": "Monkey_Madness_I__011",
+          "claim": "Zooknock is found at the end of a dangerous dungeon tunnel full of hazards like floor spikes, rock traps, and falling rocks, requiring Protect from Melee and food/potions; you talk to him and use the m'amulet mould, gold bar, and monkey dentures on him to get an enchanted bar.",
+          "chunk": {
+            "chunk_id": "Monkey_Madness_I__011",
+            "page_title": "Monkey Madness I",
+            "url": "https://oldschool.runescape.wiki/w/Monkey_Madness_I",
+            "section_path": "Monkey Business > Chapter 2 > The Light at the End of the Tunnel",
+            "heading_anchor": "The_Light_at_the_End_of_the_Tunnel",
+            "source_type": "prose",
+            "text": ": protect from melee | number : 17 image : | name : floor spikes | description : spikes will launch from the ground and deal rapid damage if stood on, equal to 7. 5 % of your current health rounded up. | action : avoid the dot clusters on the ground | number : 30 +\n\nImage:  | Name: Rock trap | Description: Two stalagmites will crash into you and deal rapid damage if you stand on the rock in the middle, equal to 20% of your current health rounded up. | Action: Step on the square in front of the rock, and then run through by clicking the other side, to avoid all damage. A plank can also be placed on the flat rock to pass the trap. | Number: 2\n\nImage:  | Name: Falling rocks | Description: Every 15 seconds, a pile of rocks will fall from the ceiling, dealing damage equal to 4% of your current health, rounded up. | Action: You can stand under the overhangs to avoid the falling rocks if you are low on food. | Number: N/A\n\nEven with consistent running, it will take at least three minutes of running to navigate the dungeon. Be prepared to drink your prayer and energy restoring potions, as well as food, when necessary.\n\nAt the end of the tunnel, you will find the gnomes Zooknock , Waymottin and Bunkwicket . Talk to Zooknock, and then use your m'amulet mould , gold bar , and monkey dentures on him and speak to him again. Make sure he gives you an enchanted bar before leaving the tunnel . Additionally, do not to use the m'amulet mould on Zooknock when you already have the enchanted bar , as he will keep the mould and you will have to obtain another. Teleport out, and bank if necessary. If you have not gone through all the dialogue with Garkor you will not be able to use the items on him.",
+            "token_count": 400,
+            "dense_score": 0.708708643913269,
+            "rerank_score": 0.9657341241836548,
+            "dense_rank": 16,
+            "final_rank": 4
+          }
+        },
+        {
+          "chunk_id": "Monkey_Madness_I_Quick_guide__010",
+          "claim": "You give Zooknock Monkey talismans and monkey bones (using them, not burying them) to receive Greegrees, with the bone type determining the Greegree received, repeating until you have four Greegrees (Karamjan, Ninja, Zombie, and Gorilla).",
+          "chunk": {
+            "chunk_id": "Monkey_Madness_I_Quick_guide__010",
+            "page_title": "Monkey Madness I/Quick guide",
+            "url": "https://oldschool.runescape.wiki/w/Monkey_Madness_I/Quick_guide",
+            "section_path": "Walkthrough > The greegree",
+            "heading_anchor": "The_greegree",
+            "source_type": "prose",
+            "text": "Teleport away, then return by talking to Daero , Waydar , and Lumdo . Now is an ideal time to resupply at a bank for the Ape Atoll dungeon. Bring good Food , as well as Prayer , Antipoison , and Stamina / Energy potions. Follow the yellow path west and climb down the ladder. Run to the end of the dungeon. Use Protect from Melee prayer and ignore all the hazards, eating food and drinking potions as needed. Give Zooknock your Monkey talisman and Monkey bones (make sure these are bones from the regular monkeys; examine Text: These are small monkey bones. ). After a moment he will give you a Greegree . Do not accidentally bury the bones! Right click them and carefully select \"use\". Do not leave the dialogue with Zooknock prematurely. Should the player exit the cutscene before it has finished, talking to Zooknock again will restart the cutscene, and no items will be lost. Optional : If you plan on doing the Freeing King Awowogei section of Recipe for Disaster : Talk to Zooknock again. ( 2 • 1 ) … 2 1 Use another talisman and bone on him. The type of bones you give him will determine the Greegree you receive. After a moment he will give you another Greegree . Repeat the above steps until you have four Greegrees in total. ( Karamjan , Ninja , Zombie , and Gorilla ) Note: Teleporting while wielding the Greegree will force it into your inventory. If your inventory is full then it will be dropped. If unnoticed, the Greegree can be lost.\n\nNow is an ideal time to resupply at a bank for the Ape Atoll dungeon. Bring good Food , as well as Prayer , Antipoison , and Stamina / Energy potions.\n\nUse Protect from Melee prayer and ignore all the hazards, eating food and drinking potions as needed.",
+            "token_count": 402,
+            "dense_score": 0.7323514223098755,
+            "rerank_score": 0.9756829738616943,
+            "dense_rank": 6,
+            "final_rank": 3
+          }
+        }
+      ],
+      "answerable": true,
+      "hallucinated_citation_ids": [],
+      "has_hallucinated_citations": false,
+      "model": "claude-sonnet-5",
+      "input_tokens": 3623,
+      "output_tokens": 648,
+      "stop_reason": "tool_use"
+    }
+  },
+  {
+    "query": "What are the steps to complete the Cook's Assistant quest?",
+    "answer": {
+      "query": "What are the steps to complete the Cook's Assistant quest?",
+      "answer": "The retrieved chunks do not contain any information about the Cook's Assistant quest or its steps. They cover unrelated topics such as Summer pie recipes, Prayer/Ranged experience rewards from quests, and clue scroll quest requirements. I don't have enough information from the provided context to answer this question.",
+      "citations": [],
+      "answerable": false,
+      "hallucinated_citation_ids": [],
+      "has_hallucinated_citations": false,
+      "model": "claude-sonnet-5",
+      "input_tokens": 4742,
+      "output_tokens": 177,
+      "stop_reason": "tool_use"
+    }
+  }
+]
