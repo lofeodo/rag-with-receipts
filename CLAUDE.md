@@ -34,7 +34,7 @@ quantified comparison against the managed alternative.
 - [x] **Step 2 — Embedding & indexing** ← 955/955 chunks embedded, FAISS flat-IP index built. See status note below.
 - [x] **Step 3 — Retrieval pipeline** ← dense top-k + cross-encoder reranking, verified against the real corpus. See status note below.
 - [x] **Step 4 — Generation** ← Claude Sonnet 5, structured tool-use citations, hallucinated-citation validation. See status note below.
-- [ ] Step 5 — Eval harness (retrieval precision + LLM-as-judge correctness, results report)
+- [ ] **Step 5 — Eval harness** (retrieval precision + LLM-as-judge correctness, results report) ← harness built (config, metrics, Judge, runner, CLI) on `feat/eval-harness`; blocked on the user hand-authoring `data/eval/qa_pairs.json` before the final full-corpus run. See status note below.
 - [ ] Step 6 — Grounding / hallucination check (entailment/overlap flag on cited chunks)
 - [ ] Step 7 — Latency instrumentation + one measured optimization (reranker sweep)
 - [ ] Step 8 — GCP deployment (Cloud Run, GCS, Artifact Registry, Secret Manager)
@@ -385,3 +385,82 @@ marker's `pyproject.toml` docstring was broadened to cover both cases.
   chunks) worth revisiting in a later step rather than in Step 4's scope.
 
 _Status: complete on `feat/generation`. Tell the user before starting Step 5's in-depth plan._
+
+### Step 5 — Eval harness (in progress — harness built, blocked on gold Q/A authoring)
+
+**Goal:** run the full pipeline over a hand-labeled gold Q/A set and produce numbers —
+retrieval precision/recall/MRR/hit-rate and LLM-as-judge correctness, overall and broken
+down by question type (single-hop vs multi-hop) — rather than the spot-check queries
+Steps 1-4 relied on.
+
+**Scope decisions made explicit in the plan:**
+- Retrieval-precision metric measures only the pipeline's actual final output
+  (`Retriever.retrieve()`, post-rerank top `top_k_final`) — the same chunks generation
+  receives. A dense-vs-reranked precision comparison is deliberately **not** done here;
+  that's Step 7's reranker-sweep job.
+- The judge scores answer **correctness** against a gold reference answer only — not
+  groundedness/entailment against cited chunks, which is Step 6's job.
+- The 30-50 gold Q/A pairs in `data/eval/qa_pairs.json` are being hand-authored by the
+  user, independent of the harness build — confirmed explicitly, not drafted by the
+  assistant.
+
+**Design decisions actually implemented (commits 1-5 of 6, on `feat/eval-harness`):**
+- `EvalConfig` (`src/rag_receipts/eval/config.py`) wired into `AppConfig` following the
+  existing flat-YAML-to-nested-dataclass convention every prior step uses; `config.yaml`'s
+  `eval:` stub is now live (`judge_model`, `judge_max_tokens`, `dataset_path`,
+  `output_path`).
+- `EvalQuestion`/`RetrievalScore`/`JudgeVerdict`/`EvalResult`/`EvalSummary`
+  (`src/rag_receipts/eval/models.py`) and `load_eval_questions()`
+  (`src/rag_receipts/eval/dataset.py`) — the loader validates the user's hand-written file
+  (unique ids, `gold_chunk_ids`/`gold_answer` required exactly when `answerable=true`,
+  empty/`null` when `false`) and raises a specific `ValueError` on each violation, since
+  this is the first thing that runs against hand-authored data.
+- `retrieval_metrics.py` — pure `precision_at_k`/`recall_at_k`/`mrr`/`hit` functions plus
+  `score_retrieval()`, scoring `RetrievedChunk.chunk_id`s against a question's
+  `gold_chunk_ids` by exact string match (no normalization needed — chunk_ids flow
+  unchanged from ingestion through indexing to retrieval).
+- `Judge` (`src/rag_receipts/eval/judge.py`) — mirrors `Generator`'s `Protocol` +
+  `@dataclass` + `from_config` shape and `stop_reason` handling discipline exactly
+  (`refusal` → safe `incorrect` verdict instead of raising; `max_tokens`/missing
+  `tool_use` → raise `RuntimeError`), scoring a 3-way categorical verdict
+  (`correct`/`partially_correct`/`incorrect`) via a forced `submit_verdict` tool call.
+  Same no-`temperature` / forced-`tool_choice`-only-valid-on-`claude-sonnet-5` caveat as
+  `Generator`.
+- `runner.py` — `run_eval()` resolves three of the six non-error correctness outcomes
+  directly from the expected-vs-actual `answerable` flags with **no judge call spent**
+  (`correct_abstention`, `incorrectly_abstained`, `incorrectly_answered`); the judge is
+  only called when both sides agree the question should be answerable. A `RuntimeError`
+  from `Generator.generate()` or `Judge.score()` is caught per-question and recorded as an
+  `"error"` result rather than aborting the batch. `summarize()` aggregates mean
+  precision/recall/MRR/hit-rate and a strict correctness-accuracy rate
+  (`correct` + `correct_abstention` over non-error results), overall and per question type.
+- `scripts/run_eval.py` — plain script (no typer, matching `sample_answers.py`'s
+  convention for a batch run over a dataset file), writes
+  `{"summary": ..., "results": [...]}` to `results/eval_report.json`. Added `tqdm` to the
+  `eval` extra in `pyproject.toml` for the progress bar.
+- Tests follow the established per-package convention (`tests/eval/`, own `__init__.py`,
+  duplicated fakes rather than cross-package imports): `test_config.py`, `test_dataset.py`
+  (schema-violation coverage), `test_retrieval_metrics.py`, `test_judge.py` (against a
+  duplicated `FakeAnthropicClient`), `test_runner.py` (all three no-judge-call paths, the
+  judge-call path, generation-error and judge-error handling, and `summarize()`
+  aggregation math including a zero-division guard on an empty type bucket).
+  `tests/eval/fixtures/qa_pairs_small.json` — 5 hand-crafted questions (3 answerable, 2
+  deliberately unanswerable/out-of-corpus; 2 single-hop + 1 multi-hop among the
+  answerable ones) built from real `chunk_id`s already visible in
+  `results/sample_retrievals.json`/`sample_answers.json` — feeds both `test_dataset.py`
+  and `tests/eval/test_eval_integration.py` (`slow`-marked, dual-`skipif`-gated on
+  `ANTHROPIC_API_KEY` and the real index artifacts, same pattern as
+  `test_generator_integration.py`/`test_retrieval_integration.py`).
+
+**Verification so far:** `pytest -q` — 113 passed, 5 deselected (4 pre-existing `slow`
+tests + the new eval integration test, all correctly skipped without `ANTHROPIC_API_KEY`
+in this environment). The real-API integration test has not yet been run (no API key
+available in this session) — do so once available, and before commit 6.
+
+**Remaining work (commit 6 of 6, blocked on the user):** the user needs to hand-author
+`data/eval/qa_pairs.json` (30-50 Q/A pairs, ~70% single-hop/~30% multi-hop, with real
+`gold_chunk_ids` looked up from `data/processed/chunks.jsonl`/`scripts/retrieve.py`) before
+`python scripts/run_eval.py` can be run against the real corpus and
+`results/eval_report.json` committed. Once that's done: run it, spot-check a handful of
+judge verdicts by hand for sanity, commit the report, and update this section's status line
+to complete before starting Step 6's in-depth plan.
