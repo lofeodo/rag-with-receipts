@@ -33,7 +33,7 @@ quantified comparison against the managed alternative.
 - [x] **Step 1 — Ingestion & chunking** ← 110 pages, 955 chunks. See status note below.
 - [x] **Step 2 — Embedding & indexing** ← 955/955 chunks embedded, FAISS flat-IP index built. See status note below.
 - [x] **Step 3 — Retrieval pipeline** ← dense top-k + cross-encoder reranking, verified against the real corpus. See status note below.
-- [ ] Step 4 — Generation (grounded answers with chunk citations)
+- [x] **Step 4 — Generation** ← Claude Sonnet 5, structured tool-use citations, hallucinated-citation validation. See status note below.
 - [ ] Step 5 — Eval harness (retrieval precision + LLM-as-judge correctness, results report)
 - [ ] Step 6 — Grounding / hallucination check (entailment/overlap flag on cited chunks)
 - [ ] Step 7 — Latency instrumentation + one measured optimization (reranker sweep)
@@ -294,3 +294,94 @@ steps' test directories.
   the same page) drops to `final_rank=3`.
 
 _Status: complete on `feat/retrieval`. Tell the user before starting Step 4's in-depth plan._
+
+### Step 4 — Generation (complete)
+
+**Goal:** turn Step 3's reranked chunks into a grounded, cited answer — Claude Sonnet 5
+answers using only the retrieved chunks, citing the specific `chunk_id`(s) behind each claim,
+and every citation is validated against the actual retrieved set rather than trusted on
+faith (the project's "receipts" thesis: a citation that doesn't check out is exactly the
+failure mode being designed against).
+
+**Design decisions actually implemented:**
+- Citations via **structured tool-use output**, not inline `[1][2]` markers: Claude is called
+  with `tool_choice` forced to a `submit_answer` tool returning
+  `{answerable, answer, citations: [{chunk_id, claim}]}` — deterministic to parse, no regex
+  over free text. `rag_receipts/generation/generator.py::Generator` follows the
+  `Reranker`-style shape (`Protocol` + `.from_config` + `@dataclass` wrapper), with one
+  deliberate deviation: no `lru_cache` on the client constructor, since (unlike
+  `SentenceTransformer`/`CrossEncoder`) constructing `anthropic.Anthropic()` is cheap.
+- `Generator.generate(query, chunks: list[RetrievedChunk]) -> GeneratedAnswer` takes
+  pre-retrieved chunks rather than owning retrieval itself — symmetric to
+  `Reranker.score(query, passages)`. `scripts/generate.py` composes `Retriever.retrieve()` +
+  `Generator.generate()`; a future eval harness can retrieve once and reuse the chunks for
+  both retrieval-precision and generation-correctness metrics.
+- **Every citation the model returns is treated as untrusted input.** `generate()` resolves
+  each `chunk_id` against the chunks it was actually given: a real match becomes a `Citation`
+  with the full `RetrievedChunk` attached (so callers render `page_title`/`url`/
+  `heading_anchor` without a second lookup); an unresolvable `chunk_id` is dropped from
+  `citations` but preserved in `hallucinated_citation_ids` (plus a `has_hallucinated_citations`
+  flag) rather than silently discarded or silently trusted.
+- **No `temperature` field.** Verified against the current Claude API docs before
+  implementation: `claude-sonnet-5` runs adaptive thinking by default, and the API rejects
+  sampling params (`temperature`/`top_p`/`top_k`) with a 400 whenever thinking is active.
+  Determinism comes from the forced tool schema + `strict: true`, not sampling.
+  `thinking` is left unset (adaptive, the default) rather than disabled — disabling thinking
+  on a forced-tool-choice call is a documented failure mode where the model can write the
+  tool call into visible text instead of a real `tool_use` block, silently breaking citation
+  parsing. `max_tokens` defaults to 4096 (not lowballed to ~1024), since adaptive-thinking
+  tokens count against the same budget as the visible tool-call output; `generate()` explicitly
+  checks `stop_reason == "max_tokens"` and raises rather than trying to parse a possibly
+  truncated tool call. Forced `tool_choice` is valid on `claude-sonnet-5` today, but a
+  comment in `generator.py` flags that pointing `config.generation.model` at Fable 5.1/
+  Mythos 5.1/Opus 5.5/Sonnet 5.5 later would need `tool_choice: {"type": "auto"}` instead
+  (those four models reject forced tool_choice with a 400).
+- `refusal` and missing-`tool_use` stop reasons are both handled explicitly: a `refusal`
+  returns a safe `answerable=False` result instead of raising; a response with no `tool_use`
+  block raises `RuntimeError` with the stop_reason and content for debugging, rather than
+  failing with an opaque `AttributeError`/`KeyError` deep in citation-resolution code.
+- `input_tokens`/`output_tokens`/`model`/`stop_reason` are captured on every `GeneratedAnswer`
+  from `response.usage` — cheap to capture now, needed by Step 7's latency/cost work later;
+  no telemetry system built beyond that.
+- `ANTHROPIC_API_KEY` is read from the environment by the SDK's default client construction,
+  never from `config.yaml` — matches the GCP deploy plan's Secret Manager routing.
+
+**Test conventions:** `tests/generation/helpers.py::FakeAnthropicClient` implements the same
+structural `AnthropicClientLike` Protocol the real SDK client does, returning scripted
+`FakeMessage` responses (including one whose `citations` payload names a `chunk_id` not in
+the passed chunks, exercising the hallucination-validation path). `test_generator.py` is pure
+unit tests against the fake (8 tests: prompt construction, `answerable=false` passthrough,
+real-citation resolution, hallucinated-citation dropping/tracking, usage capture, `refusal`
+handling, `max_tokens` handling, missing-`tool_use` handling).
+`test_generator_integration.py` is `slow`-marked and additionally `skipif`-gated on
+`ANTHROPIC_API_KEY` being set — makes one real API call, since (unlike the other `slow` tests,
+which just load a real local ML model) this one costs real API dollars per run. The `slow`
+marker's `pyproject.toml` docstring was broadened to cover both cases.
+
+**What actually happened running against the real corpus:**
+- `pytest -q`: 71 passed (60 existing + 11 new generation unit/config tests), 4 deselected
+  (`slow`: the 3 existing ML-model integration tests + the new API-call integration test).
+- `pytest -q -m slow tests/generation/test_generator_integration.py` with `ANTHROPIC_API_KEY`
+  set: passed — a real call correctly cites a real `chunk_id` with no hallucination.
+- `python scripts/generate.py "What items are required to start Monkey Madness I?"` — grounded
+  answer, citations resolve to the real `Monkey Madness I` page/section, no hallucination
+  warning.
+- `python scripts/generate.py "What are the requirements to start Dragon Slayer II?"` was
+  tried as a candidate "out of corpus" question first and turned out to be a bad example: it
+  came back `answerable: true`, correctly grounded in stray "quests requiring this skill" rows
+  on unrelated skill pages (`Strength`, `Hitpoints`) that happen to list Dragon Slayer II's
+  skill requirements — a legitimate citation, not a hallucination, just not the intended demo.
+  Replaced with `"What are the steps to complete the Cook's Assistant quest?"` (a quest
+  entirely outside the corpus's combat/Slayer/Herblore/Monkey Madness scope), which correctly
+  returns `answerable: false` with a sensible explanation instead of a guess.
+- `python scripts/sample_answers.py` → `results/sample_answers.json` (committed): 6 queries,
+  3 `answerable: true` with correctly-resolving citations, 3 `answerable: false`, zero
+  `hallucinated_citation_ids` anywhere. Two of the three `answerable: false` cases
+  ("How much Slayer experience is needed for level 70?", "What potions require Herblore level
+  78?") are **in-corpus topics** where the retrieved top-k simply didn't surface the specific
+  fact — the model correctly declined rather than guessing from parametric knowledge, which is
+  the grounding discipline working as designed, but it also surfaces a retrieval-recall gap
+  (possibly `top_k_final=5` too small, or XP/potion-level tables split awkwardly across
+  chunks) worth revisiting in a later step rather than in Step 4's scope.
+
+_Status: complete on `feat/generation`. Tell the user before starting Step 5's in-depth plan._
