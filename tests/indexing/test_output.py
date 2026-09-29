@@ -1,7 +1,7 @@
 import json
 
 import pandas as pd
-from helpers import make_chunks_df
+from .helpers import make_chunks_df
 
 from rag_receipts.indexing.faiss_index import build_flat_ip_index, load_index
 from rag_receipts.indexing.output import write_index, write_metadata, write_stats
