@@ -54,10 +54,13 @@ indexing:
     metadata_filename: index_metadata.parquet
     stats_path: data/processed/index_stats.json
 
-# retrieval:
-#   top_k_dense: 30
-#   top_k_final: 5
-#   reranker_model: BAAI/bge-reranker-base
+retrieval:
+  top_k_dense: 30
+  top_k_final: 5
+  reranker_model: BAAI/bge-reranker-base
+  reranker_batch_size: 32
+  reranker_device: auto
+  reranker_show_progress_bar: false
 
 # generation:
 #   provider: anthropic

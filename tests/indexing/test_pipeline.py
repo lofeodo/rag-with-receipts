@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from helpers import FakeEncoder, make_chunks_df
+from .helpers import FakeEncoder, make_chunks_df
 
 from rag_receipts.config import AppConfig
 from rag_receipts.indexing.config import EmbeddingConfig, IndexingConfig, IndexOutputConfig

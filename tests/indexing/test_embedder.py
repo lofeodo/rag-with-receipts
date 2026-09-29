@@ -1,4 +1,4 @@
-from helpers import FakeEncoder
+from .helpers import FakeEncoder
 
 from rag_receipts.indexing.config import EmbeddingConfig
 from rag_receipts.indexing.embedder import Embedder, resolve_device

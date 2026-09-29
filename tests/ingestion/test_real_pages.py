@@ -6,7 +6,7 @@ from rag_receipts.ingestion.html_parser import build_section_tree
 from rag_receipts.ingestion.tokenizer import get_tokenizer
 from rag_receipts.ingestion.utils import page_url
 
-from conftest import FIXTURES_DIR
+from .conftest import FIXTURES_DIR
 
 REAL_PAGES = [
     ("Slayer_training.html", "Slayer training"),

@@ -1,4 +1,4 @@
-from conftest import load_fixture
+from .conftest import load_fixture
 
 from rag_receipts.ingestion.html_parser import build_section_tree, flatten_infobox, flatten_table
 from bs4 import BeautifulSoup
