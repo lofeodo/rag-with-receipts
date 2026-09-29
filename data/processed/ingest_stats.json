@@ -1,0 +1,38 @@
+{
+  "page_count": 110,
+  "chunk_count": 955,
+  "per_category": {
+    "combat_mechanics": {
+      "pages": 45,
+      "chunks": 419
+    },
+    "slayer_training": {
+      "pages": 1,
+      "chunks": 56
+    },
+    "herblore_training": {
+      "pages": 1,
+      "chunks": 35
+    },
+    "questline": {
+      "pages": 2,
+      "chunks": 41
+    },
+    "linked_item": {
+      "pages": 50,
+      "chunks": 353
+    },
+    "linked_monster": {
+      "pages": 11,
+      "chunks": 51
+    }
+  },
+  "chunk_size_histogram": {
+    "0-100": 103,
+    "100-200": 289,
+    "200-300": 153,
+    "300-400": 121,
+    "400-500": 289
+  },
+  "parse_failures": []
+}
