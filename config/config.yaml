@@ -62,9 +62,10 @@ retrieval:
   reranker_device: auto
   reranker_show_progress_bar: false
 
-# generation:
-#   provider: anthropic
-#   model: claude-sonnet-5                    # config-driven, not hardcoded
+generation:
+  provider: anthropic
+  model: claude-sonnet-5                    # config-driven, not hardcoded
+  max_tokens: 4096
 
 # eval:
 #   judge_model: claude-sonnet-5

@@ -13,6 +13,7 @@ from pathlib import Path
 
 import yaml
 
+from rag_receipts.generation.config import GenerationConfig, _build_generation_config
 from rag_receipts.indexing.config import IndexingConfig, _build_indexing_config
 from rag_receipts.ingestion.config import CorpusConfig, IngestionConfig, _build_ingestion_config
 from rag_receipts.retrieval.config import RetrievalConfig, _build_retrieval_config
@@ -24,6 +25,7 @@ class AppConfig:
     ingestion: IngestionConfig
     indexing: IndexingConfig
     retrieval: RetrievalConfig = field(default_factory=RetrievalConfig)
+    generation: GenerationConfig = field(default_factory=GenerationConfig)
 
 
 def load_config(path: str | Path) -> AppConfig:
@@ -32,4 +34,11 @@ def load_config(path: str | Path) -> AppConfig:
     ingestion = _build_ingestion_config(raw["ingestion"])
     indexing = _build_indexing_config(raw.get("indexing", {}))
     retrieval = _build_retrieval_config(raw.get("retrieval", {}))
-    return AppConfig(corpus=corpus, ingestion=ingestion, indexing=indexing, retrieval=retrieval)
+    generation = _build_generation_config(raw.get("generation", {}))
+    return AppConfig(
+        corpus=corpus,
+        ingestion=ingestion,
+        indexing=indexing,
+        retrieval=retrieval,
+        generation=generation,
+    )

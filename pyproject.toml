@@ -29,6 +29,9 @@ serve = [
 eval = [
     "anthropic",
 ]
+generation = [
+    "anthropic",
+]
 dev = [
     "pytest",
     "ruff",
