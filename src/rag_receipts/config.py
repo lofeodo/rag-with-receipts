@@ -13,6 +13,7 @@ from pathlib import Path
 
 import yaml
 
+from rag_receipts.indexing.config import IndexingConfig, _build_indexing_config
 from rag_receipts.ingestion.config import CorpusConfig, IngestionConfig, _build_ingestion_config
 
 
@@ -20,10 +21,12 @@ from rag_receipts.ingestion.config import CorpusConfig, IngestionConfig, _build_
 class AppConfig:
     corpus: CorpusConfig
     ingestion: IngestionConfig
+    indexing: IndexingConfig
 
 
 def load_config(path: str | Path) -> AppConfig:
     raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     corpus = CorpusConfig(**raw["corpus"])
     ingestion = _build_ingestion_config(raw["ingestion"])
-    return AppConfig(corpus=corpus, ingestion=ingestion)
+    indexing = _build_indexing_config(raw.get("indexing", {}))
+    return AppConfig(corpus=corpus, ingestion=ingestion, indexing=indexing)
