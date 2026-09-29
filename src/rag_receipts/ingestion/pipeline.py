@@ -6,8 +6,8 @@ import json
 import logging
 from pathlib import Path
 
+from rag_receipts.config import AppConfig
 from rag_receipts.ingestion.chunker import chunk_page
-from rag_receipts.ingestion.config import AppConfig
 from rag_receipts.ingestion.fetch import FetchResult, fetch_and_cache, load_cached_html
 from rag_receipts.ingestion.html_parser import build_section_tree
 from rag_receipts.ingestion.mediawiki_client import MediaWikiClient

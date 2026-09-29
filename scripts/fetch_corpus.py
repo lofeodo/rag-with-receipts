@@ -11,7 +11,7 @@ from pathlib import Path
 
 import typer
 
-from rag_receipts.ingestion.config import load_config
+from rag_receipts.config import load_config
 from rag_receipts.ingestion.pipeline import run_fetch
 
 app = typer.Typer(add_completion=False)

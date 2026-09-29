@@ -1,15 +1,13 @@
-"""Config loading for the ingestion pipeline.
+"""Config dataclasses for the ingestion pipeline.
 
-Plain dataclasses + PyYAML, matching the dependencies already declared in
-pyproject.toml's `ingest` extra (no pydantic).
+Plain dataclasses (no pydantic), built from a raw dict by `_build_ingestion_config`.
+The top-level `AppConfig`/`load_config` that reads config.yaml live in
+`rag_receipts.config`, which assembles this step's config alongside every other step's.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
-
-import yaml
 
 
 @dataclass
@@ -63,12 +61,6 @@ class IngestionConfig:
     max_retries: int = 3
 
 
-@dataclass
-class AppConfig:
-    corpus: CorpusConfig
-    ingestion: IngestionConfig
-
-
 def _build_ingestion_config(raw: dict) -> IngestionConfig:
     categories = [CategorySpec(**c) for c in raw["categories"]]
     questline = QuestlineSpec(**raw["questline"])
@@ -97,10 +89,3 @@ def _build_ingestion_config(raw: dict) -> IngestionConfig:
         rate_limit_delay_seconds=fetch.get("rate_limit_delay_seconds", 0.5),
         max_retries=fetch.get("max_retries", 3),
     )
-
-
-def load_config(path: str | Path) -> AppConfig:
-    raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    corpus = CorpusConfig(**raw["corpus"])
-    ingestion = _build_ingestion_config(raw["ingestion"])
-    return AppConfig(corpus=corpus, ingestion=ingestion)
