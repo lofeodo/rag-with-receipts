@@ -8,13 +8,14 @@ import another step's package just to load a config file.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
 
 from rag_receipts.indexing.config import IndexingConfig, _build_indexing_config
 from rag_receipts.ingestion.config import CorpusConfig, IngestionConfig, _build_ingestion_config
+from rag_receipts.retrieval.config import RetrievalConfig, _build_retrieval_config
 
 
 @dataclass
@@ -22,6 +23,7 @@ class AppConfig:
     corpus: CorpusConfig
     ingestion: IngestionConfig
     indexing: IndexingConfig
+    retrieval: RetrievalConfig = field(default_factory=RetrievalConfig)
 
 
 def load_config(path: str | Path) -> AppConfig:
@@ -29,4 +31,5 @@ def load_config(path: str | Path) -> AppConfig:
     corpus = CorpusConfig(**raw["corpus"])
     ingestion = _build_ingestion_config(raw["ingestion"])
     indexing = _build_indexing_config(raw.get("indexing", {}))
-    return AppConfig(corpus=corpus, ingestion=ingestion, indexing=indexing)
+    retrieval = _build_retrieval_config(raw.get("retrieval", {}))
+    return AppConfig(corpus=corpus, ingestion=ingestion, indexing=indexing, retrieval=retrieval)
