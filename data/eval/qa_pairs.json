@@ -517,7 +517,7 @@
   {
     "id": "q051",
     "question": "What are the full rewards for completing the Recipe for Disaster quest?",
-    "type": "single_hop",
+    "type": null,
     "answerable": false,
     "gold_chunk_ids": [],
     "gold_answer": null
@@ -525,7 +525,7 @@
   {
     "id": "q052",
     "question": "What is Vorkath's combat level and max melee hit?",
-    "type": "single_hop",
+    "type": null,
     "answerable": false,
     "gold_chunk_ids": [],
     "gold_answer": null
@@ -533,7 +533,7 @@
   {
     "id": "q053",
     "question": "What are the steps to complete the Gertrude's Cat quest?",
-    "type": "multi_hop",
+    "type": null,
     "answerable": false,
     "gold_chunk_ids": [],
     "gold_answer": null
@@ -541,7 +541,7 @@
   {
     "id": "q054",
     "question": "What is the most efficient method to train Woodcutting to level 99?",
-    "type": "multi_hop",
+    "type": null,
     "answerable": false,
     "gold_chunk_ids": [],
     "gold_answer": null
@@ -549,7 +549,7 @@
   {
     "id": "q055",
     "question": "How is Farming XP calculated in the Tithe Farm minigame?",
-    "type": "single_hop",
+    "type": null,
     "answerable": false,
     "gold_chunk_ids": [],
     "gold_answer": null
