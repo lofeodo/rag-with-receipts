@@ -15,6 +15,7 @@ import yaml
 
 from rag_receipts.eval.config import EvalConfig, _build_eval_config
 from rag_receipts.generation.config import GenerationConfig, _build_generation_config
+from rag_receipts.grounding.config import GroundingConfig, _build_grounding_config
 from rag_receipts.indexing.config import IndexingConfig, _build_indexing_config
 from rag_receipts.ingestion.config import CorpusConfig, IngestionConfig, _build_ingestion_config
 from rag_receipts.retrieval.config import RetrievalConfig, _build_retrieval_config
@@ -28,6 +29,7 @@ class AppConfig:
     retrieval: RetrievalConfig = field(default_factory=RetrievalConfig)
     generation: GenerationConfig = field(default_factory=GenerationConfig)
     eval: EvalConfig = field(default_factory=EvalConfig)
+    grounding: GroundingConfig = field(default_factory=GroundingConfig)
 
 
 def load_config(path: str | Path) -> AppConfig:
@@ -38,6 +40,7 @@ def load_config(path: str | Path) -> AppConfig:
     retrieval = _build_retrieval_config(raw.get("retrieval", {}))
     generation = _build_generation_config(raw.get("generation", {}))
     eval_config = _build_eval_config(raw.get("eval", {}))
+    grounding = _build_grounding_config(raw.get("grounding", {}))
     return AppConfig(
         corpus=corpus,
         ingestion=ingestion,
@@ -45,4 +48,5 @@ def load_config(path: str | Path) -> AppConfig:
         retrieval=retrieval,
         generation=generation,
         eval=eval_config,
+        grounding=grounding,
     )
