@@ -1,0 +1,68 @@
+[
+  {
+    "model_name": "BAAI/bge-reranker-base",
+    "retrieval": {
+      "mean_precision": 0.20400000000000007,
+      "mean_recall": 0.83,
+      "mean_mrr": 0.6946666666666665,
+      "hit_rate": 0.9,
+      "count": 50
+    },
+    "rerank_latency": {
+      "p50": 0.5519323999906192,
+      "p95": 0.5670295199990505,
+      "mean": 0.5543436109096299,
+      "count": 55
+    },
+    "total_retrieval_latency": {
+      "p50": 0.5710336999909487,
+      "p95": 0.5858875700097996,
+      "mean": 0.5739143709112382,
+      "count": 55
+    }
+  },
+  {
+    "model_name": "BAAI/bge-reranker-v2-m3",
+    "retrieval": {
+      "mean_precision": 0.22000000000000003,
+      "mean_recall": 0.9,
+      "mean_mrr": 0.8396666666666667,
+      "hit_rate": 0.98,
+      "count": 50
+    },
+    "rerank_latency": {
+      "p50": 2.774645400000736,
+      "p95": 3.3305392900001607,
+      "mean": 2.84804919636385,
+      "count": 55
+    },
+    "total_retrieval_latency": {
+      "p50": 2.8082184999948367,
+      "p95": 3.344573830012814,
+      "mean": 2.8685760800001763,
+      "count": 55
+    }
+  },
+  {
+    "model_name": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    "retrieval": {
+      "mean_precision": 0.21600000000000005,
+      "mean_recall": 0.88,
+      "mean_mrr": 0.7516666666666668,
+      "hit_rate": 0.96,
+      "count": 50
+    },
+    "rerank_latency": {
+      "p50": 0.11125950000132434,
+      "p95": 0.12840225000254576,
+      "mean": 0.11368936909076927,
+      "count": 55
+    },
+    "total_retrieval_latency": {
+      "p50": 0.12904650000564288,
+      "p95": 0.1472883500100579,
+      "mean": 0.1335919454548275,
+      "count": 55
+    }
+  }
+]

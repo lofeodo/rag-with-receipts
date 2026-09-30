@@ -20,6 +20,8 @@ from rag_receipts.indexing.faiss_index import load_index
 from rag_receipts.retrieval.config import RetrievalConfig
 from rag_receipts.retrieval.models import RetrievedChunk
 from rag_receipts.retrieval.reranker import Reranker, rerank_text
+from rag_receipts.telemetry.models import RetrievalTiming
+from rag_receipts.telemetry.timing import Stopwatch
 
 
 def load_metadata(metadata_path: Path) -> pd.DataFrame:
@@ -48,17 +50,50 @@ def run_retrieval(
     reranker: Reranker,
     config: RetrievalConfig,
 ) -> list[RetrievedChunk]:
-    query_vecs = embedder.encode_queries([query])
-    scores, ids = dense_search(index, query_vecs, config.top_k_dense)
+    chunks, _timing = run_retrieval_with_timing(
+        query,
+        index=index,
+        metadata=metadata,
+        embedder=embedder,
+        reranker=reranker,
+        config=config,
+    )
+    return chunks
+
+
+def run_retrieval_with_timing(
+    query: str,
+    *,
+    index: faiss.Index,
+    metadata: pd.DataFrame,
+    embedder: Embedder,
+    reranker: Reranker,
+    config: RetrievalConfig,
+) -> tuple[list[RetrievedChunk], RetrievalTiming]:
+    """Same as run_retrieval, but also returns per-stage wall-clock seconds
+    (Step 7) - used by scripts/measure_latency.py and scripts/sweep_reranker.py.
+    run_retrieval is a thin wrapper around this that discards the timing."""
+    with Stopwatch() as embed_sw:
+        query_vecs = embedder.encode_queries([query])
+
+    with Stopwatch() as dense_sw:
+        scores, ids = dense_search(index, query_vecs, config.top_k_dense)
     dense_scores, dense_ids = scores[0], ids[0]
 
     valid = [(score, idx) for score, idx in zip(dense_scores, dense_ids) if idx != -1]
     if not valid:
-        return []
+        timing = RetrievalTiming(
+            embed_query_s=embed_sw.elapsed_seconds,
+            dense_search_s=dense_sw.elapsed_seconds,
+            rerank_s=0.0,
+            total_s=embed_sw.elapsed_seconds + dense_sw.elapsed_seconds,
+        )
+        return [], timing
 
     rows = metadata.iloc[[int(idx) for _, idx in valid]].reset_index(drop=True)
     passages = [rerank_text(row.page_title, row.section_path, row.text) for row in rows.itertuples()]
-    rerank_scores = reranker.score(query, passages)
+    with Stopwatch() as rerank_sw:
+        rerank_scores = reranker.score(query, passages)
 
     candidates = [
         RetrievedChunk(
@@ -84,7 +119,14 @@ def run_retrieval(
     top = candidates[: config.top_k_final]
     for rank, chunk in enumerate(top, start=1):
         chunk.final_rank = rank
-    return top
+
+    timing = RetrievalTiming(
+        embed_query_s=embed_sw.elapsed_seconds,
+        dense_search_s=dense_sw.elapsed_seconds,
+        rerank_s=rerank_sw.elapsed_seconds,
+        total_s=embed_sw.elapsed_seconds + dense_sw.elapsed_seconds + rerank_sw.elapsed_seconds,
+    )
+    return top, timing
 
 
 @dataclass
@@ -118,6 +160,16 @@ class Retriever:
 
     def retrieve(self, query: str) -> list[RetrievedChunk]:
         return run_retrieval(
+            query,
+            index=self.index,
+            metadata=self.metadata,
+            embedder=self.embedder,
+            reranker=self.reranker,
+            config=self.config,
+        )
+
+    def retrieve_with_timing(self, query: str) -> tuple[list[RetrievedChunk], RetrievalTiming]:
+        return run_retrieval_with_timing(
             query,
             index=self.index,
             metadata=self.metadata,
