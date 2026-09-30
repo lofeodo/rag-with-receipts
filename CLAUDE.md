@@ -480,6 +480,15 @@ Steps 1-4 relied on.
 — both pass against the real API. `data/eval/qa_pairs.json` loads cleanly through
 `load_eval_questions()` (55/55, no schema violations).
 
+**Schema correction found after the first run:** `EvalQuestion.type` was originally forced
+to `single_hop`/`multi_hop` for every question, including the 5 deliberately-unanswerable
+ones (assistant-assigned types, since the user's source data had `type: null` there) — this
+inflated the type breakdown's n to 38/17 instead of the intended 35/15, silently mixing
+abstention outcomes into the single-hop/multi-hop accuracy numbers. Fixed: `type` is now
+`Optional`, `null` only when `answerable=false`; `dataset.py` enforces this; `runner.py`'s
+`summarize()` excludes untyped questions from `retrieval_by_type`/`correctness_by_type`
+(they still count in the overall totals). The gold set and report below reflect the fix.
+
 **Real run against the full gold set** (`python scripts/run_eval.py`, 55 questions, 0
 errors, `results/eval_report.json` committed):
 
@@ -489,23 +498,35 @@ errors, `results/eval_report.json` committed):
 | Retrieval mean recall | 0.83 |
 | Retrieval mean MRR | 0.70 |
 | Retrieval mean precision | 0.20 (expected — precision's denominator is `top_k_final=5` against a 1-2-chunk gold set, so even a perfect retrieval can't exceed ~0.2-0.4) |
-| Correctness accuracy (overall) | 0.84 |
-| Correctness accuracy (single-hop, n=38) | 0.97 (37/38) |
-| Correctness accuracy (multi-hop, n=17) | 0.53 (9/17) |
-| Label counts | `correct`: 41, `correct_abstention`: 5, `incorrectly_abstained`: 6, `partially_correct`: 1, `incorrect`: 2 |
+| Correctness accuracy (overall) | 0.80 |
+| Correctness accuracy (single-hop, n=35) | 0.97 (34/35) |
+| Correctness accuracy (multi-hop, n=15) | 0.33 (5/15) |
+| Label counts | `correct`: 39, `correct_abstention`: 5, `incorrectly_abstained`: 7, `partially_correct`: 2, `incorrect`: 2 |
 
-**The headline finding is the single-hop/multi-hop gap, and it has one consistent, traced
-cause, not several unrelated ones.** Every one of the 8 non-fully-correct multi-hop results
-has a 2-chunk `gold_chunk_ids` set, and in every case retrieval's `top_k_final=5` surfaced
-at most one of the two needed chunks (`recall` 0.0 or 0.5, never 1.0). Given only partial
-evidence, generation did the right thing in 6/8 cases (`incorrectly_abstained` — correctly
-declining rather than fabricating the missing fact) and got the arithmetic/fact wrong using
-adjacent-but-wrong context in the other 2 (`incorrect`). This is a **retrieval-recall
-limitation on multi-hop synthesis**, not a generation or grounding problem — the model is
-behaving exactly as designed (declining when it lacks a fact), it's just frequently missing
-one of two needed chunks. Directly relevant to Step 7: raising `top_k_final` or trying the
-stronger reranker variant (`bge-reranker-v2-m3`) are the natural levers to test against this
-specific number.
+**Note on reproducibility:** the retrieval numbers above are identical between the
+pre-fix and post-fix runs (the embedding/reranker models are deterministic local
+inference). The correctness numbers are *not* bit-identical between runs — generation and
+judging call the live Claude API without `temperature` pinning (a deliberate Step 4 design
+choice: Sonnet 5's forced-tool-choice + adaptive thinking doesn't accept sampling params),
+so a re-run can shift a few borderline multi-hop verdicts. Single-hop accuracy was stable
+across both runs (37/38 → 34/35); multi-hop moved more (9/17 → 5/15) because the borderline
+arithmetic-synthesis questions are exactly where a model's adaptive-thinking pass varies
+most run to run. Treat the multi-hop percentage as "meaningfully worse than single-hop,"
+not as a precise, reproducible figure.
+
+**The headline finding is still the single-hop/multi-hop gap, and it's still dominantly
+one traced cause — with one honest exception this run surfaced.** Of the 10 non-fully-
+correct multi-hop results, 9 have retrieval `recall` < 1.0 (`0.0` or `0.5` — missing at
+least one of the two gold chunks) and generation correctly declined or erred on the
+missing fact rather than fabricating it. The 1 exception (q044, "how many diamonds could
+you accumulate...") had `recall=1.0` — both gold chunks were retrieved — but the model
+still got the arithmetic wrong. So the story is: **retrieval-recall on 2-chunk gold sets
+is the dominant cause** (9/10), but not the *only* one — there's a smaller, real
+arithmetic-synthesis failure mode even when retrieval succeeds. Directly relevant to
+Step 7: raising `top_k_final` or trying the stronger reranker variant
+(`bge-reranker-v2-m3`) targets the dominant cause; the arithmetic-synthesis failure mode
+is a generation-side limitation Step 7 won't fix and is out of this project's scope to
+chase further.
 
 **All 5 deliberately-unanswerable questions correctly triggered `correct_abstention`**
 (5/5) — zero `incorrectly_answered`, i.e. no hallucinated "yes" on a genuinely
