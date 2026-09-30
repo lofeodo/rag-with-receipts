@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from .helpers import FakeCrossEncoder, FakeEncoder, make_chunks_df
 
@@ -9,7 +10,12 @@ from rag_receipts.indexing.config import EmbeddingConfig
 from rag_receipts.indexing.embedder import Embedder
 from rag_receipts.indexing.faiss_index import build_flat_ip_index
 from rag_receipts.retrieval.config import RerankerConfig, RetrievalConfig
-from rag_receipts.retrieval.pipeline import Retriever, dense_search, run_retrieval
+from rag_receipts.retrieval.pipeline import (
+    Retriever,
+    dense_search,
+    run_retrieval,
+    run_retrieval_with_timing,
+)
 from rag_receipts.retrieval.reranker import Reranker
 
 
@@ -196,6 +202,76 @@ def test_run_retrieval_empty_result_when_no_valid_ids():
     )
 
     assert result == []
+
+
+def test_run_retrieval_with_timing_returns_same_chunks_as_run_retrieval():
+    n = 3
+    embeddings = np.eye(n, dtype="float32")
+    metadata = make_chunks_df(n)
+    index = build_flat_ip_index(embeddings)
+    config = RetrievalConfig(top_k_dense=n, top_k_final=n)
+
+    chunks, timing = run_retrieval_with_timing(
+        "some query",
+        index=index,
+        metadata=metadata,
+        embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0])),
+        reranker=_reranker(),
+        config=config,
+    )
+    from_run_retrieval = run_retrieval(
+        "some query",
+        index=index,
+        metadata=metadata,
+        embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0])),
+        reranker=_reranker(),
+        config=config,
+    )
+
+    assert [c.chunk_id for c in chunks] == [c.chunk_id for c in from_run_retrieval]
+    assert timing.embed_query_s >= 0.0
+    assert timing.dense_search_s >= 0.0
+    assert timing.rerank_s >= 0.0
+    assert timing.total_s == pytest.approx(
+        timing.embed_query_s + timing.dense_search_s + timing.rerank_s
+    )
+
+
+def test_run_retrieval_with_timing_empty_result_has_zero_rerank_time():
+    index = build_flat_ip_index(np.zeros((0, 4), dtype="float32"))
+    metadata = make_chunks_df(3)
+
+    chunks, timing = run_retrieval_with_timing(
+        "some query",
+        index=index,
+        metadata=metadata,
+        embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0, 0.0])),
+        reranker=_reranker(),
+        config=RetrievalConfig(top_k_dense=3, top_k_final=3),
+    )
+
+    assert chunks == []
+    assert timing.rerank_s == 0.0
+    assert timing.total_s == pytest.approx(timing.embed_query_s + timing.dense_search_s)
+
+
+def test_retriever_retrieve_with_timing_delegates_to_function():
+    n = 3
+    embeddings = np.eye(n, dtype="float32")
+    metadata = make_chunks_df(n)
+    index = build_flat_ip_index(embeddings)
+    embedder = _embedder(FakeEncoder(dim=n))
+    reranker = _reranker()
+    config = RetrievalConfig(top_k_dense=n, top_k_final=2)
+
+    retriever = Retriever(
+        config=config, index=index, metadata=metadata, embedder=embedder, reranker=reranker
+    )
+
+    chunks, timing = retriever.retrieve_with_timing("some query")
+
+    assert len(chunks) == 2
+    assert timing.total_s >= 0.0
 
 
 def test_retriever_retrieve_delegates_to_run_retrieval():
