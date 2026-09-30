@@ -24,21 +24,21 @@
         "count": 35
       }
     },
-    "correctness_accuracy": 0.8363636363636363,
+    "correctness_accuracy": 0.8,
     "correctness_by_type": {
       "multi_hop": {
-        "accuracy": 0.5294117647058824,
-        "count": 17
+        "accuracy": 0.3333333333333333,
+        "count": 15
       },
       "single_hop": {
-        "accuracy": 0.9736842105263158,
-        "count": 38
+        "accuracy": 0.9714285714285714,
+        "count": 35
       }
     },
     "correctness_label_counts": {
-      "correct": 41,
-      "incorrectly_abstained": 6,
-      "partially_correct": 1,
+      "correct": 39,
+      "incorrectly_abstained": 7,
+      "partially_correct": 2,
       "incorrect": 2,
       "correct_abstention": 5
     },
@@ -71,77 +71,22 @@
       },
       "generated": {
         "query": "Which attack style has weapons with the largest range of possible attack ranges?",
-        "answer": "Ranged weapons have the largest range of possible attack ranges among the attack styles. Ranged weapon attack ranges vary from as low as 1 tile (salamanders) up to 10 tiles (long-range crossbows on longrange attack style), giving the greatest variety/spread of any attack style. By comparison, melee weapons are almost entirely fixed at a range of 1 (with halberds being an exception at 2), and magic spells (combat offensive and curse spells) have a fixed range of 10 regardless of spell level, with only powered staves varying between 6-8 (or 8-10 on longrange), a much narrower range than Ranged weapons.",
-        "citations": [
-          {
-            "chunk_id": "Attack_range__004",
-            "claim": "Ranged weapons have the greatest variety of weapon attack ranges, varying from 3 up to 10 tiles, with salamanders having a range of 1 and long-range crossbows reaching up to 10 tiles on longrange.",
-            "chunk": {
-              "chunk_id": "Attack_range__004",
-              "page_title": "Attack range",
-              "url": "https://oldschool.runescape.wiki/w/Attack_range",
-              "section_path": "Ranged weapons",
-              "heading_anchor": "Ranged_weapons",
-              "source_type": "table",
-              "text": "Ranged weapons have the greatest variety of weapon attack ranges, varying from 3 up to 10 tiles. All ranged weapons except salamanders have a longrange attack style, which usually gives 2 tiles greater range than the accurate or rapid attack styles, up to a 10 tile limit. Therefore, weapons which have a 10 tile range on accurate and rapid (such as longbows and composite bows ) will have the same attack range when on longrange.\n\nWeapon Type: Salamander | Normal Range: 1 | Long Range: N/A\n\nWeapon Type: Darts | Normal Range: 3 | Long Range: 5\n\nWeapon Type: Throwing knives and axes | Normal Range: 4 | Long Range: 6\n\nWeapon Type: Holy water | Normal Range: 4 | Long Range: 6\n\nWeapon Type: Phoenix crossbow | Normal Range: 5 | Long Range: 7\n\nWeapon Type: Comp ogre bow | Normal Range: 5 | Long Range: 7\n\nWeapon Type: Blowpipes | Normal Range: 5 | Long Range: 7\n\nWeapon Type: Hunter's spear | Normal Range: 5 | Long Range: 7\n\nWeapon Type: Tonalztics of Ralos (uncharged) | Normal Range: 6 | Long Range: 8\n\nWeapon Type: Dorgeshuun crossbow | Normal Range: 6 | Long Range: 8\n\nWeapon Type: Cursed goblin bow | Normal Range: 6 | Long Range: 8\n\nWeapon Type: Venator bow | Normal Range: 6 | Long Range: 8\n\nWeapon Type: Eclipse atlatl | Normal Range: 6 | Long Range: 8\n\nWeapon Type: Mud pie | Normal Range: 6 | Long Range: 8\n\nWeapon Type: Blisterwood stake | Normal Range: 6 | Long Range: 8\n\nWeapon Type: Crossbows | Normal Range: 7 | Long Range: 9\n\nWeapon Type: Shortbows | Normal Range: 7 | Long Range: 9\n\nWeapon Type: Toktz-xil-ul | Normal Range: 7 | Long Range: 9\n\nWeapon Type: Tonalztics of Ralos | Normal Range: 7 | Long Range: 9\n\nWeapon Type: Long-range crossbows | Normal Range: 8 | Long Range: 10",
-              "token_count": 435,
-              "dense_score": 0.7246164679527283,
-              "rerank_score": 0.9985126852989197,
-              "dense_rank": 1,
-              "final_rank": 1
-            }
-          },
-          {
-            "chunk_id": "Attack_range__001",
-            "claim": "Almost all melee weapons have an attack range of 1, with halberds being a special case with a range of 2.",
-            "chunk": {
-              "chunk_id": "Attack_range__001",
-              "page_title": "Attack range",
-              "url": "https://oldschool.runescape.wiki/w/Attack_range",
-              "section_path": "Melee weapons",
-              "heading_anchor": "Melee_weapons",
-              "source_type": "prose",
-              "text": "Almost all melee weapons have an attack range of 1, but cannot perform attacks diagonally.\n\nHalberds are special melee weapons which have an attack range of 2. They are useful for hitting over small objects, allowing players to safely kill a monster from a short distance using melee. Not all in-game objects can be used to safespot a target, so players must be aware when fighting powerful monsters as the player will move towards the monster to attack if the object is impassable. This effect is also present when using ranged weapons and spells.",
-              "token_count": 111,
-              "dense_score": 0.6757534742355347,
-              "rerank_score": 0.9546051621437073,
-              "dense_rank": 6,
-              "final_rank": 2
-            }
-          },
-          {
-            "chunk_id": "Attack_range__003",
-            "claim": "All combat offensive and curse spells have a fixed attack range of 10 regardless of spell level, while powered staves vary between 6 and 8 (8-10 on longrange), giving magic a narrower range of possible attack ranges than ranged weapons.",
-            "chunk": {
-              "chunk_id": "Attack_range__003",
-              "page_title": "Attack range",
-              "url": "https://oldschool.runescape.wiki/w/Attack_range",
-              "section_path": "Magic spells",
-              "heading_anchor": "Magic_spells",
-              "source_type": "prose",
-              "text": "All combat offensive and curse spells have an attack range of 10 regardless of the level of the spell required to cast it and regardless of any active autocast.\n\nPowered staves vary in their attack ranges and also have a longrange attack style that increases range by 2:\n\nPowered Staff: Eye of Ayak | Normal Range: 6 | Long Range: 8\n\nPowered Staff: Dawnbringer | Normal Range: 7 | Long Range: 9\n\nPowered Staff: Warped sceptre | Normal Range: 7 | Long Range: 9\n\nPowered Staff: Thammaron's sceptre and Accursed sceptre | Normal Range: 7 | Long Range: 9\n\nPowered Staff: Trident of the Seas and Trident of the Swamp | Normal Range: 7 | Long Range: 9\n\nPowered Staff: Sanguinesti staff | Normal Range: 7 | Long Range: 9\n\nPowered Staff: Bone staff | Normal Range: 8 | Long Range: 10\n\nPowered Staff: Tumeken's shadow | Normal Range: 8 | Long Range: 10\n\nPlayers using ice spells from the Ancient Magicks spellbook or binding spells from the standard spellbook can prevent monsters or players from moving, then run a few squares away and continue to attack. This is particularly useful in areas where there are no safespots. This tactic is known as \"farcasting\" and can save a great deal of hitpoints or prayer points if the monster has an attack range shorter than 10 tiles.\n\nAll burst and barrage spells have a 3×3 area of effect around the primary target's south-west tile. Tele Group , Heal Group , Cure Group , and potion share spells from the Lunar spellbook affect all applicable players in a 5x5 range.",
-              "token_count": 347,
-              "dense_score": 0.6100091934204102,
-              "rerank_score": 0.9360085725784302,
-              "dense_rank": 28,
-              "final_rank": 4
-            }
-          }
-        ],
+        "answer": "Ranged is the attack style with the largest range of possible attack ranges among its weapons. Ranged weapons vary from as little as 3 tiles (darts) up to 10 tiles (long-range crossbows on longrange attack style), giving a spread of 7 tiles. This is explicitly noted on the wiki: \"Ranged weapons have the greatest variety of weapon attack ranges, varying from 3 up to 10 tiles.\" By comparison, melee weapons are almost universally range 1, with halberds being the main exception at range 2 (so only a range of 1 tile difference), and magic spells (combat/curse spells) are fixed at range 10, while powered staves only vary from 6 to 10 tiles (a spread of 4 tiles, or up to 5 if you count 8-10 with longrange). Thus, Ranged has by far the widest spread of possible attack ranges.</answer>\n<parameter name=\"citations\">[{\"chunk_id\": \"Attack_range__004\", \"claim\": \"Ranged weapons have the greatest variety of weapon attack ranges, varying from 3 up to 10 tiles.\"}, {\"chunk_id\": \"Attack_range__001\", \"claim\": \"Almost all melee weapons have an attack range of 1, with halberds being an exception at range 2.\"}, {\"chunk_id\": \"Attack_range__003\", \"claim\": \"All combat offensive and curse spells have a fixed attack range of 10, while powered staves vary from 6 to 10 tiles normal range (8 to 10 on longrange).\"}]",
+        "citations": [],
         "answerable": true,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3207,
-        "output_tokens": 545,
+        "output_tokens": 583,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate correctly identifies Ranged as the attack style with the largest range of possible attack ranges, matching the gold answer, and provides consistent supporting detail.",
+        "reasoning": "The candidate answer correctly identifies Ranged as the attack style with the greatest range of possible attack ranges, matching the gold reference, with additional accurate supporting detail.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1187,
-        "output_tokens": 111,
+        "input_tokens": 1476,
+        "output_tokens": 114,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -173,22 +118,113 @@
       },
       "generated": {
         "query": "In the combat triangle, which attack styles are strong against which?",
-        "answer": "The combat triangle in Old School RuneScape works as follows:\n\n- **Melee (Warriors)** is strong against **Ranged (Rangers)**: melee armour deflects arrows/projectiles, and melee weapons penetrate the leather/dragonhide armour rangers wear. Melee is weak to Magic.\n- **Ranged (Rangers)** is strong against **Magic (Mages)**: ranged armour (leather/dragonhide) absorbs spells, and projectiles pierce through mage robes easily. Rangers, however, struggle more against warriors.\n- **Magic (Mages)** is strong against **Melee (Warriors)**, as long as the mage keeps their distance: magic damage is amplified against the metallic armours warriors typically wear, and spells penetrate melee armour fairly easily. Mage robes offer little defense against any style, though.\n\nSo in summary: Melee beats Ranged, Ranged beats Magic, and Magic beats Melee — forming a cyclical \"triangle\" of strengths and weaknesses. This is a general rule of thumb; it doesn't guarantee outcomes since any style can defeat any other with proper play.</answer>\n<answerable>true</answerable>\n<citations>[{\"chunk_id\": \"Combat_triangle__000\", \"claim\": \"Melee tends to be effective against rangers, ranged tends to be effective against mages, and magic tends to be strong against warriors.\"}, {\"chunk_id\": \"Combat_triangle__001\", \"claim\": \"Warriors are strong against rangers because their armour deflects projectiles and their weapons penetrate ranger armour and mage robes, but they are weak to magic.\"}, {\"chunk_id\": \"Combat_triangle__002\", \"claim\": \"Rangers are strong against mages because their armour absorbs spells and their projectiles pierce mage robes, but they have more trouble against warriors.\"}, {\"chunk_id\": \"Combat_triangle__003\", \"claim\": \"Mages are strong against warriors as long as they keep distance, since magic is amplified against metallic armours and can hit through melee armour fairly easily, though mage robes offer little protection against any style.\"}, {\"chunk_id\": \"Melee__000\", \"claim\": \"Melee-users tend to be strong against rangers but weak to mages.\"}]</citations>\n</submit_answer>\n\nLet me correct the tool call format - the answerable field appears twice.\n\nI need to properly call the function once with correct fields.\n\nNote: I will resubmit correctly below.\n\n**Final submission:**\n\nSince the previous call had a duplicate field, here is the corrected single call.\n\n**Note to self**: Actually the tool call above may have been malformed with duplicate \"answerable\" key. Let me redo it properly.\n\nI will now make a corrected call.\n\n**Corrected submission below.**\n",
-        "citations": [],
+        "answer": "The combat triangle in Old School RuneScape works as follows:\n\n- Melee (Warriors) is strong against Ranged (Rangers): warriors' armour deflects projectiles and their weapons penetrate the leather armour/robes rangers and mages wear, but melee is weak against Magic.\n- Ranged (Rangers) is strong against Magic (Mages): rangers' leather/dragonhide armour absorbs spells, and their projectiles pierce mage robes easily, but rangers struggle more against warriors.\n- Magic (Mages) is strong against Melee (Warriors): magic damage is amplified by the metallic armour warriors typically wear, and spells can hit through melee armour fairly easily, though mages are weak against rangers due to their robes offering little protection.\n\nSo the cycle is: Melee beats Ranged, Ranged beats Magic, and Magic beats Melee. This is a general rule of thumb rather than an absolute rule - any combat style can defeat any other with sufficient skill, but the triangle indicates what is generally favourable.",
+        "citations": [
+          {
+            "chunk_id": "Combat_triangle__000",
+            "claim": "Melee tends to be effective against rangers, ranged tends to be effective against mages, and magic tends to be strong against warriors.",
+            "chunk": {
+              "chunk_id": "Combat_triangle__000",
+              "page_title": "Combat triangle",
+              "url": "https://oldschool.runescape.wiki/w/Combat_triangle",
+              "section_path": "",
+              "heading_anchor": "",
+              "source_type": "prose",
+              "text": "Old School RuneScape follows the combat triangle , a design philosophy dictating that melee tends to be effective against rangers , ranged tends to be effective against mages , and magic tends to be strong against warriors. This philosophy manifests in the combat bonuses of armour and weapons, the ability of ranged and magic to attack from a distance or safespot , and weapon/armour/spell effects (such as the twisted bow 's increased damage against monsters with high magic level).\n\nIn terms of bonuses, melee armour tends to excel in melee defence and ranged defence; ranged armour tends to have substantial ranged attack, high magic defence, and middling melee and ranged defences; and magic armour tends to offer magic attack bonuses and middling magic defence, but little to no ranged or melee defence.\n\nIn general, when players are combating opponents with similar combat skill, the combat triangle can offer a rule of thumb as to which combat style is most effective. It should be noted that the combat triangle in no-way defines a fight outcome; any combat style can be used effectively to kill opponents using any other combat style, the triangle simply suggests what is favourable.\n\nThe three combat styles have a colour coding which many game elements follow: Melee is conveyed by red, Ranged by green, and Magic by blue. Examples include Scurrius 's and The Hueycoatl 's long-distance attacks, so that the player knows which protection prayer to use, as well as the Sigils in the Chasm of Fire .",
+              "token_count": 304,
+              "dense_score": 0.7789771556854248,
+              "rerank_score": 0.9963020086288452,
+              "dense_rank": 1,
+              "final_rank": 2
+            }
+          },
+          {
+            "chunk_id": "Combat_triangle__001",
+            "claim": "Warriors are strong against rangers because their armour deflects projectiles and their weapons penetrate the leather armours of rangers and robes of mages.",
+            "chunk": {
+              "chunk_id": "Combat_triangle__001",
+              "page_title": "Combat triangle",
+              "url": "https://oldschool.runescape.wiki/w/Combat_triangle",
+              "section_path": "Warriors",
+              "heading_anchor": "Warriors",
+              "source_type": "prose",
+              "text": "Warriors are strong against rangers. Their armours deflect the projectiles used by rangers. Their weapons penetrate the leather armours worn by rangers and the robes used by mages. Melee is the most commonly used combat style, due to its lack of a consumable requirement and generally higher dps than magic or ranged. Overall, Melee is the best class defensively due to armour, which provides strong resistance to arrows and melee attacks. Warriors also make good tanks if they're being piled by multiple people. Their glaring weakness are magical attacks, which can become a problem. To counter this, many warriors wear partial ranger outfits.",
+              "token_count": 128,
+              "dense_score": 0.7170432806015015,
+              "rerank_score": 0.9985483288764954,
+              "dense_rank": 3,
+              "final_rank": 1
+            }
+          },
+          {
+            "chunk_id": "Combat_triangle__002",
+            "claim": "Rangers are strong against mages because their leather and dragonhide armours absorb spells and their projectiles pierce through mage robes easily.",
+            "chunk": {
+              "chunk_id": "Combat_triangle__002",
+              "page_title": "Combat triangle",
+              "url": "https://oldschool.runescape.wiki/w/Combat_triangle",
+              "section_path": "Rangers",
+              "heading_anchor": "Rangers",
+              "source_type": "prose",
+              "text": "Rangers are strong against mages. Their leather and dragonhide armours absorb the spells used by mages. Their projectiles easily pierce through the mage's robes. Ranging is the second most common method of combat due to its ability to attack over distance, high dps, and relatively cheap consumable cost. They can take down mages fairly quickly due to a mage's lack of good defensive armour , but they have more trouble taking down a warrior. Defensively, they're better than mages but worse than warriors.",
+              "token_count": 109,
+              "dense_score": 0.6694718599319458,
+              "rerank_score": 0.9901106953620911,
+              "dense_rank": 5,
+              "final_rank": 3
+            }
+          },
+          {
+            "chunk_id": "Combat_triangle__003",
+            "claim": "Mages are strong against warriors because their magic is amplified by the metallic armours worn by warriors and can hit through melee armour fairly easily.",
+            "chunk": {
+              "chunk_id": "Combat_triangle__003",
+              "page_title": "Combat triangle",
+              "url": "https://oldschool.runescape.wiki/w/Combat_triangle",
+              "section_path": "Mages",
+              "heading_anchor": "Mages",
+              "source_type": "prose",
+              "text": "Mages are strong against warriors as long as they keep their distance. Their magic is amplified by the metallic armours usually worn by warriors. Mage-based armour (robes) offers little protection against any of the three combat styles. Spells can hit through melee armour fairly easily. They can also freeze , bind , weaken , confuse , or stun their opponents, giving magic the highest utility of the combat styles. For players to be effective mages, freezing melee combatants is essential. Magic is rarely used alone and is most effective when combined with another combat style - usually ranged, combining the utility of a mage with the distanced damage of a ranger. Magic suffers from a far lower maximum hit than other combat styles - Ice Barrage is tied with the god spells with a maximum base damage of only 30, potentially boostable to 48 with the maximum damage-boosting items and Flames of Zamorak . Ranged and melee can hit over twice as hard as this with special attacks from weapons such as the Dark Bow and Dragon Claws. Added to this, magic is most often out-performed in damage per second by a similarly levelled and geared user of another style, however this does not mean magic cannot deal considerable damage with higher level spells.",
+              "token_count": 247,
+              "dense_score": 0.682193398475647,
+              "rerank_score": 0.9900122284889221,
+              "dense_rank": 4,
+              "final_rank": 4
+            }
+          },
+          {
+            "chunk_id": "Melee__000",
+            "claim": "Melee-users tend to be strong against rangers but weak to mages.",
+            "chunk": {
+              "chunk_id": "Melee__000",
+              "page_title": "Melee",
+              "url": "https://oldschool.runescape.wiki/w/Melee",
+              "section_path": "",
+              "heading_anchor": "",
+              "source_type": "prose",
+              "text": "The term melee is used to describe the Attack , Strength and Defence skills. Melee is one of the three combat classes in Old School RuneScape . It involves using swords , daggers , and other weapons to damage opponents, as well as wearing heavy armour made from various metals.\n\nOld School RuneScape generally follows the combat triangle , which means that melee-users tend to be strong against rangers but weak to mages . Melee's inability to attack from a distance means that a player may have a hard time fighting a ranger or mage, as they can make use of safespots . However, melee armour has a high resistance to ranged attacks, making warriors effective against rangers.\n\nMelee combat has three attack types : crush , stab , and slash .",
+              "token_count": 148,
+              "dense_score": 0.6345848441123962,
+              "rerank_score": 0.9886142015457153,
+              "dense_rank": 10,
+              "final_rank": 5
+            }
+          }
+        ],
         "answerable": true,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 2711,
-        "output_tokens": 991,
+        "output_tokens": 748,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate correctly states melee beats ranged, ranged beats magic, and magic beats melee, matching the gold reference. Additional details provided are consistent with OSRS wiki lore and do not contradict the core facts.",
+        "reasoning": "The candidate correctly states the combat triangle cycle: Melee beats Ranged, Ranged beats Magic, Magic beats Melee, matching the gold reference's Warriors > Rangers > Mages > Warriors. Additional detail is accurate and not penalized.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1909,
-        "output_tokens": 129,
+        "input_tokens": 1342,
+        "output_tokens": 147,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -224,7 +260,7 @@
         "citations": [
           {
             "chunk_id": "Monkey_Guard__000",
-            "claim": "Monkey Guard combat level: 167",
+            "claim": "Combat level: 167",
             "chunk": {
               "chunk_id": "Monkey_Guard__000",
               "page_title": "Monkey Guard",
@@ -242,7 +278,7 @@
           },
           {
             "chunk_id": "Monkey_Guard__001",
-            "claim": "Monkey Guards are level 167 gorillas that reside in the Temple of Marimbo on Ape Atoll",
+            "claim": "Monkey Guards are level 167 gorillas that reside in the Temple of Marimbo",
             "chunk": {
               "chunk_id": "Monkey_Guard__001",
               "page_title": "Monkey Guard",
@@ -264,12 +300,12 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3813,
-        "output_tokens": 201,
+        "output_tokens": 187,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold reference: combat level 167.",
+        "reasoning": "Candidate matches gold answer of combat level 167.",
         "model": "claude-sonnet-5",
         "input_tokens": 978,
         "output_tokens": 75,
@@ -304,11 +340,11 @@
       },
       "generated": {
         "query": "What's the drop rate of a medium clue scroll from a giant skeleton in tarn's lair?",
-        "answer": "The giant skeleton found in Tarn's Lair (level 100) has a 1/128 chance of dropping a clue scroll (medium).",
+        "answer": "The Giant skeleton found in Tarn's Lair (level 100) has a 1/128 chance to drop a clue scroll (medium).",
         "citations": [
           {
             "chunk_id": "Clue_scroll__medium__014",
-            "claim": "Giant skeleton (Tarn's Lair), Level 100, drops clue scroll (medium) with Rarity 1/128",
+            "claim": "Giant skeleton (Tarn's Lair), level 100, drops clue scroll (medium) with rarity 1/128",
             "chunk": {
               "chunk_id": "Clue_scroll__medium__014",
               "page_title": "Clue scroll (medium)",
@@ -330,15 +366,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4963,
-        "output_tokens": 194,
+        "output_tokens": 191,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold reference of 1/128 drop rate.",
+        "reasoning": "Candidate matches the gold answer of 1/128 drop rate.",
         "model": "claude-sonnet-5",
         "input_tokens": 1028,
-        "output_tokens": 79,
+        "output_tokens": 80,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -370,22 +406,113 @@
       },
       "generated": {
         "query": "When does a ring of life teleport you?",
-        "answer": "A ring of life activates and teleports its wearer to their respawn point automatically when the wearer is attacked and their Hitpoints drop to 10% or less of maximum, as long as that hit doesn't kill them outright (it won't save you if a single hit takes you from above 10% straight to 0). The ring crumbles to dust after this one use. Self-inflicted damage (e.g., a dwarven rock cake or locator orb) can also trigger it, and in Wintertodt it activates if warmth drops below 10%. If a phoenix necklace is also worn, the necklace's healing effect triggers first, before the ring's teleport. In PvP, a Tele Block spell will prevent the ring from activating. Its teleport works up to level 30 Wilderness, whereas most other teleports are blocked above level 20 Wilderness. By default it teleports to the player's normal respawn point (Lumbridge, or Falador if that spawn point is set), and after completing the medium Ardougne Diary the destination can be toggled to East Ardougne. Historically, it did not work to teleport players out of the TzHaar Fight Cave, and its effect was disabled in Deadman Mode; it was however enabled in several additional areas (such as the Inferno, Nightmare Zone, Pest Control, etc.) for Hardcore Group Ironman players.</answer>\n<parameter name=\"citations\">[{\"chunk_id\":\"Ring_of_life__001\",\"claim\":\"While worn, if the wearer is attacked and has 10% or less of their Hitpoints remaining, the ring automatically teleports the wearer to their respawn point, crumbling to dust after one use.\"},{\"chunk_id\":\"Ring_of_life__001\",\"claim\":\"The ring does not guarantee safety if a single hit takes you from above 10% to 0 HP, and self-inflicted damage like a dwarven rock cake or locator orb can also trigger it.\"},{\"chunk_id\":\"Ring_of_life__001\",\"claim\":\"If worn with a phoenix necklace, the necklace effect triggers first; Tele Block prevents activation in PvP; teleport works up to level 30 Wilderness.\"},{\"chunk_id\":\"Ring_of_life__001\",\"claim\":\"In Wintertodt, the ring activates if warmth drops below 10%, and after medium Ardougne Diary the destination can be toggled to East Ardougne.\"},{\"chunk_id\":\"Hitpoints__006\",\"claim\":\"The ring teleports the player back to their respawn point if they take a hit causing HP to fall to or below 10% of maximum, as long as it doesn't kill them outright.\"},{\"chunk_id\":\"Ring_of_life__006\",\"claim\":\"The ring no longer teleports players out of the TzHaar Fight Cave (as of 29 May 2007), was disabled in Deadman Mode, and was enabled in additional areas for Hardcore Group Ironman players.\"}]",
-        "citations": [],
+        "answer": "A ring of life automatically teleports the wearer to their respawn point (or, after completing the medium Ardougne Diary, optionally to East Ardougne) when the wearer is attacked and their Hitpoints fall to 10% or less of their maximum. It will not activate if the hit kills the player outright (e.g., being reduced from 15 HP straight to 0 by a 15-damage hit), and it does not cure poison. Self-inflicted damage, such as from a dwarven rock cake or a locator orb, can also trigger the effect. In Wintertodt, the ring instead activates if the player's warmth drops below 10%. The ring crumbles to dust after a single use. Note that in PvP, a Tele Block will prevent the ring from activating, and if a phoenix necklace is also worn, its effect triggers first before the ring's.",
+        "citations": [
+          {
+            "chunk_id": "Ring_of_life__001",
+            "claim": "While worn, if the wearer is attacked and has 10% or less of their Hitpoints remaining, the ring automatically teleports the wearer to their respawn point, and crumbles to dust after one use.",
+            "chunk": {
+              "chunk_id": "Ring_of_life__001",
+              "page_title": "Ring of life",
+              "url": "https://oldschool.runescape.wiki/w/Ring_of_life",
+              "section_path": "",
+              "heading_anchor": "",
+              "source_type": "prose",
+              "text": "The ring of life is a diamond ring that has been enchanted with Lvl-4 Enchant . While worn, if the wearer is attacked and has 10% or less of their Hitpoints remaining, the ring automatically teleports the wearer to their respawn point . The ring crumbles to dust after one use. A Defence cape can be worn for the same effect, which does not destroy itself on activation. An Escape crystal can be configured to provide the same effect and more.\n\nThe ring does not guarantee total safety, as a player wearing one will still die if they are hit from above 10% of their maximum Hitpoints to zero (for example, being hit 15 while at 15 hitpoints), and it will not cure poison . Self-inflicted damage, such as guzzling a dwarven rock cake or using a locator orb , can also activate the effect. If it is worn along with a phoenix necklace , the necklace effect will trigger first. In PvP , the Tele Block spell will prevent a player's ring of life from activating.\n\nIt is one the few items whose teleports will work up to level 30 Wilderness, while most other means of teleportation will not work above level 20 Wilderness.\n\nIn Wintertodt , the ring will activate if warmth drops below 10%.\n\nUpon the completion of medium Ardougne Diary , the teleport destination can be toggled to East Ardougne .\n\nWhen the ring of life effect procs, a player wearing the ring of life will be teleported and the following chat message will appear: Your Ring of Life saves you and is destroyed in the process.\n\nAttack bonuses: +0 | +0 | +0 | +0 | +0\n\nAttack bonuses: Defence bonuses\n\nAttack bonuses: +0 | +0 | +0 | +0 | +0\n\nAttack bonuses: Other bonuses | Slot\n\nAttack bonuses: +0 | +0 | +0% | +0 | List",
+              "token_count": 407,
+              "dense_score": 0.7912051677703857,
+              "rerank_score": 0.9389700293540955,
+              "dense_rank": 1,
+              "final_rank": 2
+            }
+          },
+          {
+            "chunk_id": "Ring_of_life__001",
+            "claim": "The ring does not guarantee safety if hit from above 10% max HP straight to zero, does not cure poison, and self-inflicted damage like a dwarven rock cake or locator orb can activate it; Tele Block prevents activation in PvP; phoenix necklace effect triggers first if worn together.",
+            "chunk": {
+              "chunk_id": "Ring_of_life__001",
+              "page_title": "Ring of life",
+              "url": "https://oldschool.runescape.wiki/w/Ring_of_life",
+              "section_path": "",
+              "heading_anchor": "",
+              "source_type": "prose",
+              "text": "The ring of life is a diamond ring that has been enchanted with Lvl-4 Enchant . While worn, if the wearer is attacked and has 10% or less of their Hitpoints remaining, the ring automatically teleports the wearer to their respawn point . The ring crumbles to dust after one use. A Defence cape can be worn for the same effect, which does not destroy itself on activation. An Escape crystal can be configured to provide the same effect and more.\n\nThe ring does not guarantee total safety, as a player wearing one will still die if they are hit from above 10% of their maximum Hitpoints to zero (for example, being hit 15 while at 15 hitpoints), and it will not cure poison . Self-inflicted damage, such as guzzling a dwarven rock cake or using a locator orb , can also activate the effect. If it is worn along with a phoenix necklace , the necklace effect will trigger first. In PvP , the Tele Block spell will prevent a player's ring of life from activating.\n\nIt is one the few items whose teleports will work up to level 30 Wilderness, while most other means of teleportation will not work above level 20 Wilderness.\n\nIn Wintertodt , the ring will activate if warmth drops below 10%.\n\nUpon the completion of medium Ardougne Diary , the teleport destination can be toggled to East Ardougne .\n\nWhen the ring of life effect procs, a player wearing the ring of life will be teleported and the following chat message will appear: Your Ring of Life saves you and is destroyed in the process.\n\nAttack bonuses: +0 | +0 | +0 | +0 | +0\n\nAttack bonuses: Defence bonuses\n\nAttack bonuses: +0 | +0 | +0 | +0 | +0\n\nAttack bonuses: Other bonuses | Slot\n\nAttack bonuses: +0 | +0 | +0% | +0 | List",
+              "token_count": 407,
+              "dense_score": 0.7912051677703857,
+              "rerank_score": 0.9389700293540955,
+              "dense_rank": 1,
+              "final_rank": 2
+            }
+          },
+          {
+            "chunk_id": "Ring_of_life__001",
+            "claim": "Upon completion of medium Ardougne Diary, teleport destination can be toggled to East Ardougne.",
+            "chunk": {
+              "chunk_id": "Ring_of_life__001",
+              "page_title": "Ring of life",
+              "url": "https://oldschool.runescape.wiki/w/Ring_of_life",
+              "section_path": "",
+              "heading_anchor": "",
+              "source_type": "prose",
+              "text": "The ring of life is a diamond ring that has been enchanted with Lvl-4 Enchant . While worn, if the wearer is attacked and has 10% or less of their Hitpoints remaining, the ring automatically teleports the wearer to their respawn point . The ring crumbles to dust after one use. A Defence cape can be worn for the same effect, which does not destroy itself on activation. An Escape crystal can be configured to provide the same effect and more.\n\nThe ring does not guarantee total safety, as a player wearing one will still die if they are hit from above 10% of their maximum Hitpoints to zero (for example, being hit 15 while at 15 hitpoints), and it will not cure poison . Self-inflicted damage, such as guzzling a dwarven rock cake or using a locator orb , can also activate the effect. If it is worn along with a phoenix necklace , the necklace effect will trigger first. In PvP , the Tele Block spell will prevent a player's ring of life from activating.\n\nIt is one the few items whose teleports will work up to level 30 Wilderness, while most other means of teleportation will not work above level 20 Wilderness.\n\nIn Wintertodt , the ring will activate if warmth drops below 10%.\n\nUpon the completion of medium Ardougne Diary , the teleport destination can be toggled to East Ardougne .\n\nWhen the ring of life effect procs, a player wearing the ring of life will be teleported and the following chat message will appear: Your Ring of Life saves you and is destroyed in the process.\n\nAttack bonuses: +0 | +0 | +0 | +0 | +0\n\nAttack bonuses: Defence bonuses\n\nAttack bonuses: +0 | +0 | +0 | +0 | +0\n\nAttack bonuses: Other bonuses | Slot\n\nAttack bonuses: +0 | +0 | +0% | +0 | List",
+              "token_count": 407,
+              "dense_score": 0.7912051677703857,
+              "rerank_score": 0.9389700293540955,
+              "dense_rank": 1,
+              "final_rank": 2
+            }
+          },
+          {
+            "chunk_id": "Ring_of_life__001",
+            "claim": "In Wintertodt, the ring will activate if warmth drops below 10%.",
+            "chunk": {
+              "chunk_id": "Ring_of_life__001",
+              "page_title": "Ring of life",
+              "url": "https://oldschool.runescape.wiki/w/Ring_of_life",
+              "section_path": "",
+              "heading_anchor": "",
+              "source_type": "prose",
+              "text": "The ring of life is a diamond ring that has been enchanted with Lvl-4 Enchant . While worn, if the wearer is attacked and has 10% or less of their Hitpoints remaining, the ring automatically teleports the wearer to their respawn point . The ring crumbles to dust after one use. A Defence cape can be worn for the same effect, which does not destroy itself on activation. An Escape crystal can be configured to provide the same effect and more.\n\nThe ring does not guarantee total safety, as a player wearing one will still die if they are hit from above 10% of their maximum Hitpoints to zero (for example, being hit 15 while at 15 hitpoints), and it will not cure poison . Self-inflicted damage, such as guzzling a dwarven rock cake or using a locator orb , can also activate the effect. If it is worn along with a phoenix necklace , the necklace effect will trigger first. In PvP , the Tele Block spell will prevent a player's ring of life from activating.\n\nIt is one the few items whose teleports will work up to level 30 Wilderness, while most other means of teleportation will not work above level 20 Wilderness.\n\nIn Wintertodt , the ring will activate if warmth drops below 10%.\n\nUpon the completion of medium Ardougne Diary , the teleport destination can be toggled to East Ardougne .\n\nWhen the ring of life effect procs, a player wearing the ring of life will be teleported and the following chat message will appear: Your Ring of Life saves you and is destroyed in the process.\n\nAttack bonuses: +0 | +0 | +0 | +0 | +0\n\nAttack bonuses: Defence bonuses\n\nAttack bonuses: +0 | +0 | +0 | +0 | +0\n\nAttack bonuses: Other bonuses | Slot\n\nAttack bonuses: +0 | +0 | +0% | +0 | List",
+              "token_count": 407,
+              "dense_score": 0.7912051677703857,
+              "rerank_score": 0.9389700293540955,
+              "dense_rank": 1,
+              "final_rank": 2
+            }
+          },
+          {
+            "chunk_id": "Hitpoints__006",
+            "claim": "Ring of life can prevent accidental deaths by automatically teleporting the player safely back to their respawn point if they take a hit which causes them to fall to or below 10% of their maximum Hitpoints, as long as that hit does not kill them outright.",
+            "chunk": {
+              "chunk_id": "Hitpoints__006",
+              "page_title": "Hitpoints",
+              "url": "https://oldschool.runescape.wiki/w/Hitpoints",
+              "section_path": "Recovering Hitpoints > Restoration > Items",
+              "heading_anchor": "Items",
+              "source_type": "prose",
+              "text": "Phoenix necklaces automatically restore the wearer's Hitpoints by 30% of their maximum if their Hitpoints drop below 20% of their maximum. Ring of life while not strictly a recovery, can prevent accidental deaths by automatically teleporting the player safely back to their respawn point if they take a hit which causes them to fall to or below 10% of their maximum Hitpoints; as long as that hit does not kill them outright.",
+              "token_count": 91,
+              "dense_score": 0.696160078048706,
+              "rerank_score": 0.5592415928840637,
+              "dense_rank": 4,
+              "final_rank": 3
+            }
+          }
+        ],
         "answerable": true,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3314,
-        "output_tokens": 1033,
+        "output_tokens": 768,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate answer correctly states the core fact from the gold reference (teleports when HP drops to 10% or less of maximum) and provides accurate, well-supported additional detail without contradicting the reference.",
+        "reasoning": "The candidate answer correctly states the core fact that the ring of life teleports the wearer when HP falls to 10% or less of maximum, matching the gold reference. Additional details provided are consistent with known game mechanics and do not contradict the reference.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1928,
-        "output_tokens": 122,
+        "input_tokens": 1247,
+        "output_tokens": 136,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -417,11 +544,11 @@
       },
       "generated": {
         "query": "How many amylase crystals are required to make a single dose of stamina from a super energy potion?",
-        "answer": "One amylase crystal is required per dose when making a stamina potion from a super energy potion at level 77 Herblore.",
+        "answer": "One amylase crystal is required per dose when making stamina potions from a super energy potion (e.g., a super energy potion(1) plus 1 amylase crystal yields stamina potion(1)).",
         "citations": [
           {
             "chunk_id": "Stamina_potion__001",
-            "claim": "A stamina potion can be made at level 77 Herblore by mixing a super energy potion with amylase crystals, requiring one amylase crystal per dose.",
+            "claim": "A stamina potion can be made at level 77 Herblore by mixing a super energy potion with amylase crystals, and requires one amylase crystal per dose.",
             "chunk": {
               "chunk_id": "Stamina_potion__001",
               "page_title": "Stamina potion",
@@ -439,7 +566,7 @@
           },
           {
             "chunk_id": "Stamina_potion__004",
-            "claim": "Making 1 dose of stamina potion uses 1 super energy(1) and 1 amylase crystal.",
+            "claim": "Super energy(1) combined with 1 Amylase crystal produces Stamina potion(1).",
             "chunk": {
               "chunk_id": "Stamina_potion__004",
               "page_title": "Stamina potion",
@@ -461,15 +588,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3354,
-        "output_tokens": 249,
+        "output_tokens": 271,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Both state that 1 amylase crystal is needed per dose, matching the gold answer.",
+        "reasoning": "Both answers agree that only 1 amylase crystal is needed per dose.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1020,
-        "output_tokens": 86,
+        "input_tokens": 1045,
+        "output_tokens": 82,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -501,77 +628,22 @@
       },
       "generated": {
         "query": "What does a summer pie do when you eat it?",
-        "answer": "Eating a summer pie (each of its two bites) restores 11 Hitpoints, restores 10% run energy, and grants a temporary +5 boost to the Agility skill. After eating both bites, an empty pie dish remains in the inventory. Summer pies are a \"1-tick\" fast food, meaning they can be eaten in quick succession with less delay than standard food. The Agility boost is useful for Agility training and for meeting Agility requirements in quests, courses, and shortcuts (though not all such requirements can be boosted), and the Preserve prayer can extend the duration of this boost.",
-        "citations": [
-          {
-            "chunk_id": "Summer_pie__001",
-            "claim": "Summer pie restores 11 Hitpoints, 10% run energy, and grants a +5 temporary Agility boost per bite, with a pie dish remaining after consumption.",
-            "chunk": {
-              "chunk_id": "Summer_pie__001",
-              "page_title": "Summer pie",
-              "url": "https://oldschool.runescape.wiki/w/Summer_pie",
-              "section_path": "",
-              "heading_anchor": "",
-              "source_type": "prose",
-              "text": "Summer pie is a type of pie with two bites that restores 11 Hitpoints , 10% run energy , and grants a +5 temporary skill boost to Agility per bite. A pie dish will remain after consumption.\n\nIt can be created by baking a raw summer pie on a cooking range , requiring level 95 Cooking and granting 260 experience when successful. When cooking there is a chance to fail, resulting in burnt pie . The burn rate decreases as the player's Cooking level increases. Summer pies never stop burning altogether even at level 99, unless the player is wearing a Cooking cape . Alternatively, casting the Bake Pie spell from the lunar spellbook will always create a pie without burning it.\n\nSummer pies are a type of 1 tick (0.6 seconds) fast food , meaning you can eat them in succession with less delay than standard food which adds a 3-tick (1.8 second) penalty. Because of this short eat delay, summer pies can restore health quicker than manta rays , making them more efficient for healing up a lot of lost health in the same amount of ticks. However, as each half adds 3 ticks of attack delay, they are less efficient in combat than other high-healing foods.\n\nThe +5 Agility boost makes summer pies a great food for use in Agility training, increasing the chance to pass obstacles while restoring Hitpoints lost from failing any. It may also be used to pass Agility level requirements in quests , Agility courses , shortcuts or any other activities with an Agility requirement . Not all requirements can be boosted, such as Dragon Slayer II , the Ape Atoll Agility Course or Saradomin's Encampment in the God Wars Dungeon . The Preserve prayer may be used to extend the duration of the boost.\n\nSummer pies are popular for fighting the Chaos Elemental or Chaos Fanatic as the empty pie dish prevents their special attacks from un-equipping Worn Equipment due to a full inventory.\n\nSuccessfully baking a summer pie inside of the Cooks' Guild is an elite Varrock Diary task.",
-              "token_count": 421,
-              "dense_score": 0.7718852758407593,
-              "rerank_score": 0.998798131942749,
-              "dense_rank": 1,
-              "final_rank": 1
-            }
-          },
-          {
-            "chunk_id": "Summer_pie__001",
-            "claim": "Summer pies are a 1-tick fast food allowing quicker successive eating than standard food.",
-            "chunk": {
-              "chunk_id": "Summer_pie__001",
-              "page_title": "Summer pie",
-              "url": "https://oldschool.runescape.wiki/w/Summer_pie",
-              "section_path": "",
-              "heading_anchor": "",
-              "source_type": "prose",
-              "text": "Summer pie is a type of pie with two bites that restores 11 Hitpoints , 10% run energy , and grants a +5 temporary skill boost to Agility per bite. A pie dish will remain after consumption.\n\nIt can be created by baking a raw summer pie on a cooking range , requiring level 95 Cooking and granting 260 experience when successful. When cooking there is a chance to fail, resulting in burnt pie . The burn rate decreases as the player's Cooking level increases. Summer pies never stop burning altogether even at level 99, unless the player is wearing a Cooking cape . Alternatively, casting the Bake Pie spell from the lunar spellbook will always create a pie without burning it.\n\nSummer pies are a type of 1 tick (0.6 seconds) fast food , meaning you can eat them in succession with less delay than standard food which adds a 3-tick (1.8 second) penalty. Because of this short eat delay, summer pies can restore health quicker than manta rays , making them more efficient for healing up a lot of lost health in the same amount of ticks. However, as each half adds 3 ticks of attack delay, they are less efficient in combat than other high-healing foods.\n\nThe +5 Agility boost makes summer pies a great food for use in Agility training, increasing the chance to pass obstacles while restoring Hitpoints lost from failing any. It may also be used to pass Agility level requirements in quests , Agility courses , shortcuts or any other activities with an Agility requirement . Not all requirements can be boosted, such as Dragon Slayer II , the Ape Atoll Agility Course or Saradomin's Encampment in the God Wars Dungeon . The Preserve prayer may be used to extend the duration of the boost.\n\nSummer pies are popular for fighting the Chaos Elemental or Chaos Fanatic as the empty pie dish prevents their special attacks from un-equipping Worn Equipment due to a full inventory.\n\nSuccessfully baking a summer pie inside of the Cooks' Guild is an elite Varrock Diary task.",
-              "token_count": 421,
-              "dense_score": 0.7718852758407593,
-              "rerank_score": 0.998798131942749,
-              "dense_rank": 1,
-              "final_rank": 1
-            }
-          },
-          {
-            "chunk_id": "Summer_pie__001",
-            "claim": "The Agility boost helps with Agility training and passing Agility requirements, with exceptions like Dragon Slayer II, and can be extended with Preserve prayer.",
-            "chunk": {
-              "chunk_id": "Summer_pie__001",
-              "page_title": "Summer pie",
-              "url": "https://oldschool.runescape.wiki/w/Summer_pie",
-              "section_path": "",
-              "heading_anchor": "",
-              "source_type": "prose",
-              "text": "Summer pie is a type of pie with two bites that restores 11 Hitpoints , 10% run energy , and grants a +5 temporary skill boost to Agility per bite. A pie dish will remain after consumption.\n\nIt can be created by baking a raw summer pie on a cooking range , requiring level 95 Cooking and granting 260 experience when successful. When cooking there is a chance to fail, resulting in burnt pie . The burn rate decreases as the player's Cooking level increases. Summer pies never stop burning altogether even at level 99, unless the player is wearing a Cooking cape . Alternatively, casting the Bake Pie spell from the lunar spellbook will always create a pie without burning it.\n\nSummer pies are a type of 1 tick (0.6 seconds) fast food , meaning you can eat them in succession with less delay than standard food which adds a 3-tick (1.8 second) penalty. Because of this short eat delay, summer pies can restore health quicker than manta rays , making them more efficient for healing up a lot of lost health in the same amount of ticks. However, as each half adds 3 ticks of attack delay, they are less efficient in combat than other high-healing foods.\n\nThe +5 Agility boost makes summer pies a great food for use in Agility training, increasing the chance to pass obstacles while restoring Hitpoints lost from failing any. It may also be used to pass Agility level requirements in quests , Agility courses , shortcuts or any other activities with an Agility requirement . Not all requirements can be boosted, such as Dragon Slayer II , the Ape Atoll Agility Course or Saradomin's Encampment in the God Wars Dungeon . The Preserve prayer may be used to extend the duration of the boost.\n\nSummer pies are popular for fighting the Chaos Elemental or Chaos Fanatic as the empty pie dish prevents their special attacks from un-equipping Worn Equipment due to a full inventory.\n\nSuccessfully baking a summer pie inside of the Cooks' Guild is an elite Varrock Diary task.",
-              "token_count": 421,
-              "dense_score": 0.7718852758407593,
-              "rerank_score": 0.998798131942749,
-              "dense_rank": 1,
-              "final_rank": 1
-            }
-          }
-        ],
+        "answer": "Eating a summer pie (it has two bites) restores 11 Hitpoints, restores 10% of your run energy, and grants a temporary +5 boost to your Agility skill per bite. After eating both bites, a pie dish remains in your inventory. Because it's a 1-tick (0.6s) fast food, you can eat successive bites/pies more quickly than standard food, making it efficient for restoring health quickly, though the attack delay from each bite makes it less ideal in combat than other high-healing foods. The Agility boost is useful for passing Agility-related requirements (in quests, courses, shortcuts, etc., with some exceptions) and can be extended with the Preserve prayer.</answer>\n<parameter name=\"citations\">[{\"chunk_id\":\"Summer_pie__001\",\"claim\":\"Summer pie is a type of pie with two bites that restores 11 Hitpoints, 10% run energy, and grants a +5 temporary skill boost to Agility per bite; a pie dish remains after consumption.\"},{\"chunk_id\":\"Summer_pie__001\",\"claim\":\"Summer pies are a type of 1 tick (0.6 seconds) fast food, allowing quicker successive eating than standard food, making them efficient for healing but less efficient in combat due to attack delay.\"},{\"chunk_id\":\"Summer_pie__001\",\"claim\":\"The +5 Agility boost helps pass Agility requirements in quests, courses, shortcuts, etc., with some exceptions, and can be extended using the Preserve prayer.\"}]",
+        "citations": [],
         "answerable": true,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3565,
-        "output_tokens": 479,
+        "output_tokens": 580,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate matches the gold reference's key facts: 11 HP healed per bite, 10% run energy restored, and +5% (candidate says +5, minor phrasing difference but consistent with 5% boost) temporary agility boost. Additional details provided are consistent with known OSRS wiki info and do not contradict the reference.",
+        "reasoning": "The candidate matches all key facts from the gold answer (11 HP heal, 10% run energy restore, +5% Agility boost) and adds accurate supplementary details without contradicting the reference.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1189,
-        "output_tokens": 163,
+        "input_tokens": 1497,
+        "output_tokens": 120,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -603,11 +675,11 @@
       },
       "generated": {
         "query": "Do regular snakes on Karamja inflict poison damage?",
-        "answer": "No. Regular snakes found on Karamja (Serpentes Fellis) do not inflict poison, unlike bush snakes.",
+        "answer": "No. Regular snakes found on Karamja (and elsewhere) do not inflict poison — unlike bush snakes, these snakes do not have a poison attack.",
         "citations": [
           {
             "chunk_id": "Snake__001",
-            "claim": "Snakes on Karamja do not inflict poison, unlike bush snakes.",
+            "claim": "Snakes found on Karamja, unlike bush snakes, do not inflict poison.",
             "chunk": {
               "chunk_id": "Snake__001",
               "page_title": "Snake",
@@ -629,15 +701,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3611,
-        "output_tokens": 167,
+        "output_tokens": 179,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate agrees with gold answer \"No\" and adds plausible extra detail without contradicting the core fact.",
+        "reasoning": "The gold answer is \"No\" and the candidate answer correctly states \"No\" with consistent additional detail.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1008,
-        "output_tokens": 93,
+        "input_tokens": 1018,
+        "output_tokens": 90,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -669,14 +741,14 @@
       },
       "generated": {
         "query": "What can regular snakes drop?",
-        "answer": "The retrieved chunks only contain general information about how drop tables and venom work in OSRS, but none of them list the specific drop table for the regular \"snake\" monster. I don't have the actual drop data for snakes to answer this question.",
+        "answer": "The retrieved chunks only contain general information about how monster drop tables work (100% drops, main drops, unique drops, etc.) and about venom-inflicting monsters, but none of them list the specific drop table for regular snakes. Therefore, I cannot determine what regular snakes drop from the given context.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 2711,
-        "output_tokens": 149,
+        "output_tokens": 174,
         "stop_reason": "tool_use"
       },
       "judge": null,
@@ -735,15 +807,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 2587,
-        "output_tokens": 140,
+        "output_tokens": 141,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches the gold date exactly.",
+        "reasoning": "The candidate answer matches the gold reference date exactly.",
         "model": "claude-sonnet-5",
         "input_tokens": 986,
-        "output_tokens": 72,
+        "output_tokens": 76,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -775,7 +847,7 @@
       },
       "generated": {
         "query": "When was the Attack skill released?",
-        "answer": "The Attack skill was released on 4 January 2001, as part of the initial batch of skills when RuneScape launched.",
+        "answer": "The Attack skill was released on 4 January 2001, as part of the initial batch of skills.",
         "citations": [
           {
             "chunk_id": "Attack__000",
@@ -797,7 +869,7 @@
           },
           {
             "chunk_id": "Skills__006",
-            "claim": "Attack's release date of 4 January 2001 was part of the initial batch of skills.",
+            "claim": "Attack's release date was 4 January 2001, part of the initial batch of skills.",
             "chunk": {
               "chunk_id": "Skills__006",
               "page_title": "Skills",
@@ -819,15 +891,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3307,
-        "output_tokens": 199,
+        "output_tokens": 190,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate date (4 January 2001) matches gold reference (04-Jan-01).",
+        "reasoning": "The candidate answer states the release date as 4 January 2001, matching the gold reference of 04-Jan-01.",
         "model": "claude-sonnet-5",
-        "input_tokens": 999,
-        "output_tokens": 86,
+        "input_tokens": 991,
+        "output_tokens": 94,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -890,10 +962,10 @@
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate answer states the maximum combat level was 123, matching the gold reference answer, with additional accurate context.",
+        "reasoning": "The candidate answer matches the gold reference (123) and adds accurate supporting detail.",
         "model": "claude-sonnet-5",
         "input_tokens": 1002,
-        "output_tokens": 94,
+        "output_tokens": 86,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -925,11 +997,11 @@
       },
       "generated": {
         "query": "According to the combat triangle, which combat style is magic strong against?",
-        "answer": "According to the combat triangle, magic (mages) is strong against melee (warriors).",
+        "answer": "According to the combat triangle, Magic is strong against Melee (warriors). Mages are strong against warriors as long as they keep their distance, since their spells are amplified by the metallic armour typically worn by warriors and can hit through melee armour fairly easily.",
         "citations": [
           {
             "chunk_id": "Combat_triangle__000",
-            "claim": "Old School RuneScape follows the combat triangle, where magic tends to be strong against warriors (melee).",
+            "claim": "Old School RuneScape follows the combat triangle, a design philosophy dictating that melee tends to be effective against rangers, ranged tends to be effective against mages, and magic tends to be strong against warriors.",
             "chunk": {
               "chunk_id": "Combat_triangle__000",
               "page_title": "Combat triangle",
@@ -947,7 +1019,7 @@
           },
           {
             "chunk_id": "Combat_triangle__003",
-            "claim": "Mages are strong against warriors as long as they keep their distance, since their magic is amplified by the metallic armours warriors wear.",
+            "claim": "Mages are strong against warriors as long as they keep their distance; their magic is amplified by the metallic armours usually worn by warriors, and spells can hit through melee armour fairly easily.",
             "chunk": {
               "chunk_id": "Combat_triangle__003",
               "page_title": "Combat triangle",
@@ -969,15 +1041,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 2995,
-        "output_tokens": 231,
+        "output_tokens": 338,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold: magic is strong against melee/warriors.",
+        "reasoning": "Candidate correctly states magic is strong against melee (warriors), matching the gold answer, with additional accurate detail.",
         "model": "claude-sonnet-5",
-        "input_tokens": 998,
-        "output_tokens": 80,
+        "input_tokens": 1054,
+        "output_tokens": 96,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1009,11 +1081,11 @@
       },
       "generated": {
         "query": "How much damage can Vorkath's dragonfire hit for?",
-        "answer": "Vorkath's dragonfire is a stronger form of dragonfire that can hit up to 80 damage when the player is unprotected. This maximum damage can be reduced depending on the protection methods used (such as Protect from Magic, an anti-dragon shield, or antifire potions).",
+        "answer": "Vorkath's dragonfire (a \"stronger dragon\" variant) can hit up to 80 damage when the player has no protection against it at all.",
         "citations": [
           {
             "chunk_id": "Dragonfire__001",
-            "claim": "Stronger dragons, such as Vorkath, can hit up to 80 with dragonfire (compared to 50 for adult dragons).",
+            "claim": "Adult dragons can deal up to 50 damage with regular dragonfire; stronger dragons, such as Vorkath, can hit up to 80 instead.",
             "chunk": {
               "chunk_id": "Dragonfire__001",
               "page_title": "Dragonfire",
@@ -1031,7 +1103,7 @@
           },
           {
             "chunk_id": "Dragonfire__006",
-            "claim": "The maximum unprotected damage of Vorkath's dragonfire is 80.",
+            "claim": "The maximum unprotected damage for Vorkath's dragonfire is 80.",
             "chunk": {
               "chunk_id": "Dragonfire__006",
               "page_title": "Dragonfire",
@@ -1053,15 +1125,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4589,
-        "output_tokens": 289,
+        "output_tokens": 250,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold answer's key fact (up to 80 damage) and adds accurate extra context.",
+        "reasoning": "Candidate matches gold answer of up to 80 damage, with additional consistent detail.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1060,
-        "output_tokens": 91,
+        "input_tokens": 1015,
+        "output_tokens": 86,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1119,15 +1191,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3303,
-        "output_tokens": 153,
+        "output_tokens": 152,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate answer matches the gold reference, listing both \"health\" and \"HP\" as alternate names for the Hitpoints skill.",
+        "reasoning": "Candidate matches gold reference: 'health' and 'HP' are both mentioned.",
         "model": "claude-sonnet-5",
         "input_tokens": 983,
-        "output_tokens": 99,
+        "output_tokens": 86,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1159,7 +1231,7 @@
       },
       "generated": {
         "query": "By what percentage of max Hitpoints does a Phoenix necklace heal the wearer, and at what threshold does it trigger?",
-        "answer": "A Phoenix necklace automatically restores the wearer's Hitpoints by 30% of their maximum Hitpoints, and this effect triggers when their Hitpoints drop below 20% of their maximum.",
+        "answer": "A Phoenix necklace automatically restores the wearer's Hitpoints by 30% of their maximum Hitpoints, and this effect triggers when the wearer's Hitpoints drop below 20% of their maximum.",
         "citations": [
           {
             "chunk_id": "Hitpoints__006",
@@ -1185,15 +1257,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3757,
-        "output_tokens": 224,
+        "output_tokens": 228,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold: 30% heal, triggers below 20% max HP.",
+        "reasoning": "The candidate answer matches the gold reference exactly: 30% max HP heal, triggered below 20% HP.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1076,
-        "output_tokens": 84,
+        "input_tokens": 1080,
+        "output_tokens": 94,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1225,11 +1297,11 @@
       },
       "generated": {
         "query": "What is the initial poison damage dealt by a Poison Scorpion?",
-        "answer": "A Poison Scorpion deals an initial poison damage of 3.",
+        "answer": "A Poison Scorpion inflicts poison with an initial damage of 3.",
         "citations": [
           {
             "chunk_id": "Poison__008",
-            "claim": "Poison Scorpion initial poison damage is 3",
+            "claim": "Poison Scorpion's initial poison damage is 3.",
             "chunk": {
               "chunk_id": "Poison__008",
               "page_title": "Poison",
@@ -1251,15 +1323,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4726,
-        "output_tokens": 139,
+        "output_tokens": 143,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold answer of 3.",
+        "reasoning": "Candidate matches gold answer of 3 initial poison damage.",
         "model": "claude-sonnet-5",
-        "input_tokens": 991,
-        "output_tokens": 72,
+        "input_tokens": 994,
+        "output_tokens": 79,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1291,11 +1363,11 @@
       },
       "generated": {
         "query": "What percentage of damage dealt does the Saradomin godsword's special attack recharge in Prayer points?",
-        "answer": "The Saradomin godsword's special attack, \"Healing Blade,\" restores the user's Prayer points by 25% of the damage dealt (with a minimum of 5 Prayer points), rounded up.",
+        "answer": "The Saradomin godsword's special attack (Healing Blade) restores the user's Prayer points by 25% of the damage dealt, rounded up, with a minimum restoration of 5 Prayer points.",
         "citations": [
           {
             "chunk_id": "Prayer__006",
-            "claim": "The Saradomin godsword recharges Prayer by 25% of the damage dealt, rounded up.",
+            "claim": "The Saradomin godsword recharges prayer points by 25% of the damage dealt, rounded up.",
             "chunk": {
               "chunk_id": "Prayer__006",
               "page_title": "Prayer",
@@ -1313,7 +1385,7 @@
           },
           {
             "chunk_id": "Special_attacks__008",
-            "claim": "Saradomin godsword's special attack restores the user's Prayer by 25% of damage dealt (minimum of 5 Prayer points).",
+            "claim": "Restores the user's Prayer by 25% of damage dealt (minimum of 5 Prayer points).",
             "chunk": {
               "chunk_id": "Special_attacks__008",
               "page_title": "Special attacks",
@@ -1331,7 +1403,7 @@
           },
           {
             "chunk_id": "Prayer__022",
-            "claim": "If the Saradomin godsword's special attack is a successful hit, it restores the user's Prayer by 25% of damage dealt (with a minimum of 5 prayer points).",
+            "claim": "If it is a successful hit, the Saradomin godsword's special attack restores Prayer by 25% of damage dealt (minimum of 5 prayer points).",
             "chunk": {
               "chunk_id": "Prayer__022",
               "page_title": "Prayer",
@@ -1353,15 +1425,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3614,
-        "output_tokens": 348,
+        "output_tokens": 337,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate answer states 25% of damage dealt, rounded up, matching the gold reference exactly, with additional correct detail about the minimum restore amount.",
+        "reasoning": "The candidate answer matches the gold reference: 25% of damage dealt, rounded up, plus additional correct detail about minimum restoration.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1056,
-        "output_tokens": 108,
+        "input_tokens": 1058,
+        "output_tokens": 103,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1393,11 +1465,11 @@
       },
       "generated": {
         "query": "For how long will a player automatically retaliate to attackers with no input before Auto Retaliate effectively stops?",
-        "answer": "A player will automatically retaliate to attackers for 20 minutes if no player input is given. After 20 minutes of idle combat with no input, players stop attacking altogether, even if they continue to be attacked by monsters.",
+        "answer": "A player will automatically retaliate to attackers for 20 minutes with no player input; after that period, players stop attacking altogether even if attacked by monsters.",
         "citations": [
           {
             "chunk_id": "Auto_Retaliate__000",
-            "claim": "The player will attempt to automatically retaliate to the attacker for 20 minutes if no player input is given, after which players stop attacking all together even if they are attacked by monsters.",
+            "claim": "The player will attempt to automatically retaliate to the attacker for 20 minutes if no player input is given, after which players stop attacking altogether even if attacked by monsters.",
             "chunk": {
               "chunk_id": "Auto_Retaliate__000",
               "page_title": "Auto Retaliate",
@@ -1437,15 +1509,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3422,
-        "output_tokens": 286,
+        "output_tokens": 265,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold answer of 20 minutes, with additional consistent detail.",
+        "reasoning": "The candidate matches the gold answer of 20 minutes, with consistent additional detail.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1054,
-        "output_tokens": 85,
+        "input_tokens": 1034,
+        "output_tokens": 86,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1477,11 +1549,11 @@
       },
       "generated": {
         "query": "What is the requirement to use Vannaka as a Slayer master?",
-        "answer": "To use Vannaka as a Slayer master, you need a combat level of 40 or a Slayer level of 99. Vannaka is located in the Edgeville Dungeon.",
+        "answer": "To use Vannaka as a Slayer master (located in the Edgeville Dungeon), you need either 40 Combat level or 99 Slayer level.",
         "citations": [
           {
             "chunk_id": "Slayer_training__003",
-            "claim": "Vannaka's requirement to use is 40 combat or 99 Slayer, located in Edgeville Dungeon",
+            "claim": "Vannaka's requirement to use: 40 combat or 99 Slayer",
             "chunk": {
               "chunk_id": "Slayer_training__003",
               "page_title": "Slayer training",
@@ -1499,7 +1571,7 @@
           },
           {
             "chunk_id": "Combat_level__001",
-            "claim": "Vannaka requires combat level 40",
+            "claim": "Vannaka requires 40 combat level",
             "chunk": {
               "chunk_id": "Combat_level__001",
               "page_title": "Combat level",
@@ -1521,15 +1593,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3621,
-        "output_tokens": 234,
+        "output_tokens": 215,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate correctly states the requirement of 40 combat or 99 Slayer, matching the gold reference. Additional location detail is accurate and doesn't detract from correctness.",
+        "reasoning": "The candidate correctly states the requirement matches the gold reference: 40 combat or 99 Slayer.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1034,
-        "output_tokens": 115,
+        "input_tokens": 1027,
+        "output_tokens": 92,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1561,11 +1633,11 @@
       },
       "generated": {
         "query": "How many Slayer reward points does it cost to permanently block a task with Duradel/Kuradal?",
-        "answer": "It costs 100 Slayer reward points to permanently block a task with Duradel/Kuradal.",
+        "answer": "It costs 100 Slayer reward points to permanently block a task with Duradel or Kuradal.",
         "citations": [
           {
             "chunk_id": "Slayer_training__024",
-            "claim": "Duradel/Kuradal task block costs 100 points",
+            "claim": "Duradel / Kuradal task block costs 100 points",
             "chunk": {
               "chunk_id": "Slayer_training__024",
               "page_title": "Slayer training",
@@ -1592,10 +1664,10 @@
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold answer: 100 points.",
+        "reasoning": "The candidate answer matches the gold reference answer of 100 points.",
         "model": "claude-sonnet-5",
         "input_tokens": 1012,
-        "output_tokens": 74,
+        "output_tokens": 79,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1627,7 +1699,7 @@
       },
       "generated": {
         "query": "Once \"Bigger and Badder\" is unlocked, what are the odds of a kill attracting a superior Slayer monster?",
-        "answer": "Once the \"Bigger and Badder\" perk is unlocked (for 50 Slayer points), several monsters have a 1/200 chance of a kill attracting a superior variant of that monster.",
+        "answer": "Once the \"Bigger and Badder\" perk is unlocked (costing 50 Slayer points), certain monsters have a 1/200 chance of a superior variant spawning after they are killed.",
         "citations": [
           {
             "chunk_id": "Slayer_training__032",
@@ -1658,10 +1730,10 @@
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate answer matches the gold reference odds of 1/200 and adds accurate supporting detail.",
+        "reasoning": "Candidate correctly states the odds as 1/200, matching the gold reference, with additional accurate detail.",
         "model": "claude-sonnet-5",
         "input_tokens": 1049,
-        "output_tokens": 91,
+        "output_tokens": 92,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1693,11 +1765,11 @@
       },
       "generated": {
         "query": "Which quest must be completed before Herblore training can begin, and what level does it grant?",
-        "answer": "The Druidic Ritual quest must be completed before Herblore training can begin, and it grants the player level 3 Herblore.",
+        "answer": "The Druidic Ritual quest must be completed before Herblore training can begin, and completing it grants the player level 3 Herblore.",
         "citations": [
           {
             "chunk_id": "Herblore_training__000",
-            "claim": "Herblore training usually involves making potions which can only begin after completing the Druidic Ritual quest granting the player level 3 Herblore.",
+            "claim": "Herblore training usually can only begin after completing the Druidic Ritual quest, which grants the player level 3 Herblore.",
             "chunk": {
               "chunk_id": "Herblore_training__000",
               "page_title": "Herblore training",
@@ -1719,14 +1791,14 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3469,
-        "output_tokens": 186,
+        "output_tokens": 184,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
         "reasoning": "Candidate matches gold reference exactly: Druidic Ritual quest, grants level 3 Herblore.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1029,
+        "input_tokens": 1031,
         "output_tokens": 94,
         "stop_reason": "tool_use"
       },
@@ -1790,10 +1862,10 @@
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold answer of up to 3,000 grimy herbs per hour.",
+        "reasoning": "Candidate matches the gold answer of up to 3,000 grimy herbs per hour.",
         "model": "claude-sonnet-5",
         "input_tokens": 1013,
-        "output_tokens": 86,
+        "output_tokens": 87,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1856,10 +1928,10 @@
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate date matches gold reference (6 December 2004 = 06-Dec-04).",
+        "reasoning": "The candidate's date, 6 December 2004, matches the gold reference date 06-Dec-04.",
         "model": "claude-sonnet-5",
         "input_tokens": 986,
-        "output_tokens": 87,
+        "output_tokens": 90,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1891,7 +1963,7 @@
       },
       "generated": {
         "query": "What items are required to start Monkey Madness I?",
-        "answer": "To start Monkey Madness I you need: a gold bar, five empty inventory slots, a ball of wool, monkey bones or a monkey corpse from Karamja (obtainable during the quest), and five bananas (also obtainable during the quest).",
+        "answer": "To start Monkey Madness I, you need: a gold bar, five empty inventory slots, a ball of wool, monkey bones or corpse from Karamja (which can be obtained during the quest), and five bananas (also obtainable during the quest).",
         "citations": [
           {
             "chunk_id": "Monkey_Madness_I__002",
@@ -1917,15 +1989,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3393,
-        "output_tokens": 251,
+        "output_tokens": 250,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate answer lists all the same required items as the gold reference: gold bar, five empty inventory slots, ball of wool, monkey bones/corpse from Karamja, and five bananas, matching the key facts.",
+        "reasoning": "The candidate answer lists all the same items as the gold reference: gold bar, five empty inventory slots, ball of wool, monkey bones/corpse from Karamja, and five bananas. The additional detail about obtaining items during the quest doesn't contradict the core requirements.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1080,
-        "output_tokens": 126,
+        "input_tokens": 1079,
+        "output_tokens": 146,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -1957,11 +2029,11 @@
       },
       "generated": {
         "query": "What are the quest point and coin rewards for completing Monkey Madness I?",
-        "answer": "Completing Monkey Madness I rewards the player with 3 Quest Points and 10,000 Coins (along with other rewards such as 3 Diamonds and experience choices from Daero).",
+        "answer": "Completing Monkey Madness I rewards the player with 3 Quest points and 10,000 Coins (along with 3 Diamonds and a choice of combat experience rewards, plus access to buy/wield the Dragon scimitar and access to Ape Atoll).",
         "citations": [
           {
             "chunk_id": "Monkey_Madness_I__021",
-            "claim": "Monkey Madness I rewards 3 Quest points and 10,000 Coins",
+            "claim": "Monkey Madness I rewards include 3 Quest points and 10,000 Coins",
             "chunk": {
               "chunk_id": "Monkey_Madness_I__021",
               "page_title": "Monkey Madness I",
@@ -1979,7 +2051,7 @@
           },
           {
             "chunk_id": "Monkey_Madness_I_Quick_guide__014",
-            "claim": "Monkey Madness I rewards 3 Quest points and 10,000 Coins",
+            "claim": "Monkey Madness I rewards include 3 Quest points and 10,000 Coins",
             "chunk": {
               "chunk_id": "Monkey_Madness_I_Quick_guide__014",
               "page_title": "Monkey Madness I/Quick guide",
@@ -2001,15 +2073,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3202,
-        "output_tokens": 259,
+        "output_tokens": 286,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate answer correctly states 3 quest points and 10,000 coins, matching the gold reference. Extra details do not detract from correctness.",
+        "reasoning": "The candidate correctly includes the gold reference's key facts (3 quest points, 10,000 coins) and adds extra accurate details without contradicting the reference.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1043,
-        "output_tokens": 104,
+        "input_tokens": 1068,
+        "output_tokens": 109,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2041,7 +2113,7 @@
       },
       "generated": {
         "query": "What item do players receive for being caught and jailed for the 100th time during Monkey Madness I?",
-        "answer": "Players receive a stuffed monkey as a reward for being caught and jailed for the 100th time during Monkey Madness I.",
+        "answer": "Players receive a stuffed monkey as a reward when they are caught and jailed for the 100th time during Monkey Madness I.",
         "citations": [
           {
             "chunk_id": "Monkey_Madness_I__024",
@@ -2067,15 +2139,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3683,
-        "output_tokens": 174,
+        "output_tokens": 175,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches the gold reference answer exactly.",
+        "reasoning": "The candidate answer matches the gold reference exactly: a stuffed monkey.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1022,
-        "output_tokens": 75,
+        "input_tokens": 1023,
+        "output_tokens": 84,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2111,7 +2183,7 @@
         "citations": [
           {
             "chunk_id": "Glough__000",
-            "claim": "Glough's associated quests are The Grand Tree, Monkey Madness I, and Monkey Madness II.",
+            "claim": "Glough's quest appearances are The Grand Tree, Monkey Madness I, and Monkey Madness II.",
             "chunk": {
               "chunk_id": "Glough__000",
               "page_title": "Glough",
@@ -2129,7 +2201,7 @@
           },
           {
             "chunk_id": "Glough__002",
-            "claim": "Glough's schemes are thwarted in The Grand Tree quest, and once again in Monkey Madness I, and he is fought and killed in Monkey Madness II.",
+            "claim": "Glough's schemes are thwarted in The Grand Tree quest, and once again in Monkey Madness I, with his alliance broken in Monkey Madness II.",
             "chunk": {
               "chunk_id": "Glough__002",
               "page_title": "Glough",
@@ -2156,10 +2228,10 @@
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold reference exactly: The Grand Tree, Monkey Madness I, Monkey Madness II.",
+        "reasoning": "Candidate matches gold reference exactly, listing the same three quests.",
         "model": "claude-sonnet-5",
         "input_tokens": 1017,
-        "output_tokens": 98,
+        "output_tokens": 80,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2191,7 +2263,7 @@
       },
       "generated": {
         "query": "What is the combat level of the Jungle Demon fought at the end of Monkey Madness I?",
-        "answer": "The Jungle Demon fought at the end of Monkey Madness I is a level 195 monster.",
+        "answer": "The Jungle Demon fought at the end of Monkey Madness I is level 195.",
         "citations": [
           {
             "chunk_id": "Monkey_Madness_I__018",
@@ -2212,21 +2284,21 @@
             }
           },
           {
-            "chunk_id": "Monkey_Madness_I__003",
-            "claim": "Enemies to defeat: Jungle Demon (level 195)",
+            "chunk_id": "Monkey_Madness_I__002",
+            "claim": "Requirements include the ability to defeat a level 195 Jungle Demon.",
             "chunk": {
-              "chunk_id": "Monkey_Madness_I__003",
+              "chunk_id": "Monkey_Madness_I__002",
               "page_title": "Monkey Madness I",
               "url": "https://oldschool.runescape.wiki/w/Monkey_Madness_I",
               "section_path": "Details",
               "heading_anchor": "Details",
               "source_type": "table",
-              "text": "requirements | completion of the following quests : the grand tree tree gnome village the ability to defeat a level 195 jungle demon items required | a gold bar five empty inventory slots a ball of wool monkey bones or corpse from karamja ( obtainable during quest ) five bananas ( obtainable during quest )\n\nRecommended | 65 Combat level 43+ Prayer highly recommended , as the player will be attacked by numerous hard-hitting melee enemies in multicombat Poison cures such as antipoison or antidote++ Energy-restoring items such as the explorer's ring along with energy and stamina potions Prayer potions (note that the Temple of Marimbo contains two Gorilla Statue that can be prayed at to restore prayer if lack of prayer potions is a concern) A knife for free healing, as there are pineapple plants around Ape Atoll High healing food A lockpick Weight-reducing clothing Emergency teleport (a ring of life works as well) Ardougne cloak 1 or Ardougne teleports A ring of dueling to bank quickly (the Ardougne cloak could be used instead, although it's somewhat further from a bank; the Battlefield of Khazard has a spirit tree, and the Gnome Stronghold has a bank and glider service) 200,000 coins (if skipping the puzzle)\n\nEnemies to defeat | Jungle Demon (level 195)\n\nIronman concerns | 40 Smithing [ boostable ] (to make the gold bar if not dropped by a monster) or 33 Magic [ boostable ] (to telegrab a gold bar from Varrock west bank basement) or 5 Thieving to steal from a crafting stall in Keldagrim. A gold bar is also a reward from The Digsite , Goblin Diplomacy , and Waterfall Quest\n\nLeague notes | Unlocking Kandarin ✓ will auto-complete the quest",
-              "token_count": 374,
-              "dense_score": 0.7519916296005249,
-              "rerank_score": 0.9979078769683838,
-              "dense_rank": 2,
-              "final_rank": 3
+              "text": "Start point | Talk to King Narnode Shareen in the Grand Tree . Show on map\n\nOfficial difficulty | Master\n\nOfficial length | Long\n\nDescription | The King of the northern Gnomes, Narnode Shareen, is once again in need of your help. He recently decided to send an envoy of his Royal Guard, the 10th squad, to oversee the decommissioning of the Gnome owned ship-building facilities on the eastern coast of Karamja . It has been quite some time since the 10th squad were dispatched and they have been deemed missing in action. It will be up to you, should you decide to help, to find out what fate befell the 10th squad and if possible, track them down. If only it were so simple. Sinister forces have begun to spread through the Gnome hierarchy and threaten to unleash an unknown terror upon the world. Far across the land, the fires of vengeance are being stoked once again. Can you unravel the mystery behind the deception? Can you separate the truth from the lies? Can you decide for yourself what is real and what is not?\n\nRequirements | Completion of the following quests: The Grand Tree Tree Gnome Village The ability to defeat a level 195 Jungle Demon\n\nItems required | A gold bar Five empty inventory slots A ball of wool Monkey bones or corpse from Karamja (obtainable during quest) Five bananas (obtainable during quest)",
+              "token_count": 284,
+              "dense_score": 0.7059054374694824,
+              "rerank_score": 0.9835083484649658,
+              "dense_rank": 14,
+              "final_rank": 5
             }
           }
         ],
@@ -2235,15 +2307,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3985,
-        "output_tokens": 233,
+        "output_tokens": 235,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate states the Jungle Demon is level 195, matching the gold reference answer.",
+        "reasoning": "The candidate answer matches the gold reference of combat level 195.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1007,
-        "output_tokens": 86,
+        "input_tokens": 1003,
+        "output_tokens": 78,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2275,11 +2347,11 @@
       },
       "generated": {
         "query": "What is Kruk's role during Monkey Madness I?",
-        "answer": "During Monkey Madness I, Kruk plays a minor role: the player must speak to him so that he escorts them to King Awowogei, allowing the quest to continue. Specifically, after being directed by the Elder Guard near Garkor, the player travels west across Ape Atoll to find Kruk, and after speaking with him, he takes the player back to King Awowogei so they can offer an alliance and continue the quest.",
+        "answer": "During Monkey Madness I, Kruk plays only a minor role: the player must speak to him so that he escorts them to King Awowogei to continue the quest. Specifically, after being directed by the Elder Guard near Garkor to find Kruk, the player travels across Ape Atoll to speak with him, and once the conversation ends he takes the player back to King Awowogei, allowing the quest to progress (leading to the task of rescuing a monkey from the Ardougne Zoo).",
         "citations": [
           {
             "chunk_id": "Kruk__003",
-            "claim": "Kruk plays a minor role in Monkey Madness I; the player must speak to him to be escorted to King Awowogei and continue the quest.",
+            "claim": "Kruk plays a minor role in Monkey Madness I. The player must speak to him to be escorted to King Awowogei and continue the quest.",
             "chunk": {
               "chunk_id": "Kruk__003",
               "page_title": "Kruk",
@@ -2297,7 +2369,7 @@
           },
           {
             "chunk_id": "Monkey_Madness_I__016",
-            "claim": "The Elder Guard tells the player to speak with Kruk, who after the conversation takes the player back to King Awowogei.",
+            "claim": "The Elder Guard tells the player to speak with Kruk, and after speaking to Kruk, he takes the player back to King Awowogei.",
             "chunk": {
               "chunk_id": "Monkey_Madness_I__016",
               "page_title": "Monkey Madness I",
@@ -2319,15 +2391,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 2823,
-        "output_tokens": 350,
+        "output_tokens": 375,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate answer matches the gold reference: Kruk's role is to escort the player to King Awowogei, with additional plausible contextual detail that does not contradict the core fact.",
+        "reasoning": "The candidate answer matches the gold reference's key fact that Kruk escorts the player to King Awowogei, with additional plausible detail that does not contradict the reference.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1114,
-        "output_tokens": 114,
+        "input_tokens": 1136,
+        "output_tokens": 111,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2359,11 +2431,11 @@
       },
       "generated": {
         "query": "What is the chance of receiving a medium clue scroll by feeding the quest monkey bananas in Monkey Madness I?",
-        "answer": "The chance is 1/256 per feeding. Feeding the quest monkey bananas gives a 1/256 chance of receiving a one-off medium clue scroll, at which point the message \"The monkey chews on the banana and spits out a clue!\" appears in the chatbox. Only one such clue scroll can be obtained per player, and once received, feeding the monkey further bananas will not yield another clue.",
+        "answer": "The chance is 1/256 per feeding. This is a one-off (once per player) reward - once you've received the clue scroll from the monkey, subsequent feedings will just yield a message that the monkey is grateful, without giving another clue.",
         "citations": [
           {
             "chunk_id": "Monkey__Monkey_Madness_I__003",
-            "claim": "The chance of receiving a medium clue scroll from feeding the monkey bananas is 1/256, with a message appearing in the chatbox when it occurs.",
+            "claim": "The chance of receiving the clue scroll is 1/256, and this can only be obtained once per player.",
             "chunk": {
               "chunk_id": "Monkey__Monkey_Madness_I__003",
               "page_title": "Monkey (Monkey Madness I)",
@@ -2381,7 +2453,7 @@
           },
           {
             "chunk_id": "Monkey_Madness_I__017",
-            "claim": "There is a 1/256 chance the monkey will give a medium clue scroll if bananas are used on him directly, and only one clue may be obtained per player.",
+            "claim": "There is a 1/256 chance that feeding bananas directly to the quest monkey will give a clue scroll (medium), and only one clue may be obtained per player.",
             "chunk": {
               "chunk_id": "Monkey_Madness_I__017",
               "page_title": "Monkey Madness I",
@@ -2421,15 +2493,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3773,
-        "output_tokens": 426,
+        "output_tokens": 357,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate answer states the probability as 1/256, matching the gold reference exactly, with additional plausible details that don't contradict it.",
+        "reasoning": "The candidate answer states the chance is 1/256, matching the gold reference. The additional detail about it being one-off is extra info not contradicting the core fact.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1115,
-        "output_tokens": 100,
+        "input_tokens": 1062,
+        "output_tokens": 107,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2461,7 +2533,7 @@
       },
       "generated": {
         "query": "How many doses of antipoison are needed to fully cure venom?",
-        "answer": "Two doses of antipoison are needed to fully cure venom. Drinking one dose converts the venom into regular poison (which retains the same damage level as the venom had), and drinking a second dose then removes that poison entirely.",
+        "answer": "Two doses of antipoison are needed to fully cure venom. The first dose reduces the venom to regular poison, and the second dose removes the poison entirely.",
         "citations": [
           {
             "chunk_id": "Antipoison__001",
@@ -2483,7 +2555,7 @@
           },
           {
             "chunk_id": "Venom__002",
-            "claim": "Drinking a dose of any strength of antipoison converts the venom to regular poison, which starts at the same damage the venom had; to fully cure venom, players can drink another dose of antipoison.",
+            "claim": "Drinking a dose of any strength of antipoison converts venom to poison, and another dose fully cures venom.",
             "chunk": {
               "chunk_id": "Venom__002",
               "page_title": "Venom",
@@ -2505,15 +2577,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3765,
-        "output_tokens": 296,
+        "output_tokens": 250,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold answer of two doses, with accurate additional detail.",
+        "reasoning": "The candidate answer states two doses, matching the gold reference, with additional plausible detail.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1038,
-        "output_tokens": 82,
+        "input_tokens": 1018,
+        "output_tokens": 86,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2545,7 +2617,7 @@
       },
       "generated": {
         "query": "How many balls of wool are needed to make a M'speak amulet in Monkey Madness I?",
-        "answer": "Only 1 ball of wool is needed to make the M'speak amulet during Monkey Madness I (used to string the unstrung m'speak amulet).",
+        "answer": "Only 1 ball of wool is needed to make (string) a M'speak amulet during Monkey Madness I.",
         "citations": [
           {
             "chunk_id": "Ball_of_wool__003",
@@ -2566,21 +2638,39 @@
             }
           },
           {
-            "chunk_id": "M_speak_amulet__unstrung__001",
-            "claim": "The unstrung m'speak amulet can be completed using a ball of wool",
+            "chunk_id": "M_speak_amulet__001",
+            "claim": "The amulet can be completed using a ball of wool or the String Jewellery spell",
             "chunk": {
-              "chunk_id": "M_speak_amulet__unstrung__001",
-              "page_title": "M'speak amulet (unstrung)",
-              "url": "https://oldschool.runescape.wiki/w/M'speak_amulet_(unstrung)",
+              "chunk_id": "M_speak_amulet__001",
+              "page_title": "M'speak amulet",
+              "url": "https://oldschool.runescape.wiki/w/M'speak_amulet",
               "section_path": "",
               "heading_anchor": "",
               "source_type": "prose",
-              "text": "A m'speak amulet (unstrung) is the unfinished version of the m'speak amulet crafted during Monkey Madness I . Once strung, it allows the player to communicate with monkeys .\n\nTo make one, the player must take monkey dentures , a m'amulet mould , and a gold bar to Zooknock , who will give them an enchanted bar (and the mould back). They must then use the bar on the wall of flame in the Temple of Marimbo Dungeon with the mould in their inventory, granting them 200 Crafting experience . The amulet can be completed using a ball of wool .\n\nIf the m'speak amulet is lost, it cannot be reobtained by any means other than repeating the above steps, or it can be reclaimed from Zooknock after completing Monkey Madness II .\n\nSince Zooknock returns the m'amulet mould to the player when the bar is created, only one mould is required to create two or more enchanted bars.",
-              "token_count": 200,
-              "dense_score": 0.7632604837417603,
-              "rerank_score": 0.9994901418685913,
-              "dense_rank": 4,
-              "final_rank": 2
+              "text": "A m'speak amulet is an item crafted during Monkey Madness I that allows the player to communicate with monkeys . It is later used in the Recipe for Disaster Awowogei subquest as well as Monkey Madness II . After completion of Monkey Madness II, the amulet is no longer needed to speak with monkeys (though the amulet is no longer used after Chapter III of the quest).\n\nTo make one, the player must take monkey dentures , a m'amulet mould , and a gold bar to Zooknock , who will give them an enchanted bar (and the mould back). They must then use the bar on the wall of flame in the Temple of Marimbo Dungeon with the mould in their inventory to create an unstrung m'speak amulet . The amulet can be completed using a ball of wool or the String Jewellery spell.\n\nIf the m'speak amulet is lost, it can be reobtained by repeating the above steps, or if Monkey Madness II has been completed, by speaking with Zooknock in the Tree Gnome Stronghold .\n\nSince Zooknock returns the m'amulet mould to the player when the bar is created, only one mould is required to create two or more enchanted bars.\n\nStringing the amulet displays the message You put some string on your amulet. It makes a slight 'Ook' sound.\n\nAttack bonuses |  | \n\n+0 | +0 | +0 | +0 | +0\n\nDefence bonuses\n\n+0 | +0 | +0 | +0 | +0\n\nOther bonuses | Slot\n\n+0 | +0 | +0% | +0 | List",
+              "token_count": 326,
+              "dense_score": 0.7658360004425049,
+              "rerank_score": 0.9998127818107605,
+              "dense_rank": 3,
+              "final_rank": 1
+            }
+          },
+          {
+            "chunk_id": "M_speak_amulet__002",
+            "claim": "Creation of M'speak amulet from unstrung version uses 1 ball of wool as the cost",
+            "chunk": {
+              "chunk_id": "M_speak_amulet__002",
+              "page_title": "M'speak amulet",
+              "url": "https://oldschool.runescape.wiki/w/M'speak_amulet",
+              "section_path": "Creation",
+              "heading_anchor": "Creation",
+              "source_type": "table",
+              "text": "Skill: Crafting | Level: 1 | XP: 4\n\nSkill: Members | Level:  | XP: Ticks | 2 (1.2s)\n\nItem:  | Quantity: M'speak amulet (unstrung) | Cost: 1 | N/A\n\nItem:  | Quantity: Ball of wool | Cost: 1 | 64\n\nItem: Total cost | Quantity: 64\n\nItem:  | Quantity: M'speak amulet | Cost: 1 | N/A\n\nSkill: Magic | Level: 80 (b) | XP: 83\n\nSkill: Crafting | Level: 1 | XP: 4\n\nSkill: Completion of Lunar Diplomacy\n\nSkill: Members | Level:  | XP: Ticks | 3 (1.8s)\n\nSkill: Tools | Level:  | XP: Facilities | None\n\nItem:  | Quantity: M'speak amulet (unstrung) | Cost: 1 | N/A\n\nItem:  | Quantity: Water rune | Cost: 5 | 25\n\nItem:  | Quantity: Earth rune | Cost: 10 | 60\n\nItem:  | Quantity: Astral rune | Cost: 2 | 234\n\nItem: Total cost | Quantity: 319\n\nItem:  | Quantity: M'speak amulet | Cost: 1 | N/A\n\nDate: 7 December 2004 ( Update ) | Changes: Additionally monkeyspeak amulets can now be obtained after completing Monkey Madness I .",
+              "token_count": 271,
+              "dense_score": 0.8090227246284485,
+              "rerank_score": 0.9961994290351868,
+              "dense_rank": 1,
+              "final_rank": 4
             }
           }
         ],
@@ -2589,15 +2679,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3302,
-        "output_tokens": 239,
+        "output_tokens": 282,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold answer of 1 ball of wool.",
+        "reasoning": "The candidate answer states 1 ball of wool is needed, matching the gold reference answer.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1025,
-        "output_tokens": 78,
+        "input_tokens": 1012,
+        "output_tokens": 87,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2660,10 +2750,10 @@
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold reference exactly: 1,200 coins.",
+        "reasoning": "Candidate answer matches the gold reference exactly.",
         "model": "claude-sonnet-5",
         "input_tokens": 983,
-        "output_tokens": 80,
+        "output_tokens": 75,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2696,11 +2786,11 @@
       },
       "generated": {
         "query": "Are monkey archers aggressive?",
-        "answer": "Yes, Monkey Archers are aggressive — unless the player is holding a monkey greegree, in which case they will not attack.",
+        "answer": "Yes, monkey archers are aggressive, unless the player is holding a monkey greegree (as with other Ape Atoll creatures, they become non-aggressive when the player is holding any greegree).",
         "citations": [
           {
             "chunk_id": "Monkey_Archer__000",
-            "claim": "Monkey Archers are aggressive unless the player is holding a monkey greegree",
+            "claim": "Monkey archers are aggressive unless the player is holding a monkey greegree.",
             "chunk": {
               "chunk_id": "Monkey_Archer__000",
               "page_title": "Monkey Archer",
@@ -2718,7 +2808,7 @@
           },
           {
             "chunk_id": "Monkey_Archer__001",
-            "claim": "As with all creatures on Ape Atoll, Ninja Monkeys (including Monkey Archers) are not aggressive when holding any sort of greegree",
+            "claim": "As with all creatures on Ape Atoll, Ninja Monkeys (monkey archers) are not aggressive when holding any sort of greegree.",
             "chunk": {
               "chunk_id": "Monkey_Archer__001",
               "page_title": "Monkey Archer",
@@ -2740,15 +2830,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 2862,
-        "output_tokens": 248,
+        "output_tokens": 269,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "partially_correct",
-        "reasoning": "The candidate correctly states monkey archers are aggressive unless holding a monkey greegree, but omits the additional exception of having completed Monkey Madness II, which is part of the gold answer's key facts.",
+        "reasoning": "The candidate correctly states monkey archers are aggressive unless holding a monkey greegree, matching part of the gold answer. However, it omits the other condition mentioned in the gold reference - that completing Monkey Madness II also removes their aggressiveness. This is a missing key fact.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1025,
-        "output_tokens": 126,
+        "input_tokens": 1047,
+        "output_tokens": 152,
         "stop_reason": "tool_use"
       },
       "correctness_label": "partially_correct",
@@ -2781,14 +2871,14 @@
       },
       "generated": {
         "query": "What is the combined high-alchemy value Monkey Madness I rewards?",
-        "answer": "The retrieved chunks do not list the actual quest reward items (such as experience rewards, equipment, or other reward items) given upon completing Monkey Madness I, only details about the quest requirements and items encountered during it (like the Monkey and Enchanted bar quest items). Without a list of the specific reward items and their high alchemy values, I cannot calculate a combined high-alchemy value for the quest's rewards.",
+        "answer": "The retrieved chunks do not list the specific quest completion rewards (such as items, experience, or gold) given for finishing Monkey Madness I. They only cover quest requirements, recommendations, and details about specific quest items (like the Monkey and Enchanted bar, which are quest items used during the quest, not necessarily final rewards). Without a list of the actual reward items given upon completion, I cannot calculate a combined high-alchemy value.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3463,
-        "output_tokens": 211,
+        "output_tokens": 220,
         "stop_reason": "tool_use"
       },
       "judge": null,
@@ -2822,14 +2912,14 @@
       },
       "generated": {
         "query": "How much greater is the melee attack bonus of the necklace the Slayer training guide ranks as the single best option for melee tasks than the amulet of glory?",
-        "answer": "The retrieved chunks do not identify which necklace the Slayer training guide ranks as the single best option for melee tasks (the \"Recommended equipment\" section chunk for necklaces/amulets was not retrieved), so I cannot determine which amulet to compare against the amulet of glory's +10 melee attack bonus.",
+        "answer": "The retrieved chunks do not identify which necklace the Slayer training guide ranks as the single best option for melee tasks. The equipment recommendation chunk from Slayer training (Slayer_training__014) only covers gloves, boots, ring, and weapon slots—no necklace/amulet slot is listed. Without knowing which specific necklace is recommended for melee tasks, I cannot calculate the difference in melee attack bonus compared to the amulet of glory.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4045,
-        "output_tokens": 181,
+        "output_tokens": 229,
         "stop_reason": "tool_use"
       },
       "judge": null,
@@ -2867,7 +2957,7 @@
         "citations": [
           {
             "chunk_id": "Glough__001",
-            "claim": "Glough's combat level is 431",
+            "claim": "Glough's combat level is 431.",
             "chunk": {
               "chunk_id": "Glough__001",
               "page_title": "Glough",
@@ -2885,7 +2975,7 @@
           },
           {
             "chunk_id": "Jungle_Demon__000",
-            "claim": "The Jungle Demon's combat level is 195",
+            "claim": "The Jungle Demon's combat level is 195.",
             "chunk": {
               "chunk_id": "Jungle_Demon__000",
               "page_title": "Jungle Demon",
@@ -2912,10 +3002,10 @@
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold reference exactly: Glough 431, Jungle Demon 195, ratio ~2.2x.",
+        "reasoning": "Candidate matches the gold reference exactly, with correct figures (431, 195) and calculation (~2.2x).",
         "model": "claude-sonnet-5",
         "input_tokens": 1105,
-        "output_tokens": 98,
+        "output_tokens": 95,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -2948,11 +3038,11 @@
       },
       "generated": {
         "query": "By how much does Kruk's highest possible max hit exceed the Jungle Demon's max hit?",
-        "answer": "Kruk's highest possible max hit is 37 (with Ranged), while the Jungle Demon's max hit is 32. Therefore, Kruk's highest max hit exceeds the Jungle Demon's max hit by 5 (37 - 32 = 5).",
+        "answer": "Kruk's highest possible max hit is 37 (with Ranged attacks). The Jungle Demon's max hit is 32. Therefore, Kruk's highest max hit exceeds the Jungle Demon's max hit by 5 (37 - 32 = 5).",
         "citations": [
           {
             "chunk_id": "Kruk__001",
-            "claim": "Kruk's max hit is 33 (melee) and 37 (ranged), making his highest possible max hit 37.",
+            "claim": "Kruk's max hit is 33 (melee) or 37 (ranged), making 37 the highest possible max hit.",
             "chunk": {
               "chunk_id": "Kruk__001",
               "page_title": "Kruk",
@@ -2970,7 +3060,7 @@
           },
           {
             "chunk_id": "Jungle_Demon__000",
-            "claim": "Jungle Demon's max hit is 32.",
+            "claim": "The Jungle Demon's max hit is 32.",
             "chunk": {
               "chunk_id": "Jungle_Demon__000",
               "page_title": "Jungle Demon",
@@ -2992,14 +3082,14 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3800,
-        "output_tokens": 265,
+        "output_tokens": 269,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
         "reasoning": "Candidate matches gold reference exactly: 37 (Kruk, ranged) - 32 (Jungle Demon) = 5.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1091,
+        "input_tokens": 1093,
         "output_tokens": 102,
         "stop_reason": "tool_use"
       },
@@ -3033,18 +3123,44 @@
       },
       "generated": {
         "query": "If a player bought the full daily Grand Exchange buy limit of diamonds and crafted every one into a diamond ring, how much total Crafting XP would that earn?",
-        "answer": "The retrieved chunks give the Crafting XP for making a diamond ring (85 XP per craft), but they do not state the Grand Exchange daily buy limit for diamonds. Without that buy limit figure, the total XP from buying the full daily limit and crafting all of them into diamond rings cannot be calculated from the given information.",
-        "citations": [],
-        "answerable": false,
+        "answer": "Crafting a diamond ring requires a diamond and a gold bar, and yields 85 Crafting XP per ring. However, the retrieved chunks do not state the daily Grand Exchange buy limit for diamonds, so the total XP for buying the full daily limit and crafting all of them into diamond rings cannot be calculated from the given information.",
+        "citations": [
+          {
+            "chunk_id": "Diamond__003",
+            "claim": "Crafting a diamond into a diamond ring requires a gold bar and yields 85 XP per craft.",
+            "chunk": {
+              "chunk_id": "Diamond__003",
+              "page_title": "Diamond",
+              "url": "https://oldschool.runescape.wiki/w/Diamond",
+              "section_path": "Training > Crafting",
+              "heading_anchor": "Crafting",
+              "source_type": "table",
+              "text": "Diamonds can be crafted into jewellery at a furnace by using a gold bar and the appropriate crafting mould .\n\nLevel: 43 | Input: Diamond Gold bar | Material Cost: 1,644 | Output: Diamond ring | Sell Price: 1,831 | Profit / loss: 187 | XP/Craft: 85 | XP/Hour: 119,000 | Coins/XP: 2.20 | High Alch: 2,115 | High Alch P/L: 334\n\nLevel: 56 | Input: Diamond Gold bar | Material Cost: 1,644 | Output: Diamond necklace | Sell Price: 1,917 | Profit / loss: 273 | XP/Craft: 90 | XP/Hour: 126,000 | Coins/XP: 3.03 | High Alch: 2,205 | High Alch P/L: 424\n\nLevel: 58 | Input: Diamond Gold bar | Material Cost: 1,644 | Output: Diamond bracelet | Sell Price: 1,906 | Profit / loss: 262 | XP/Craft: 95 | XP/Hour: 133,000 | Coins/XP: 2.76 | High Alch: 2,295 | High Alch P/L: 514\n\nLevel: 70 | Input: Diamond Gold bar | Material Cost: 1,644 | Output: Diamond amulet (u) | Sell Price: 1,868 | Profit / loss: 224 | XP/Craft: 100 | XP/Hour: 140,000 | Coins/XP: 2.24 | High Alch: 2,115 | High Alch P/L: 334\n\nLevel: 1 | Input: Diamond amulet (u) Ball of wool | Material Cost: 1,932 | Output: Diamond amulet | Sell Price: 2,035 | Profit / loss: 103 | XP/Craft: 4 | XP/Hour: 8,000 | Coins/XP: 25.75 | High Alch: 2,115 | High Alch P/L: 46",
+              "token_count": 407,
+              "dense_score": 0.7388073205947876,
+              "rerank_score": 0.844274640083313,
+              "dense_rank": 1,
+              "final_rank": 1
+            }
+          }
+        ],
+        "answerable": true,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3337,
-        "output_tokens": 184,
+        "output_tokens": 245,
         "stop_reason": "tool_use"
       },
-      "judge": null,
-      "correctness_label": "incorrectly_abstained",
+      "judge": {
+        "verdict": "incorrect",
+        "reasoning": "The candidate fails to provide the final computed answer (935,000 XP) despite correctly identifying the 85 XP per ring, claiming insufficient information instead of giving the actual buy limit (11,000) and total XP.",
+        "model": "claude-sonnet-5",
+        "input_tokens": 1131,
+        "output_tokens": 131,
+        "stop_reason": "tool_use"
+      },
+      "correctness_label": "incorrect",
       "error": null
     },
     {
@@ -3074,14 +3190,14 @@
       },
       "generated": {
         "query": "How many Wigs could theoretically be crafted from one day's full Grand Exchange buy limit of balls of wool?",
-        "answer": "The retrieved chunks do not mention \"Wig\" as a product of ball of wool at all - the product list (Ball_of_wool__004 and Ball_of_wool__005) does not include a \"Wig\" item or its crafting recipe/ball of wool requirement. Without knowing how many balls of wool are needed to craft one Wig, I cannot calculate how many Wigs could be crafted from the daily buy limit of 13,000 balls of wool.",
+        "answer": "The retrieved chunks give the Grand Exchange buy limit for Ball of wool (13,000 per 4 hours, i.e., a day's limit would be a multiple of this) and list its crafting products, but none of the products listed is a \"Wig,\" nor is there any information about a \"Wig\" item or how many balls of wool are needed to craft one. Therefore I cannot determine how many Wigs could be crafted from one day's buy limit of balls of wool.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3653,
-        "output_tokens": 223,
+        "output_tokens": 224,
         "stop_reason": "tool_use"
       },
       "judge": null,
@@ -3115,44 +3231,18 @@
       },
       "generated": {
         "query": "Which requires the higher level — the Herblore level needed to make a Combat potion, or the Slayer level needed to be assigned Dark beasts — and by how many levels?",
-        "answer": "The Slayer level needed to be assigned Dark beasts is 90, which is higher than the Herblore level needed to make a Combat potion (36). This makes the Slayer requirement higher by 54 levels.",
-        "citations": [
-          {
-            "chunk_id": "Slayer_training__046",
-            "claim": "Dark beasts require a Slayer level of 90 to be assigned as a task.",
-            "chunk": {
-              "chunk_id": "Slayer_training__046",
-              "page_title": "Slayer training",
-              "url": "https://oldschool.runescape.wiki/w/Slayer_training",
-              "section_path": "Task summary",
-              "heading_anchor": "Task_summary",
-              "source_type": "table",
-              "text": ". | recommendation : do | approx. xp / h : 85, 000\n\nAssignment: Dark beasts | Slayer level: 90 | Weight: 11 | Pros: Fast task when unextended. Relatively low-effort task. | Cons: Somewhat mediocre experience rates. | Recommendation: Do | Approx. XP/h: 42,000\n\nAssignment: Drakes | Slayer level: 84 | Weight: 8 | Pros: Relatively low-effort task with high combat stats. | Cons: Mediocre experience rates and long task. Not worth doing unless Slayer points are an issue. | Recommendation: Skip/Block unless you're an ironman hunting their uniques | Approx. XP/h: 35,000\n\nAssignment: Dust devils | Slayer level: 65 | Weight: 5 | Pros: Good experience rates when barraging in the Catacombs of Kourend. Drops cover the rune costs. | Cons: Can be crowded in the Catacombs of Kourend. | Recommendation: Do | Approx. XP/h: 100,000–110,000 (Magic) 60,000 (Venator bow) 35,000 (Melee)\n\nAssignment: Elves | Slayer level: 1 | Weight: 4 | Pros: Relatively low-effort task. | Cons: Poor experience rates. Not worth doing unless Slayer points are an issue. | Recommendation: Skip | Approx. XP/h: 25,000\n\nAssignment: Fire giants | Slayer level: 1 | Weight: 7 | Pros: Relatively low-effort task. Relatively fast with imbued black mask and water wave+. | Cons: Somewhat mediocre experience rates. Using the cannon will result in a loss. Good Magic XP using water spells due to 100% weakness. | Recommendation: Do for magic XP, otherwise skip | Approx. XP/h: 40,000\n\nAssignment: Fossil Island Wyverns | Slayer level: 66, 82 | Weight: 5 | Pros: Relatively low-effort task. | Cons: Poor experience rates and mediocre profit. Not worth doing unless Slayer points are an issue. | Recommendation: Block with the unique unlock | Approx. XP/h: 15,000",
-              "token_count": 450,
-              "dense_score": 0.657509446144104,
-              "rerank_score": 0.9831485748291016,
-              "dense_rank": 9,
-              "final_rank": 1
-            }
-          }
-        ],
-        "answerable": true,
+        "answer": "The retrieved chunks confirm the Slayer level required to be assigned Dark beasts is 90, but none of the retrieved chunks mention the Herblore level needed to make a Combat potion. Therefore I cannot determine which requirement is higher or by how many levels.",
+        "citations": [],
+        "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4012,
-        "output_tokens": 195,
+        "output_tokens": 165,
         "stop_reason": "tool_use"
       },
-      "judge": {
-        "verdict": "correct",
-        "reasoning": "Candidate matches gold: Slayer 90 for Dark beasts vs Herblore 36 for Combat potion, difference of 54 levels.",
-        "model": "claude-sonnet-5",
-        "input_tokens": 1106,
-        "output_tokens": 106,
-        "stop_reason": "tool_use"
-      },
-      "correctness_label": "correct",
+      "judge": null,
+      "correctness_label": "incorrectly_abstained",
       "error": null
     },
     {
@@ -3182,11 +3272,11 @@
       },
       "generated": {
         "query": "Approximately how many diamonds, bought at their Grand Exchange price, could a player accumulate before spending the maximum possible coin stack in Old School RuneScape?",
-        "answer": "The maximum coin stack in OSRS is 2,147,483,647 coins (a limit imposed by the 32-bit signed integer used to store the value). Diamonds have a Grand Exchange price of 1,577 coins each. Dividing the max cash stack by the GE price of a diamond (2,147,483,647 ÷ 1,577) gives approximately 1,361,752 diamonds that could be purchased before exhausting the maximum coin stack.",
+        "answer": "The maximum coin stack in OSRS is 2,147,483,647 coins (a 32-bit signed integer limit). Diamonds have a Grand Exchange price of 1,577 coins each. Dividing the max cash stack by the GE price of a diamond gives approximately 1,361,624,000 diamonds (2,147,483,647 ÷ 1,577 ≈ 1,361,624,000) that could theoretically be bought before exhausting the maximum coin stack.</answer>\n<parameter name=\"citations\">[{\"chunk_id\": \"Coins__030\", \"claim\": \"The maximum number of coins in a stack is 2,147,483,647, due to the 32-bit signed integer limit.\"}, {\"chunk_id\": \"Diamond__000\", \"claim\": \"Diamond's Grand Exchange price is 1,577 coins.\"}]",
         "citations": [
           {
             "chunk_id": "Coins__030",
-            "claim": "The maximum number of coins in a stack is 2,147,483,647, due to the use of 32-bit signed integers.",
+            "claim": "The maximum number of coins in a stack is 2,147,483,647, due to the 32-bit signed integer limit.",
             "chunk": {
               "chunk_id": "Coins__030",
               "page_title": "Coins",
@@ -3226,18 +3316,18 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 2412,
-        "output_tokens": 329,
+        "output_tokens": 459,
         "stop_reason": "tool_use"
       },
       "judge": {
-        "verdict": "correct",
-        "reasoning": "The candidate answer matches the gold reference exactly: max coin stack 2,147,483,647, diamond price 1,577, division yields ~1,361,752 diamonds.",
+        "verdict": "incorrect",
+        "reasoning": "The candidate uses correct inputs (2,147,483,647 and 1,577) but miscalculates the division, giving ~1,361,624,000 instead of the correct ~1,361,752. The final numeric answer is off by roughly three orders of magnitude, which is a significant factual error.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1179,
-        "output_tokens": 114,
+        "input_tokens": 1306,
+        "output_tokens": 152,
         "stop_reason": "tool_use"
       },
-      "correctness_label": "correct",
+      "correctness_label": "incorrect",
       "error": null
     },
     {
@@ -3267,7 +3357,7 @@
       },
       "generated": {
         "query": "How many Prayer levels of buffer does Monkey Madness I's recommended Prayer level give over the bare minimum needed to use Protect from Magic during the Jungle Demon fight?",
-        "answer": "Monkey Madness I recommends 43 Prayer, while Protect from Magic requires 37 Prayer to use. This gives a buffer of 6 Prayer levels (43 − 37 = 6) over the bare minimum needed.",
+        "answer": "Monkey Madness I recommends 43+ Prayer, while the minimum Prayer level needed to use Protect from Magic during the Jungle Demon fight is 37. This gives a buffer of 6 Prayer levels (43 − 37 = 6).",
         "citations": [
           {
             "chunk_id": "Monkey_Madness_I__003",
@@ -3289,7 +3379,7 @@
           },
           {
             "chunk_id": "Jungle_Demon__002",
-            "claim": "37 Prayer is needed for Protect from Magic to make the fight considerably easier",
+            "claim": "37 Prayer is needed for Protect from Magic, making the Jungle Demon fight considerably easier",
             "chunk": {
               "chunk_id": "Jungle_Demon__002",
               "page_title": "Jungle Demon",
@@ -3311,15 +3401,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3971,
-        "output_tokens": 256,
+        "output_tokens": 272,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold answer exactly: 43 recommended minus 37 minimum equals 6 level buffer.",
+        "reasoning": "Candidate matches gold: 43 recommended minus 37 minimum equals 6 level buffer.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1106,
-        "output_tokens": 96,
+        "input_tokens": 1113,
+        "output_tokens": 91,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -3352,11 +3442,11 @@
       },
       "generated": {
         "query": "If a player made as many Antipoison(3) potions as that potion's daily Grand Exchange buy limit, what would their total profit or loss be, after GE tax?",
-        "answer": "Antipoison(3) potions are made from Marrentill potion (unf) + Unicorn horn dust via Herblore, at a cost of 922 coins for the ingredients to make one Antipoison(3) (well, per the creation data, this yields a single potion sale value of 303, with profit after GE tax being −625). Antipoison's daily GE buy limit is 2,000. Multiplying the per-potion \"profit after GE tax\" of −625 by the buy limit of 2,000 gives a total loss of 1,250,000 coins.",
+        "answer": "Antipoison(3) potions are made from Marrentill potion (unf) + Unicorn horn dust via Herblore, with a profit after GE Tax of −625 coins per potion made (total cost 922, sale value 303). The Antipoison item's daily Grand Exchange buy limit is 2,000. Therefore, if a player made 2,000 Antipoison(3) potions, their total profit/loss after GE tax would be 2,000 × (−625) = −1,250,000 coins, i.e., a loss of 1,250,000 coins.",
         "citations": [
           {
             "chunk_id": "Antipoison__003",
-            "claim": "Making Antipoison(3) from Marrentill potion (unf) and Unicorn horn dust costs 922 coins total and yields a profit after GE tax of −625 per potion.",
+            "claim": "Making Antipoison(3) from Marrentill potion (unf) and Unicorn horn dust costs 922 total, sells for 303, giving a profit after GE Tax of −625 per potion",
             "chunk": {
               "chunk_id": "Antipoison__003",
               "page_title": "Antipoison",
@@ -3374,7 +3464,7 @@
           },
           {
             "chunk_id": "Antipoison__000",
-            "claim": "Antipoison has a daily Grand Exchange buy limit of 2,000.",
+            "claim": "The buy limit for Antipoison (used as the basis for the 3-dose variant's limit) is 2,000",
             "chunk": {
               "chunk_id": "Antipoison__000",
               "page_title": "Antipoison",
@@ -3396,15 +3486,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 2725,
-        "output_tokens": 381,
+        "output_tokens": 403,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "The candidate arrives at the same key figures as the gold answer: buy limit 2,000, per-potion loss of -625 coins, total loss of 1,250,000 coins, matching the reference calculation.",
+        "reasoning": "The candidate arrives at the same final calculation as the gold answer: 2,000 × -625 = -1,250,000 coins, a loss. This matches the key facts in the reference answer.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1196,
-        "output_tokens": 123,
+        "input_tokens": 1200,
+        "output_tokens": 117,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -3437,25 +3527,98 @@
       },
       "generated": {
         "query": "Between Attack and Hitpoints, which skill's \"quest skill choice\" experience-reward pool totals higher, and by how much?",
-        "answer": "Hitpoints' \"quest skill choice\" experience total is higher. The Hitpoints skill-choice quest list shows a grand \"Total\" of 1,282,300 experience. The Attack skill-choice list provided does not show a total, but it is the same shared pool of quests (X Marks the Spot, Client of Kourend, The Ides of Milk, Fairytale II, The Great Brain Robbery, King's Ransom, A Tail of Two Cats, Darkness of Hallowvale, A Taste of Hope, Curse of the Empty Lord, In Search of Knowledge, Shadow of the Storm, Contact!, The Fremennik Isles) that appears in the Hitpoints list as well - meaning both skills draw from an overlapping quest reward pool. However, the retrieved Attack data does not include a total experience figure, so an exact numeric difference between the two skills' totals cannot be determined from the given chunks.",
-        "citations": [],
+        "answer": "Hitpoints' quest skill-choice experience pool totals higher than Attack's. The wiki page for Hitpoints explicitly lists the total for the \"Skill choice\" quest rewards as 1,282,300 experience. No equivalent total figure is given for Attack's skill-choice list in the retrieved chunks, but the retrieved Attack entries are a subset of the same quest list that also appears for Hitpoints, and since Hitpoints has additional high-value quest rewards (e.g., Dream Mentor 15,000; Recipe for Disaster 20,000; Desert Treasure II 100,000×3; Blood Moon Rises 30,000×6; Dragon Slayer II 25,000×4, etc.) that are not shown for Attack in these chunks, the Hitpoints total (1,282,300 xp) is confirmed directly, while Attack's total cannot be fully computed from the given chunks. Therefore, based on the available data, Hitpoints' pool (1,282,300 xp) is higher, though the exact difference cannot be determined without the missing Attack total figure.",
+        "citations": [
+          {
+            "chunk_id": "Hitpoints__021",
+            "claim": "The total experience reward for Hitpoints' skill choice quests is 1,282,300.",
+            "chunk": {
+              "chunk_id": "Hitpoints__021",
+              "page_title": "Hitpoints",
+              "url": "https://oldschool.runescape.wiki/w/Hitpoints",
+              "section_path": "Quests > Skill choice",
+              "heading_anchor": "Skill_choice",
+              "source_type": "table",
+              "text": ": 35, 000 & 20, 000 | skills available : | skill requirements : none quest : legends'quest | experience reward : 30, 000 four times | skills available : | skill requirements : 107, 50, 50, 45, 56, 52, 42, 50, 50, 50, 50\n\nQuest: The Blood Moon Rises | Experience reward: 30,000 six times | Skills available: Any skill above 70 | Skill requirements: 74 , 74 , 72 , 72 , 70 , 66 , 65 , 64 , 64 , 57\n\nQuest: Desert Treasure II - The Fallen Empire | Experience reward: 100,000 three times | Skills available:  | Skill requirements: 75 , 75 , 70 , 62 , 60 , 60\n\nQuest: Total | Experience reward: 1,282,300 | Skills available: ",
+              "token_count": 159,
+              "dense_score": 0.7332603931427002,
+              "rerank_score": 0.9955928921699524,
+              "dense_rank": 4,
+              "final_rank": 4
+            }
+          },
+          {
+            "chunk_id": "Hitpoints__020",
+            "claim": "Hitpoints receives large skill-choice rewards from quests like Dream Mentor, Recipe for Disaster, Dragon Slayer II, Monkey Madness II, and Legends' Quest.",
+            "chunk": {
+              "chunk_id": "Hitpoints__020",
+              "page_title": "Hitpoints",
+              "url": "https://oldschool.runescape.wiki/w/Hitpoints",
+              "section_path": "Quests > Skill choice",
+              "heading_anchor": "Skill_choice",
+              "source_type": "table",
+              "text": "Quest: Dream Mentor | Experience reward: 15,000 | Skills available:  | Skill requirements: 32 , 85 , 61 , 40 , 49 , 5 , 65 , 60 , 55\n\nQuest: The Fremennik Isles | Experience reward: 10,000 twice | Skills available:  | Skill requirements: 20 , 40\n\nQuest: A Kingdom Divided | Experience reward: 10,000 twice | Skills available: Any skill above 40 | Skill requirements: 54 , 52 , 52 , 50 , 42 , 38 , 35\n\nQuest: One Small Favour | Experience reward: 10,000 twice | Skills available: Any skill above 30 | Skill requirements: 36 , 25 , 18 , 30\n\nQuest: Recipe for Disaster ( The final battle ) | Experience reward: 20,000 | Skills available: Any skill above 50 | Skill requirements: 175 , 70 , 48 , 50 , 53 , 53 , 25 , 59 , 40 , 50 , 40 , 40 , 10 , 10 , 36\n\nQuest: Into the Tombs ( miniquest ) | Experience reward: 50,000 | Skills available:  | Skill requirements: 95 recommended\n\nQuest: The Final Dawn | Experience reward: 55,000 | Skills available:  | Skill requirements: 66 , 52 , 52 , 85 recommended\n\nQuest: A Night at the Theatre | Experience reward: 20,000 four times | Skills available:  | Skill requirements: 90 recommended\n\nQuest: Sins of the Father | Experience reward: 15,000 six times | Skills available: Any skill above 60 | Skill requirements: 62 , 60 , 56 , 52 , 50 , 50 , 49\n\nQuest: Dragon Slayer II | Experience reward: 25,000 four times | Skills available:  | Skill requirements: 200 , 75 , 70 , 68 , 62 , 60 , 60 , 50 , 50\n\nQuest: Monkey Madness II | Experience reward: 50,000 twice | Skills available:  | Skill requirements: 69 , 70 , 60 , 55 , 55 , 60\n\nQuest: Monkey Madness I | Experience reward: 35,000 & 20,000 | Skills available:  | Skill requirements: None\n\nQuest: Legends' Quest | Experience reward: 30,000 four times | Skills available:  | Skill requirements: 107 , 50 , 50 , 45 , 56 , 52 , 42 , 50 , 50 , 50 , 50",
+              "token_count": 450,
+              "dense_score": 0.7375061511993408,
+              "rerank_score": 0.9966938495635986,
+              "dense_rank": 3,
+              "final_rank": 2
+            }
+          },
+          {
+            "chunk_id": "Hitpoints__019",
+            "claim": "Hitpoints also receives skill-choice rewards from smaller quests like X Marks the Spot, Client of Kourend, and others.",
+            "chunk": {
+              "chunk_id": "Hitpoints__019",
+              "page_title": "Hitpoints",
+              "url": "https://oldschool.runescape.wiki/w/Hitpoints",
+              "section_path": "Quests > Skill choice",
+              "heading_anchor": "Skill_choice",
+              "source_type": "table",
+              "text": "Upon completing any of the following quests, players may choose to allocate experience to Hitpoints. These rewards usually come in the form of items, such as lamps or books, and are independent of any experience rewards directly received for completing the quest.\n\nQuest: X Marks the Spot | Experience reward: 300 | Skills available: Any | Skill requirements: None\n\nQuest: Client of Kourend | Experience reward: 500 twice | Skills available: Any | Skill requirements: None\n\nQuest: The Ides of Milk | Experience reward: 1,000 | Skills available:  | Skill requirements: None\n\nQuest: Fairytale II - Cure a Queen | Experience reward: 2,500 | Skills available: Any skill above 30 | Skill requirements: 49 , 57\n\nQuest: The Great Brain Robbery | Experience reward: 5,000 | Skills available: Any skill above 30 | Skill requirements: 16 , 30 , 50\n\nQuest: King's Ransom | Experience reward: 5,000 | Skills available: Any skill above 50 | Skill requirements: 65\n\nQuest: A Tail of Two Cats | Experience reward: 2,500 twice | Skills available: Any skill above 30 | Skill requirements: None\n\nQuest: Darkness of Hallowvale | Experience reward: 2,000 three times | Skills available: Any skill above 30 | Skill requirements: 5 , 20 , 22 , 32 , 33 , 40\n\nQuest: A Taste of Hope | Experience reward: 2,500 three times | Skills available: Any skill above 35 | Skill requirements: 48 , 40 , 40 , 45 , 38\n\nQuest: Curse of the Empty Lord ( miniquest ) | Experience reward: 10,000 | Skills available: Any skill above 50 | Skill requirements: Some players will need 31\n\nQuest: In Search of Knowledge ( miniquest ) | Experience reward: 10,000 | Skills available: Any skill above 40 | Skill requirements: None\n\nQuest: Shadow of the Storm | Experience reward: 10,000 | Skills available:  | Skill requirements: 30\n\nQuest: Contact! | Experience reward: 7,000 twice | Skills available:  | Skill requirements: None",
+              "token_count": 416,
+              "dense_score": 0.7649853229522705,
+              "rerank_score": 0.9958337545394897,
+              "dense_rank": 2,
+              "final_rank": 3
+            }
+          },
+          {
+            "chunk_id": "Attack__019",
+            "claim": "Attack's skill-choice quest list includes the same smaller quests as Hitpoints (X Marks the Spot, Client of Kourend, etc.) but no total figure is provided.",
+            "chunk": {
+              "chunk_id": "Attack__019",
+              "page_title": "Attack",
+              "url": "https://oldschool.runescape.wiki/w/Attack",
+              "section_path": "Quests > Skill choice",
+              "heading_anchor": "Skill_choice",
+              "source_type": "table",
+              "text": "Upon completing any of the following quests, players may choose to allocate experience to Attack. These rewards usually come in the form of items, such as lamps or books, and are independent of any experience rewards directly received for completing the quest.\n\nQuest: X Marks the Spot | Experience reward: 300 | Skills available: Any | Skill requirements: None\n\nQuest: Client of Kourend | Experience reward: 500 twice | Skills available: Any | Skill requirements: None\n\nQuest: The Ides of Milk | Experience reward: 1,000 | Skills available:  | Skill requirements: None\n\nQuest: Fairytale II - Cure a Queen | Experience reward: 2,500 | Skills available: Any skill above 30 | Skill requirements: 49 , 57\n\nQuest: The Great Brain Robbery | Experience reward: 5,000 | Skills available: Any skill above 30 | Skill requirements: 16 , 30 , 50\n\nQuest: King's Ransom | Experience reward: 5,000 | Skills available: Any skill above 50 | Skill requirements: 65\n\nQuest: A Tail of Two Cats | Experience reward: 2,500 twice | Skills available: Any skill above 30 | Skill requirements: None\n\nQuest: Darkness of Hallowvale | Experience reward: 2,000 three times | Skills available: Any skill above 30 | Skill requirements: 5 , 20 , 22 , 32 , 33 , 40\n\nQuest: A Taste of Hope | Experience reward: 2,500 three times | Skills available: Any skill above 35 | Skill requirements: 48 , 40 , 40 , 45 , 38\n\nQuest: Curse of the Empty Lord ( miniquest ) | Experience reward: 10,000 | Skills available: Any skill above 50 | Skill requirements: Some players will need 31\n\nQuest: In Search of Knowledge ( miniquest ) | Experience reward: 10,000 | Skills available: Any skill above 40 | Skill requirements: None\n\nQuest: Shadow of the Storm | Experience reward: 10,000 | Skills available:  | Skill requirements: 30\n\nQuest: Contact! | Experience reward: 7,000 twice | Skills available:  | Skill requirements: None\n\nQuest: The Fremennik Isles | Experience reward: 10,000 twice | Skills available:  | Skill requirements: 20 , 40",
+              "token_count": 442,
+              "dense_score": 0.7907960414886475,
+              "rerank_score": 0.9836063385009766,
+              "dense_rank": 1,
+              "final_rank": 5
+            }
+          }
+        ],
         "answerable": true,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4234,
-        "output_tokens": 386,
+        "output_tokens": 723,
         "stop_reason": "tool_use"
       },
       "judge": {
-        "verdict": "incorrect",
-        "reasoning": "The gold answer states Hitpoints (1,282,300) is higher than Attack (1,267,300) by 15,000 XP. The candidate correctly identifies Hitpoints' total but fails to provide Attack's total or the numeric difference, explicitly stating it cannot be determined. This misses the key required fact (the 15,000 XP difference and Attack's total), so it does not match the gold answer.",
+        "verdict": "partially_correct",
+        "reasoning": "The candidate correctly identifies that Hitpoints' total (1,282,300 XP) is higher than Attack's, matching the gold answer's key fact. However, it fails to state the exact difference (15,000 XP) requested in the question, instead claiming the difference cannot be determined, which is a missing key fact from the multi-hop answer.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1335,
-        "output_tokens": 190,
+        "input_tokens": 1387,
+        "output_tokens": 170,
         "stop_reason": "tool_use"
       },
-      "correctness_label": "incorrect",
+      "correctness_label": "partially_correct",
       "error": null
     },
     {
@@ -3485,80 +3648,18 @@
       },
       "generated": {
         "query": "If a player used the ancient mace's special attack to deal damage equal to the Jungle Demon's maximum hit, how many Prayer points would that special attack restore?",
-        "answer": "The ancient mace's special attack restores Prayer points equal to 100% of the damage dealt (it drains the target's Prayer by the amount of damage hit and recharges/boosts the user's Prayer by that same amount). So the amount of Prayer restored would be equal to the Jungle Demon's maximum hit, i.e., a 1:1 restoration - however, the exact numeric value of the Jungle Demon's maximum hit is not provided in the retrieved chunks, so the restored Prayer would simply equal whatever that maximum hit value is.",
-        "citations": [
-          {
-            "chunk_id": "Prayer__006",
-            "claim": "The ancient mace recharges the player's prayer points by 100% of the damage dealt.",
-            "chunk": {
-              "chunk_id": "Prayer__006",
-              "page_title": "Prayer",
-              "url": "https://oldschool.runescape.wiki/w/Prayer",
-              "section_path": "Recharging points > Equippable items",
-              "heading_anchor": "Equippable_items",
-              "source_type": "prose",
-              "text": "The special attacks of some weapons will restore prayer points. The ancient mace recharges the player's prayer points by 100% of the damage dealt. The eldritch Nightmare staff recharges prayer points by 50% of the damage dealt. Lastly, the Saradomin godsword recharges by 25% of the damage dealt, rounded up.\n\nThe Falador shield will also recharge a certain percentage of prayer points. The shield will restore 25%, 50% or 100% with completion of the Falador diary easy, medium, and hard tiers, respectively. The shield may be used once a day with completion of the easy tier and may be used twice a day with completion of the elite tier.\n\nThe Necklace of Faith is a rarely used equippable item that restores 25% of the wearer's prayer points when their hitpoints drop below 20% of the wearer's maximum. It functions similarly to the Phoenix necklace and Redemption , but restores prayer points at low health instead of restoring health.",
-              "token_count": 213,
-              "dense_score": 0.7212085723876953,
-              "rerank_score": 0.9981022477149963,
-              "dense_rank": 4,
-              "final_rank": 1
-            }
-          },
-          {
-            "chunk_id": "Prayer__022",
-            "claim": "The ancient mace's special attack drains the target's Prayer by the amount of damage inflicted, while restoring the user's Prayer by the same amount.",
-            "chunk": {
-              "chunk_id": "Prayer__022",
-              "page_title": "Prayer",
-              "url": "https://oldschool.runescape.wiki/w/Prayer",
-              "section_path": "Equipment that affects Prayer > Special attacks",
-              "heading_anchor": "Special_attacks",
-              "source_type": "table",
-              "text": "Some equipment can bypass or disable other players' overhead protection prayers , as well as drain, restore, or depend on Prayer.\n\nMost of this equipment cannot bypass monster protection prayers, except Verac's set against the Kalphite Queen .\n\nWeapon:  | Notes: Ancient mace | The ancient mace's special attack ignores Protect from Melee when used against players and drains their Prayer by the amount of damage inflicted, while restoring the user's Prayer by the same amount. It can restore the user's Prayer above their base level.\n\nWeapon:  | Notes: Dragon scimitar | The dragon scimitar's special attack is more accurate and will disable as well as prevent a player from using their overhead protection prayers if it is a successful hit , for 5 seconds.\n\nWeapon:  | Notes: Dragon sword | The dragon sword's special attack hits the target with 25% increased accuracy and damage, and ignores Protect from Melee when used against players.\n\nWeapon:  | Notes: Abyssal bludgeon | The abyssal bludgeon's special attack deals a hit with 0.5% extra damage for every prayer point the attacker is missing.\n\nWeapon:  | Notes: Bandos godsword | The Bandos godsword's special attack increases damage dealt by 21% and doubles the accuracy, draining one of the target's Combat stats by the amount of damage dealt, until it reaches 0. If the stat drained reaches 0 before all of the damage can be accounted for, another stat will be drained by the amount remaining. Stats are drained in the following order: Defence , Strength , Prayer, Attack , Magic , Ranged .\n\nWeapon:  | Notes: Saradomin godsword | The Saradomin godsword's special attack increases damage dealt by 10% and doubles the accuracy. If it is a successful hit, it restores the user's Hitpoints by 50% of the damage dealt (with a minimum of 10 Hitpoints) and Prayer by 25% of damage dealt (with a minimum of 5 prayer points).",
-              "token_count": 413,
-              "dense_score": 0.7382657527923584,
-              "rerank_score": 0.9958900809288025,
-              "dense_rank": 1,
-              "final_rank": 3
-            }
-          },
-          {
-            "chunk_id": "Special_attacks__014",
-            "claim": "Ancient mace's special attack drains the Prayer points of the target by 100% of the amount hit and recharges or boosts the user's prayer points by the amount drained.",
-            "chunk": {
-              "chunk_id": "Special_attacks__014",
-              "page_title": "Special attacks",
-              "url": "https://oldschool.runescape.wiki/w/Special_attacks",
-              "section_path": "Combat special attacks > Stat-draining",
-              "heading_anchor": "Stat-draining",
-              "source_type": "table",
-              "text": "These attacks will drain the target's stats based on the amount of damage done, sometimes restoring a fraction of the drained levels to the attacker.\n\nAbyssal whip:  | Name | Energy Drain\n\nAbyssal whip: Energy used | 50%\n\nAbyssal whip: Description | Transfers 10% of the target's run energy to the user in PvP.\n\nAbyssal whip: Tooltip | Deal an attack with 25% increased accuracy that siphons 10% of your target's run energy.\n\nAbyssal whip: Defence roll | Slash\n\nAbyssal whip: Attack roll modifier | 25%\n\nAbyssal whip: Damage roll modifier | None\n\nAbyssal whip: Level | 70\n\nAccursed sceptre:  | Name | Condemn\n\nAccursed sceptre: Energy used | 50%\n\nAccursed sceptre: Description | If damage is dealt, the target's Defence and Magic are reduced by up to 15%.\n\nAccursed sceptre: Tooltip | Fire a powerful spell with increased accuracy and damage, lowering your target's magic and defence levels by up to 15%.\n\nAccursed sceptre: Attack roll modifier | 50%\n\nAccursed sceptre: Damage roll modifier | None\n\nAccursed sceptre: Level | 70\n\nAncient mace:  | Name | Favour of the War God\n\nAncient mace: Energy used | 100%\n\nAncient mace: Description | Drains the Prayer points of the target by 100% of the amount hit Recharges or boosts the user's prayer points by the amount drained. Hits through Protect from Melee.\n\nAncient mace: Tooltip | Deal an attack which hits through Protect from Melee and siphons Prayer points equal to the damage dealt.\n\nAncient mace: Defence roll | Crush\n\nAncient mace: Attack roll modifier | None\n\nAncient mace: Damage roll modifier | None\n\nAncient mace: Level | 15\n\nAncient mace: Quest | Another Slice of H.A.M.\n\nBandos godsword:  | Name | Warstrike\n\nBandos godsword: Energy used | 50%",
-              "token_count": 413,
-              "dense_score": 0.6773619651794434,
-              "rerank_score": 0.9955846667289734,
-              "dense_rank": 16,
-              "final_rank": 4
-            }
-          }
-        ],
-        "answerable": true,
+        "answer": "The retrieved chunks explain that the ancient mace's special attack restores Prayer points equal to 100% of the damage dealt, but they do not contain any information about the Jungle Demon monster or its maximum hit. Without knowing the Jungle Demon's maximum hit value, the exact number of Prayer points restored cannot be calculated from the given context.",
+        "citations": [],
+        "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3428,
-        "output_tokens": 457,
+        "output_tokens": 192,
         "stop_reason": "tool_use"
       },
-      "judge": {
-        "verdict": "incorrect",
-        "reasoning": "The gold answer specifies the concrete value (32 Prayer points, based on Jungle Demon's max hit of 32). The candidate fails to provide this specific numeric answer, stating the value is unknown/not provided, which misses the key fact required by the question.",
-        "model": "claude-sonnet-5",
-        "input_tokens": 1212,
-        "output_tokens": 142,
-        "stop_reason": "tool_use"
-      },
-      "correctness_label": "incorrect",
+      "judge": null,
+      "correctness_label": "incorrectly_abstained",
       "error": null
     },
     {
@@ -3588,11 +3689,11 @@
       },
       "generated": {
         "query": "How much total Herblore experience would a player earn by completing the Druidic Ritual quest and then making one dose of antipoison?",
-        "answer": "Completing Druidic Ritual grants 250 Herblore experience, and making one antipoison(3) potion (using unicorn horn dust on a marrentill potion (unf)) grants 37.5 Herblore experience. Together, this totals 287.5 Herblore experience.",
+        "answer": "Completing the Druidic Ritual quest grants 250 Herblore experience, and making one antipoison (yielding an antipoison(3)) grants 37.5 Herblore experience. Together, this totals 287.5 Herblore experience.",
         "citations": [
           {
             "chunk_id": "Herblore_training__002",
-            "claim": "Druidic Ritual quest grants 250 Herblore experience",
+            "claim": "Completing Druidic Ritual grants 250 Herblore experience",
             "chunk": {
               "chunk_id": "Herblore_training__002",
               "page_title": "Herblore training",
@@ -3610,7 +3711,7 @@
           },
           {
             "chunk_id": "Antipoison__001",
-            "claim": "Making an antipoison(3) by using unicorn horn dust on a marrentill potion (unf) yields 37.5 Herblore experience",
+            "claim": "Making an antipoison using unicorn horn dust on a marrentill potion (unf) yields an antipoison(3) and 37.5 Herblore experience",
             "chunk": {
               "chunk_id": "Antipoison__001",
               "page_title": "Antipoison",
@@ -3632,15 +3733,15 @@
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 3141,
-        "output_tokens": 284,
+        "output_tokens": 278,
         "stop_reason": "tool_use"
       },
       "judge": {
         "verdict": "correct",
-        "reasoning": "Candidate matches gold: 250 XP + 37.5 XP = 287.5 XP total.",
+        "reasoning": "The candidate matches the gold reference exactly: 250 XP from the quest plus 37.5 XP from making antipoison equals 287.5 total Herblore XP.",
         "model": "claude-sonnet-5",
-        "input_tokens": 1117,
-        "output_tokens": 90,
+        "input_tokens": 1105,
+        "output_tokens": 112,
         "stop_reason": "tool_use"
       },
       "correctness_label": "correct",
@@ -3673,14 +3774,14 @@
       },
       "generated": {
         "query": "By what factor is a diamond's high-alchemy value greater than a ball of wool's?",
-        "answer": "The retrieved chunks give high-alchemy values for various diamond jewellery items (e.g., diamond ring, necklace, bracelet, amulet — all around 2,115–2,295 coins) but do not provide the high-alchemy value of a plain, uncut/raw diamond itself, nor do they give the high-alchemy value of a ball of wool. Without the base high-alch prices for both a diamond and a ball of wool, the factor by which one exceeds the other cannot be determined from this context.",
+        "answer": "The retrieved chunks give high-alchemy values for diamond jewellery items (e.g., diamond ring, diamond necklace, diamond amulet) but do not provide a high-alchemy value for the raw diamond itself, nor any high-alchemy value for a ball of wool. Without both figures for the plain \"Diamond\" item and the \"Ball of wool\" item, the factor by which one exceeds the other cannot be determined from this context.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4168,
-        "output_tokens": 239,
+        "output_tokens": 219,
         "stop_reason": "tool_use"
       },
       "judge": null,
@@ -3691,7 +3792,7 @@
       "question": {
         "id": "q051",
         "question": "What are the full rewards for completing the Recipe for Disaster quest?",
-        "type": "single_hop",
+        "type": null,
         "answerable": false,
         "gold_chunk_ids": [],
         "gold_answer": null
@@ -3699,14 +3800,14 @@
       "retrieval": null,
       "generated": {
         "query": "What are the full rewards for completing the Recipe for Disaster quest?",
-        "answer": "The retrieved chunks do not contain a complete rewards list for the Recipe for Disaster quest. The only relevant information found relates to experience rewards from specific subquests (\"The final battle\") that can be applied toward various skills (with requirements like 175, 70, 48, 50, 53, 53, 25, 59, 40, 50, 40, 40, 10, 10, 36), and a note that completing Recipe for Disaster costs about 320 coins (or 120 with a Ring of Charos(a)). However, there is no information here about the full set of rewards (such as items, quest points, or all experience rewards from each subquest) for completing the entire Recipe for Disaster quest. I cannot provide a complete answer without additional information.",
+        "answer": "The retrieved chunks do not contain a complete list of the rewards for completing Recipe for Disaster. They only mention partial, related details, such as the experience reward for the final subquest \"Recipe for Disaster (The final battle)\" being 20,000 experience in a skill of choice above level 50, and the coin cost incurred during the quest (~320 coins, or 120 with a Ring of Charos(a)). There is no information here about the actual full reward list (e.g., items unlocked, access granted, total rewards) for finishing the entire Recipe for Disaster quest, so I cannot provide a complete answer.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4252,
-        "output_tokens": 312,
+        "output_tokens": 274,
         "stop_reason": "tool_use"
       },
       "judge": null,
@@ -3717,7 +3818,7 @@
       "question": {
         "id": "q052",
         "question": "What is Vorkath's combat level and max melee hit?",
-        "type": "single_hop",
+        "type": null,
         "answerable": false,
         "gold_chunk_ids": [],
         "gold_answer": null
@@ -3725,14 +3826,14 @@
       "retrieval": null,
       "generated": {
         "query": "What is Vorkath's combat level and max melee hit?",
-        "answer": "The retrieved chunks do not contain Vorkath's combat level, and they don't specify his melee attack's maximum hit — only his dragonfire attack is mentioned (up to 80 damage). There isn't enough information in the retrieved context to state Vorkath's combat level or his max melee hit specifically.",
+        "answer": "The retrieved chunks do not contain Vorkath's combat level or a specific max melee hit value. The chunks only mention that Vorkath (as a dragon boss) can hit up to 80 with dragonfire, and reference it in unrelated contexts (unarmed combat achievements, general max melee hit formulas). No information about Vorkath's combat level or its melee attack's maximum hit is present in the given context.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4343,
-        "output_tokens": 177,
+        "output_tokens": 211,
         "stop_reason": "tool_use"
       },
       "judge": null,
@@ -3743,7 +3844,7 @@
       "question": {
         "id": "q053",
         "question": "What are the steps to complete the Gertrude's Cat quest?",
-        "type": "multi_hop",
+        "type": null,
         "answerable": false,
         "gold_chunk_ids": [],
         "gold_answer": null
@@ -3751,14 +3852,14 @@
       "retrieval": null,
       "generated": {
         "query": "What are the steps to complete the Gertrude's Cat quest?",
-        "answer": "The retrieved chunks do not contain the actual walkthrough or steps for the Gertrude's Cat quest. They only mention that the quest costs 100 coins as one of its requirements/costs, but no information about the quest's objectives, dialogue, or step-by-step process is provided in the retrieved context.",
+        "answer": "The retrieved chunks do not contain the actual walkthrough or steps for the Gertrude's Cat quest. They only mention that the quest costs 100 coins as a requirement/expense in a general list of quest costs, and other chunks are unrelated skill-experience-reward tables for Attack, Ranged, Prayer, and Hitpoints. None of the retrieved information describes the quest's steps, objectives, or storyline needed to complete Gertrude's Cat.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4948,
-        "output_tokens": 176,
+        "output_tokens": 231,
         "stop_reason": "tool_use"
       },
       "judge": null,
@@ -3769,7 +3870,7 @@
       "question": {
         "id": "q054",
         "question": "What is the most efficient method to train Woodcutting to level 99?",
-        "type": "multi_hop",
+        "type": null,
         "answerable": false,
         "gold_chunk_ids": [],
         "gold_answer": null
@@ -3777,14 +3878,14 @@
       "retrieval": null,
       "generated": {
         "query": "What is the most efficient method to train Woodcutting to level 99?",
-        "answer": "The retrieved chunks do not contain a Woodcutting training guide or efficiency breakdown. They only cover general skill mechanics, free-to-play skill lists, Slayer training alternate methods (which mention Woodcutting only as a minor side XP source from Temple Trekking), and item-crafting product tables (Plank, Knife) unrelated to efficient Woodcutting training. There is no information here about the fastest or most efficient method to reach level 99 Woodcutting, so I cannot answer this from the given context.",
+        "answer": "The retrieved chunks do not contain a Woodcutting training guide or efficiency data for training Woodcutting to level 99. They only mention Woodcutting as one of 15 free-to-play skills, as a minor XP reward source in Temple Trekking, and unrelated crafting/plank product tables. None of this provides a specific efficient training method or route for leveling Woodcutting to 99, so I cannot answer this question from the given information.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4598,
-        "output_tokens": 247,
+        "output_tokens": 219,
         "stop_reason": "tool_use"
       },
       "judge": null,
@@ -3795,7 +3896,7 @@
       "question": {
         "id": "q055",
         "question": "How is Farming XP calculated in the Tithe Farm minigame?",
-        "type": "single_hop",
+        "type": null,
         "answerable": false,
         "gold_chunk_ids": [],
         "gold_answer": null
@@ -3803,14 +3904,14 @@
       "retrieval": null,
       "generated": {
         "query": "How is Farming XP calculated in the Tithe Farm minigame?",
-        "answer": "The retrieved chunks do not contain any information about the Tithe Farm minigame or how its Farming XP is calculated. They only cover unrelated topics like Coins products, Herblore potion training, and Stamina potion creation. I cannot answer this question based on the provided context.",
+        "answer": "The retrieved chunks do not contain any information about the Tithe Farm minigame or how its Farming XP is calculated. They only cover unrelated topics like item exchange values (Coins) and Herblore potion-making XP rates. Please provide chunks specifically about the Tithe Farm minigame mechanics to answer this question.",
         "citations": [],
         "answerable": false,
         "hallucinated_citation_ids": [],
         "has_hallucinated_citations": false,
         "model": "claude-sonnet-5",
         "input_tokens": 4985,
-        "output_tokens": 166,
+        "output_tokens": 184,
         "stop_reason": "tool_use"
       },
       "judge": null,
