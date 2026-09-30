@@ -2,9 +2,38 @@ from __future__ import annotations
 
 from rag_receipts.eval.models import EvalQuestion, JudgeVerdict
 from rag_receipts.eval.runner import run_eval, summarize
-from rag_receipts.generation.models import GeneratedAnswer
+from rag_receipts.generation.models import Citation, GeneratedAnswer
+from rag_receipts.grounding.models import GroundingVerdict
 
 from .helpers import make_chunks
+
+
+class FakeGroundingChecker:
+    """Structural stand-in for GroundingChecker - returns a scripted list of verdicts
+    regardless of the citations passed in, unless empty citations are passed (matching
+    the real GroundingChecker.check([]) == [] contract)."""
+
+    def __init__(self, verdicts: list[GroundingVerdict] | None = None):
+        self._verdicts = verdicts if verdicts is not None else []
+        self.calls: list[list] = []
+
+    def check(self, citations):
+        self.calls.append(citations)
+        if not citations:
+            return []
+        return self._verdicts
+
+
+def _grounding_verdict(chunk_id: str, label: str) -> GroundingVerdict:
+    return GroundingVerdict(
+        chunk_id=chunk_id,
+        claim="some claim",
+        entailment_prob=0.9 if label == "grounded" else 0.1,
+        contradiction_prob=0.9 if label == "contradicted" else 0.05,
+        neutral_prob=0.05,
+        overlap_score=0.5,
+        label=label,
+    )
 
 
 class FakeRetriever:
@@ -41,11 +70,13 @@ class FakeJudge:
         return response
 
 
-def _answer(query: str, *, answerable: bool, answer: str = "some answer") -> GeneratedAnswer:
+def _answer(
+    query: str, *, answerable: bool, answer: str = "some answer", citations: list[Citation] | None = None
+) -> GeneratedAnswer:
     return GeneratedAnswer(
         query=query,
         answer=answer,
-        citations=[],
+        citations=citations if citations is not None else [],
         answerable=answerable,
         hallucinated_citation_ids=[],
         has_hallucinated_citations=False,
@@ -91,7 +122,7 @@ def test_correct_abstention_needs_no_judge_call():
     generator = FakeGenerator({"q1": _answer("q1", answerable=False)})
     judge = FakeJudge({})
 
-    results = run_eval([q], retriever=retriever, generator=generator, judge=judge)
+    results = run_eval([q], retriever=retriever, generator=generator, judge=judge, grounding_checker=FakeGroundingChecker())
 
     assert results[0].correctness_label == "correct_abstention"
     assert results[0].judge is None
@@ -105,7 +136,7 @@ def test_incorrectly_abstained_needs_no_judge_call():
     generator = FakeGenerator({"q1": _answer("q1", answerable=False)})
     judge = FakeJudge({})
 
-    results = run_eval([q], retriever=retriever, generator=generator, judge=judge)
+    results = run_eval([q], retriever=retriever, generator=generator, judge=judge, grounding_checker=FakeGroundingChecker())
 
     assert results[0].correctness_label == "incorrectly_abstained"
     assert results[0].judge is None
@@ -119,7 +150,7 @@ def test_incorrectly_answered_needs_no_judge_call():
     generator = FakeGenerator({"q1": _answer("q1", answerable=True)})
     judge = FakeJudge({})
 
-    results = run_eval([q], retriever=retriever, generator=generator, judge=judge)
+    results = run_eval([q], retriever=retriever, generator=generator, judge=judge, grounding_checker=FakeGroundingChecker())
 
     assert results[0].correctness_label == "incorrectly_answered"
     assert results[0].judge is None
@@ -132,7 +163,7 @@ def test_both_answerable_calls_judge_and_uses_its_verdict():
     generator = FakeGenerator({"q1": _answer("q1", answerable=True)})
     judge = FakeJudge({"q1": _verdict("partially_correct")})
 
-    results = run_eval([q], retriever=retriever, generator=generator, judge=judge)
+    results = run_eval([q], retriever=retriever, generator=generator, judge=judge, grounding_checker=FakeGroundingChecker())
 
     assert results[0].correctness_label == "partially_correct"
     assert results[0].judge is not None
@@ -148,7 +179,7 @@ def test_generation_failure_recorded_as_error_without_aborting_batch():
     )
     judge = FakeJudge({"q2": _verdict("correct")})
 
-    results = run_eval([q1, q2], retriever=retriever, generator=generator, judge=judge)
+    results = run_eval([q1, q2], retriever=retriever, generator=generator, judge=judge, grounding_checker=FakeGroundingChecker())
 
     assert results[0].correctness_label == "error"
     assert results[0].generated is None
@@ -162,7 +193,7 @@ def test_judge_failure_recorded_as_error_but_keeps_generated_answer():
     generator = FakeGenerator({"q1": _answer("q1", answerable=True)})
     judge = FakeJudge({"q1": RuntimeError("judge exploded")})
 
-    results = run_eval([q], retriever=retriever, generator=generator, judge=judge)
+    results = run_eval([q], retriever=retriever, generator=generator, judge=judge, grounding_checker=FakeGroundingChecker())
 
     assert results[0].correctness_label == "error"
     assert results[0].generated is not None
@@ -189,7 +220,7 @@ def test_summarize_aggregates_retrieval_and_correctness():
     q1 = _question("q1", answerable=True, qtype="single_hop", gold_chunk_ids=["Test_page__000"])
     q2 = _question("q2", answerable=True, qtype="multi_hop", gold_chunk_ids=["Test_page__999"])
 
-    results = run_eval([q1, q2, q3], retriever=retriever, generator=generator, judge=judge)
+    results = run_eval([q1, q2, q3], retriever=retriever, generator=generator, judge=judge, grounding_checker=FakeGroundingChecker())
     summary = summarize(results)
 
     assert summary.question_count == 3
@@ -220,7 +251,7 @@ def test_summarize_excludes_untyped_questions_from_type_breakdown():
     )
     judge = FakeJudge({"q1": _verdict("correct")})
 
-    results = run_eval([q1, q2], retriever=retriever, generator=generator, judge=judge)
+    results = run_eval([q1, q2], retriever=retriever, generator=generator, judge=judge, grounding_checker=FakeGroundingChecker())
     summary = summarize(results)
 
     # both questions still count toward the overall totals
@@ -240,8 +271,109 @@ def test_summarize_handles_all_errors_without_division_by_zero():
     generator = FakeGenerator({"q1": RuntimeError("boom")})
     judge = FakeJudge({})
 
-    results = run_eval([q], retriever=retriever, generator=generator, judge=judge)
+    results = run_eval([q], retriever=retriever, generator=generator, judge=judge, grounding_checker=FakeGroundingChecker())
     summary = summarize(results)
 
     assert summary.error_count == 1
     assert summary.correctness_accuracy == 0.0
+
+
+def test_grounding_computed_when_answer_has_citations():
+    q = _question("q1", answerable=True)
+    citation = Citation(chunk_id="Test_page__000", claim="some claim", chunk=make_chunks(1)[0])
+    retriever = FakeRetriever({"q1": make_chunks(1)})
+    generator = FakeGenerator({"q1": _answer("q1", answerable=True, citations=[citation])})
+    judge = FakeJudge({"q1": _verdict("correct")})
+    grounding_checker = FakeGroundingChecker([_grounding_verdict("Test_page__000", "grounded")])
+
+    results = run_eval(
+        [q], retriever=retriever, generator=generator, judge=judge, grounding_checker=grounding_checker
+    )
+
+    assert results[0].grounding is not None
+    assert results[0].grounding.all_grounded is True
+    assert grounding_checker.calls == [[citation]]
+
+
+def test_grounding_is_none_when_answer_has_no_citations():
+    q = _question("q1", answerable=False)
+    retriever = FakeRetriever({"q1": make_chunks(1)})
+    generator = FakeGenerator({"q1": _answer("q1", answerable=False)})  # no citations
+    judge = FakeJudge({})
+    grounding_checker = FakeGroundingChecker([_grounding_verdict("Test_page__000", "grounded")])
+
+    results = run_eval(
+        [q], retriever=retriever, generator=generator, judge=judge, grounding_checker=grounding_checker
+    )
+
+    assert results[0].grounding is None
+
+
+def test_grounding_is_none_on_generation_error():
+    q = _question("q1", answerable=True)
+    retriever = FakeRetriever({"q1": make_chunks(1)})
+    generator = FakeGenerator({"q1": RuntimeError("boom")})
+    judge = FakeJudge({})
+    grounding_checker = FakeGroundingChecker([_grounding_verdict("Test_page__000", "grounded")])
+
+    results = run_eval(
+        [q], retriever=retriever, generator=generator, judge=judge, grounding_checker=grounding_checker
+    )
+
+    assert results[0].grounding is None
+
+
+def test_grounding_still_computed_when_judge_fails():
+    q = _question("q1", answerable=True)
+    citation = Citation(chunk_id="Test_page__000", claim="some claim", chunk=make_chunks(1)[0])
+    retriever = FakeRetriever({"q1": make_chunks(1)})
+    generator = FakeGenerator({"q1": _answer("q1", answerable=True, citations=[citation])})
+    judge = FakeJudge({"q1": RuntimeError("judge exploded")})
+    grounding_checker = FakeGroundingChecker([_grounding_verdict("Test_page__000", "contradicted")])
+
+    results = run_eval(
+        [q], retriever=retriever, generator=generator, judge=judge, grounding_checker=grounding_checker
+    )
+
+    assert results[0].correctness_label == "error"
+    assert results[0].grounding is not None
+    assert results[0].grounding.any_contradicted is True
+
+
+def test_summarize_aggregates_grounding_stats():
+    q1 = _question("q1", answerable=True, qtype="single_hop")
+    q2 = _question("q2", answerable=True, qtype="multi_hop")
+    q3 = _question("q3", answerable=False, qtype=None)  # no citations -> grounding None
+
+    chunk = make_chunks(1)[0]
+    citation1 = Citation(chunk_id="Test_page__000", claim="claim one", chunk=chunk)
+    citation2 = Citation(chunk_id="Test_page__000", claim="claim two", chunk=chunk)
+
+    retriever = FakeRetriever({"q1": [chunk], "q2": [chunk], "q3": [chunk]})
+    generator = FakeGenerator(
+        {
+            "q1": _answer("q1", answerable=True, citations=[citation1]),
+            "q2": _answer("q2", answerable=True, citations=[citation2]),
+            "q3": _answer("q3", answerable=False),
+        }
+    )
+    judge = FakeJudge({"q1": _verdict("correct"), "q2": _verdict("incorrect")})
+    grounding_checker = FakeGroundingChecker([_grounding_verdict("Test_page__000", "ungrounded")])
+
+    q1 = _question("q1", answerable=True, qtype="single_hop", gold_chunk_ids=["Test_page__000"])
+    q2 = _question("q2", answerable=True, qtype="multi_hop", gold_chunk_ids=["Test_page__000"])
+
+    results = run_eval(
+        [q1, q2, q3], retriever=retriever, generator=generator, judge=judge, grounding_checker=grounding_checker
+    )
+    summary = summarize(results)
+
+    assert summary.grounding["citation_count"] == 2
+    assert summary.grounding["answer_count"] == 2
+    assert summary.grounding["ungrounded_rate"] == 1.0
+    assert summary.grounding["fully_grounded_answer_rate"] == 0.0
+    assert summary.grounding_by_type["single_hop"]["citation_count"] == 1
+    assert summary.grounding_by_type["multi_hop"]["citation_count"] == 1
+    assert summary.grounding_by_correctness_label["correct"]["citation_count"] == 1
+    assert summary.grounding_by_correctness_label["incorrect"]["citation_count"] == 1
+    assert summary.grounding_by_correctness_label["correct_abstention"]["citation_count"] == 0
