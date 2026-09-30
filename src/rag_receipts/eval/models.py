@@ -35,7 +35,10 @@ class EvalQuestion:
 
     id: str
     question: str
-    type: QuestionType
+    type: QuestionType | None  # None only when answerable is False - "what type of
+    # question would this have been" isn't a meaningful label for one that's out of
+    # corpus by design, so it's excluded from the type-bucketed breakdowns rather than
+    # forced into single_hop/multi_hop
     answerable: bool  # expected GeneratedAnswer.answerable
     gold_chunk_ids: list[str]  # empty when answerable is False
     gold_answer: str | None  # reference answer; None when answerable is False

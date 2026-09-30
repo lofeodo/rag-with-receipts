@@ -210,6 +210,30 @@ def test_summarize_aggregates_retrieval_and_correctness():
     assert summary.correctness_by_type["multi_hop"]["accuracy"] == 0.0  # q2 incorrect
 
 
+def test_summarize_excludes_untyped_questions_from_type_breakdown():
+    q1 = _question("q1", answerable=True, qtype="single_hop")
+    q2 = _question("q2", answerable=False, qtype=None)  # untyped: no meaningful type
+
+    retriever = FakeRetriever({"q1": make_chunks(1), "q2": make_chunks(1)})
+    generator = FakeGenerator(
+        {"q1": _answer("q1", answerable=True), "q2": _answer("q2", answerable=False)}
+    )
+    judge = FakeJudge({"q1": _verdict("correct")})
+
+    results = run_eval([q1, q2], retriever=retriever, generator=generator, judge=judge)
+    summary = summarize(results)
+
+    # both questions still count toward the overall totals
+    assert summary.question_count == 2
+    assert summary.correctness_label_counts == {"correct": 1, "correct_abstention": 1}
+    assert summary.correctness_accuracy == 1.0
+
+    # but only the typed question shows up in the by-type breakdown
+    assert list(summary.correctness_by_type.keys()) == ["single_hop"]
+    assert summary.correctness_by_type["single_hop"]["count"] == 1
+    assert list(summary.retrieval_by_type.keys()) == ["single_hop"]
+
+
 def test_summarize_handles_all_errors_without_division_by_zero():
     q = _question("q1", answerable=True)
     retriever = FakeRetriever({"q1": make_chunks(1)})

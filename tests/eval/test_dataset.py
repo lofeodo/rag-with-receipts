@@ -30,6 +30,7 @@ def test_loads_valid_fixture_set():
 
     q004 = questions[3]
     assert q004.answerable is False
+    assert q004.type is None
     assert q004.gold_chunk_ids == []
     assert q004.gold_answer is None
 
@@ -133,6 +134,50 @@ def test_answerable_true_without_gold_answer_raises_value_error(tmp_path):
     )
 
     with pytest.raises(ValueError, match="no gold_answer"):
+        load_eval_questions(path)
+
+
+def test_type_null_allowed_when_answerable_false(tmp_path):
+    path = tmp_path / "qa_pairs.json"
+    path.write_text(
+        json.dumps(
+            [
+                {
+                    "id": "q1",
+                    "question": "x",
+                    "type": None,
+                    "answerable": False,
+                    "gold_chunk_ids": [],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    questions = load_eval_questions(path)
+
+    assert questions[0].type is None
+
+
+def test_type_null_rejected_when_answerable_true(tmp_path):
+    path = tmp_path / "qa_pairs.json"
+    path.write_text(
+        json.dumps(
+            [
+                {
+                    "id": "q1",
+                    "question": "x",
+                    "type": None,
+                    "answerable": True,
+                    "gold_chunk_ids": ["Some_page__000"],
+                    "gold_answer": "some answer",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="type=None"):
         load_eval_questions(path)
 
 

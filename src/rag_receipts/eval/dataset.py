@@ -71,12 +71,22 @@ def _validate_entry(entry: dict, *, index: int, path: Path) -> None:
         if field_name not in entry:
             raise ValueError(f"{path}: question at index {index} is missing required field {field_name!r}")
 
-    if entry["type"] not in _VALID_TYPES:
-        raise ValueError(
-            f"{path}: question {entry['id']!r} has type={entry['type']!r}, "
-            f"expected one of {sorted(_VALID_TYPES)}"
-        )
     if not isinstance(entry["answerable"], bool):
         raise ValueError(
             f"{path}: question {entry['id']!r} has non-boolean answerable={entry['answerable']!r}"
+        )
+
+    # type is null only for answerable=false questions - "what type of question would
+    # this have been" isn't meaningful for one that's out of corpus by design.
+    if entry["answerable"]:
+        if entry["type"] not in _VALID_TYPES:
+            raise ValueError(
+                f"{path}: question {entry['id']!r} has type={entry['type']!r}, "
+                f"expected one of {sorted(_VALID_TYPES)} (type is only null for "
+                f"answerable=false questions)"
+            )
+    elif entry["type"] is not None and entry["type"] not in _VALID_TYPES:
+        raise ValueError(
+            f"{path}: question {entry['id']!r} has type={entry['type']!r}, "
+            f"expected null or one of {sorted(_VALID_TYPES)}"
         )

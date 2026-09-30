@@ -26,15 +26,15 @@
   {
     "id": "q004",
     "question": "What are the steps to complete the Cook's Assistant quest?",
-    "type": "single_hop",
+    "type": null,
     "answerable": false,
     "gold_chunk_ids": [],
     "gold_answer": null
   },
   {
     "id": "q005",
-    "question": "What potions require Herblore level 78?",
-    "type": "single_hop",
+    "question": "What are the steps to complete the Gertrude's Cat quest?",
+    "type": null,
     "answerable": false,
     "gold_chunk_ids": [],
     "gold_answer": null

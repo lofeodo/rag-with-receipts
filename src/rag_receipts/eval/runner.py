@@ -145,7 +145,9 @@ def _correctness_stats(results: list[EvalResult]) -> dict:
 
 
 def summarize(results: list[EvalResult]) -> EvalSummary:
-    types = sorted({r.question.type for r in results})
+    # None (unanswerable questions with no meaningful type) is excluded from the
+    # type-bucketed breakdowns - those questions still count in the overall stats above.
+    types = sorted({r.question.type for r in results if r.question.type is not None})
 
     label_counts: dict[str, int] = {}
     for r in results:
