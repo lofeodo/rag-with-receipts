@@ -34,7 +34,7 @@ quantified comparison against the managed alternative.
 - [x] **Step 2 — Embedding & indexing** ← 955/955 chunks embedded, FAISS flat-IP index built. See status note below.
 - [x] **Step 3 — Retrieval pipeline** ← dense top-k + cross-encoder reranking, verified against the real corpus. See status note below.
 - [x] **Step 4 — Generation** ← Claude Sonnet 5, structured tool-use citations, hallucinated-citation validation. See status note below.
-- [ ] **Step 5 — Eval harness** (retrieval precision + LLM-as-judge correctness, results report) ← harness built (config, metrics, Judge, runner, CLI) on `feat/eval-harness`; blocked on the user hand-authoring `data/eval/qa_pairs.json` before the final full-corpus run. See status note below.
+- [ ] **Step 5 — Eval harness** (retrieval precision + LLM-as-judge correctness, results report) ← harness + gold set (55 Q/A pairs) both built on `feat/eval-harness`; blocked only on `ANTHROPIC_API_KEY` access to run `scripts/run_eval.py` for real and commit `results/eval_report.json`. See status note below.
 - [ ] Step 6 — Grounding / hallucination check (entailment/overlap flag on cited chunks)
 - [ ] Step 7 — Latency instrumentation + one measured optimization (reranker sweep)
 - [ ] Step 8 — GCP deployment (Cloud Run, GCS, Artifact Registry, Secret Manager)
@@ -386,7 +386,7 @@ marker's `pyproject.toml` docstring was broadened to cover both cases.
 
 _Status: complete on `feat/generation`. Tell the user before starting Step 5's in-depth plan._
 
-### Step 5 — Eval harness (in progress — harness built, blocked on gold Q/A authoring)
+### Step 5 — Eval harness (in progress — harness + gold set built, blocked on API access)
 
 **Goal:** run the full pipeline over a hand-labeled gold Q/A set and produce numbers —
 retrieval precision/recall/MRR/hit-rate and LLM-as-judge correctness, overall and broken
@@ -400,11 +400,10 @@ Steps 1-4 relied on.
   that's Step 7's reranker-sweep job.
 - The judge scores answer **correctness** against a gold reference answer only — not
   groundedness/entailment against cited chunks, which is Step 6's job.
-- The 30-50 gold Q/A pairs in `data/eval/qa_pairs.json` are being hand-authored by the
-  user, independent of the harness build — confirmed explicitly, not drafted by the
-  assistant.
+- The gold Q/A pairs in `data/eval/qa_pairs.json` were hand-authored by the user,
+  independent of the harness build — confirmed explicitly, not drafted by the assistant.
 
-**Design decisions actually implemented (commits 1-5 of 6, on `feat/eval-harness`):**
+**Design decisions actually implemented (commits 1-6 of 7, on `feat/eval-harness`):**
 - `EvalConfig` (`src/rag_receipts/eval/config.py`) wired into `AppConfig` following the
   existing flat-YAML-to-nested-dataclass convention every prior step uses; `config.yaml`'s
   `eval:` stub is now live (`judge_model`, `judge_max_tokens`, `dataset_path`,
@@ -451,16 +450,40 @@ Steps 1-4 relied on.
   and `tests/eval/test_eval_integration.py` (`slow`-marked, dual-`skipif`-gated on
   `ANTHROPIC_API_KEY` and the real index artifacts, same pattern as
   `test_generator_integration.py`/`test_retrieval_integration.py`).
+- **`data/eval/qa_pairs.json`** — 55 hand-authored questions (35 single-hop + 15 multi-hop
+  answerable, hitting the locked 70/30 split exactly, + 5 deliberately unanswerable). All
+  65 `gold_chunk_id` references in the answerable questions were cross-checked
+  programmatically against the real 955-row `chunks.parquet` before conversion — zero
+  mismatches. Authored in a spreadsheet (`golden_data.csv` at repo root, not committed —
+  deleted after conversion), converted to the schema, and re-validated through
+  `load_eval_questions()` itself.
+- **Deviation, deliberate:** 55 questions, 5 over the locked 30-50 range — kept in full
+  rather than trimming a real answerable question to make room for the unanswerable slice.
+- **A real distinction surfaced while picking the 5 unanswerable questions:** "the fact
+  isn't in the corpus at all" (true out-of-corpus, e.g. a quest that was never scoped in)
+  and "the fact is in the corpus but retrieval fails to surface it" (a retrieval-recall
+  gap) are not the same thing and need different gold labels. Step 4's sample run had
+  flagged two candidate gaps anecdotally ("How much Slayer XP for level 70?", "What
+  potions require Herblore level 78?"). Checking both against the real chunk text: the
+  Herblore-78 fact **is** present (`Herblore_training__011` literally contains "Level: 78
+  | Potion: | Base: Zamorak brew"), so it was added as a normal `answerable: true`
+  question with that real `gold_chunk_id` — marking it `false` would have encoded a
+  retrieval bug as correct ground truth and hidden it from the precision/recall numbers.
+  The Slayer-XP fact genuinely isn't present anywhere in the corpus (no chunk contains the
+  universal level-70 XP threshold, 737,627), so it stayed in the true-out-of-corpus/
+  unanswerable bucket. Net effect: only 1 of the 2 candidate "gaps" was a real gap; the
+  eval will now measure it directly instead of leaving it as an anecdote.
 
 **Verification so far:** `pytest -q` — 113 passed, 5 deselected (4 pre-existing `slow`
 tests + the new eval integration test, all correctly skipped without `ANTHROPIC_API_KEY`
-in this environment). The real-API integration test has not yet been run (no API key
-available in this session) — do so once available, and before commit 6.
+in this environment). `data/eval/qa_pairs.json` loads cleanly through
+`load_eval_questions()` end-to-end (55/55 questions, no schema violations). The real-API
+integration test and the real `scripts/run_eval.py` run have not yet happened (no API key
+available in this session).
 
-**Remaining work (commit 6 of 6, blocked on the user):** the user needs to hand-author
-`data/eval/qa_pairs.json` (30-50 Q/A pairs, ~70% single-hop/~30% multi-hop, with real
-`gold_chunk_ids` looked up from `data/processed/chunks.jsonl`/`scripts/retrieve.py`) before
-`python scripts/run_eval.py` can be run against the real corpus and
-`results/eval_report.json` committed. Once that's done: run it, spot-check a handful of
-judge verdicts by hand for sanity, commit the report, and update this section's status line
-to complete before starting Step 6's in-depth plan.
+**Remaining work (commit 7 of 7, blocked on `ANTHROPIC_API_KEY` access):** run
+`python scripts/run_eval.py` against the now-complete `data/eval/qa_pairs.json` (this makes
+up to 2 real Anthropic API calls per answerable question — generation, then judging — so
+~95 calls total across the 55 questions), spot-check a handful of judge verdicts by hand
+for sanity, commit `results/eval_report.json`, and update this section's status line to
+complete before starting Step 6's in-depth plan.
