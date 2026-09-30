@@ -38,4 +38,4 @@ def test_load_config_populates_retrieval_section():
 
     assert app_config.retrieval.top_k_dense == 30
     assert app_config.retrieval.top_k_final == 5
-    assert app_config.retrieval.reranker.model_name == "BAAI/bge-reranker-base"
+    assert app_config.retrieval.reranker.model_name == "cross-encoder/ms-marco-MiniLM-L-6-v2"

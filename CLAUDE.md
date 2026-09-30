@@ -11,7 +11,7 @@ Cloud Run.
 | Corpus | OSRS Wiki (CC BY-NC-SA 3.0 — attribute in README, non-commercial use only). Scope: `Category:Combat` (45 pages) + 2 skill training guides with XP tables (Slayer training, Herblore training) + one bounded questline, **Monkey Madness I** (main article + Quick guide walkthrough) + one-hop-linked item/monster pages the questline references, filtered to `Category:Items`/`Category:Monsters`. Resolved to **110 pages / 955 chunks** — below the original ~200–300 estimate (see Step 1 status note: link-following from the broad combat/skill-training hub pages was found to explode past budget, so it was scoped to the questline only). |
 | Embeddings | Local `BAAI/bge-large-en-v1.5` via sentence-transformers, in-process. **Stretch:** benchmark against hosted Vertex `gemini-embedding-001` on the eval set; swap default only if it wins by a real margin. |
 | Vector index | **FAISS** (flat index, file artifact) as the default — in-process, zero recurring cost, most technically substantive choice for the job-market signal the user wants. **Stretch:** add pgvector on Cloud SQL as a swappable second backend (config-driven) — strong "managed vector DB on GCP" resume line, done after the core pipeline works. |
-| Reranker | Local cross-encoder, `BAAI/bge-reranker-base` baseline. Latency-optimization step compares a stronger (`bge-reranker-v2-m3`) and a faster (`ms-marco-MiniLM-L-6-v2`) variant on precision vs p95, and picks a point on that curve. |
+| Reranker | Local cross-encoder. **Updated in Step 7**: `ms-marco-MiniLM-L-6-v2` (originally the "faster" sweep candidate) replaced `bge-reranker-base` as the default after the measured sweep found it Pareto-dominates the original baseline on this corpus — higher recall/hit-rate/MRR *and* ~4x lower rerank latency. See Step 7 status note for the full comparison, including the stronger `bge-reranker-v2-m3` variant that was measured but not adopted. |
 | Generation + judge model | Claude Sonnet 5 for both, exposed as a config parameter (not hardcoded). **Stretch:** Haiku-vs-Sonnet generation comparison (latency/cost/correctness table), not a core metric. |
 | Runtime shape | Embedding model, reranker, and FAISS index all run in-process inside the Cloud Run container. Only network hops in the hot path: the Claude generation call, and (only if the hosted-embedding stretch is adopted) the embedding call. |
 | GCP deploy | Cloud Run (container, scales to zero) + Artifact Registry (image) + GCS (index artifacts, pulled on cold start) + Secret Manager (Anthropic key) + Cloud Logging (latency metrics). |
@@ -36,7 +36,7 @@ quantified comparison against the managed alternative.
 - [x] **Step 4 — Generation** ← Claude Sonnet 5, structured tool-use citations, hallucinated-citation validation. See status note below.
 - [x] **Step 5 — Eval harness** ← 55-question gold set, real run complete: correctness accuracy 0.84 (single-hop 0.97, multi-hop 0.53), retrieval hit rate 0.90. See status note below.
 - [x] **Step 6 — Grounding / hallucination check** ← NLI cross-encoder + lexical overlap per citation, wired into the eval harness: 96.0% grounded, 4.0% flagged contradicted (all 3 flagged cases manually confirmed as false positives). See status note below.
-- [ ] Step 7 — Latency instrumentation + one measured optimization (reranker sweep)
+- [x] **Step 7 — Latency instrumentation + one measured optimization (reranker sweep)** ← per-stage p50/p95 measured on the real hot path; reranker sweep found `ms-marco-MiniLM-L-6-v2` Pareto-dominates the original `bge-reranker-base` default (higher recall/hit-rate/MRR AND ~4x faster) — adopted as the new default. See status note below.
 - [ ] Step 8 — GCP deployment (Cloud Run, GCS, Artifact Registry, Secret Manager)
 - [ ] Step 9 — README polish (architecture explanation, benchmark numbers front and center)
 - [ ] Stretch — Vertex AI Search benchmark comparison (retrieval precision, correctness,
@@ -655,3 +655,131 @@ itself entails the claim, which is what this step measures.
 
 _Status: complete on `feat/grounding-check`. Tell the user before starting Step 7's
 in-depth plan._
+
+### Step 7 — Latency instrumentation + one measured optimization (reranker sweep) (complete)
+
+**Goal:** measure per-stage p50/p95 latency across the real hot path (query embedding,
+dense FAISS search, cross-encoder reranking, Claude generation), then run one measured
+optimization — a reranker sweep comparing the original baseline against a stronger and
+a faster variant on retrieval precision vs p95 latency — and pick a point on that curve.
+
+**Design decisions actually implemented (6 commits, `feat/latency-optimization`):**
+- New package `rag_receipts/telemetry/`: `timing.py` (`percentile` — linear
+  interpolation matching `numpy.percentile`'s default, implemented directly rather than
+  importing numpy just for this; `Stopwatch` context manager; `summarize_durations` →
+  `{p50, p95, mean, count}`) and `models.py` (`RetrievalTiming`). Pure, model-free,
+  fully unit-tested without loading anything.
+- `retrieval/pipeline.py::run_retrieval_with_timing` — same body as `run_retrieval`
+  with a `Stopwatch` around each of the three sub-stages (`embedder.encode_queries`,
+  `dense_search`, `reranker.score`); `run_retrieval` became a one-line delegate that
+  discards the timing, so every existing caller/test was unaffected.
+  `Retriever.retrieve_with_timing` mirrors `.retrieve()`.
+- `eval/runner.py`'s private `_retrieval_stats` was promoted to a public
+  `aggregate_retrieval_scores` in `eval/retrieval_metrics.py` (the module that already
+  owns `score_retrieval`) so the reranker sweep could reuse Step 5's exact, already-
+  tested aggregation logic instead of a second copy.
+- `scripts/measure_latency.py` — loads `Retriever`/`Generator` once (model load time
+  excluded from the stats, matching the plan's scope decision that cold-start load is a
+  Step 8 concern, not a per-query number), then runs the real 55-question gold set
+  through `retrieve_with_timing` + a wall-clock-wrapped `generate()` call, writing
+  `results/latency_report.json`.
+- `scripts/sweep_reranker.py` — retrieval-only (no generation calls; swapping the
+  reranker doesn't change generation latency, and running Sonnet 3x over the gold set
+  would add real API cost for no signal). Loads the FAISS index/metadata/embedder
+  **once** (reranker-independent) and only rebuilds the `Reranker` per candidate,
+  scoring retrieval (`score_retrieval`, answerable questions only — 50 of 55) and
+  latency (`rerank_s`/`total_s`, all 55) for each of the three candidates. Writes
+  `results/reranker_sweep.json`.
+
+**A real methodology bug was caught and fixed before trusting any latency number.**
+The first `measure_latency.py` run was launched in the background while
+`sweep_reranker.py` was still running (downloading and reranking with all three
+candidate models concurrently on the same GPU). Its rerank-stage p50 came back at
+1472ms — but the sweep's own isolated measurement of the identical model
+(`bge-reranker-base`) was 552ms, a ~2.7x gap for the same model on the same 55
+queries. This was caught by comparing the two reports against each other rather than
+trusting either one in isolation. Fix: re-ran `measure_latency.py` alone, after the
+sweep had finished and released the GPU. The clean re-run's rerank p50 (722ms) is much
+closer to the sweep's isolated number, with the remaining ~30% gap attributed to
+ordinary run-to-run variance at n=55 (the already-documented small-sample caveat)
+rather than contention. **`results/latency_report.json` reflects the clean, isolated
+re-run.** Lesson for future runs: never launch two GPU-bound benchmark scripts
+concurrently and expect either one's absolute numbers to be trustworthy.
+
+**Real latency numbers** (`python scripts/measure_latency.py`, isolated run, 55
+questions, 0 errors, config as of this run: `bge-reranker-base` — this predates the
+reranker-default swap decided below, since the swap depends on the sweep's findings,
+which in turn needed this script's stage-timing infrastructure to exist first):
+
+| Stage | p50 | p95 | mean |
+|---|---|---|---|
+| embed_query | 50.0ms | 155.4ms | 57.6ms |
+| dense_search | 0.2ms | 0.5ms | 0.3ms |
+| rerank | 722.1ms | 770.7ms | 716.0ms |
+| retrieval_total | 774.8ms | 860.4ms | 773.7ms |
+| generate | 2736.8ms | 5920.8ms | 3072.3ms |
+| end_to_end | 3510.4ms | 6713.1ms | 3846.0ms |
+
+Reranking dominates the retrieval stage by a wide margin over embedding/dense-search
+(as expected — a cross-encoder scoring 30 candidates is real inference work; FAISS
+flat search over 955 vectors is effectively free). Generation dominates end-to-end
+latency more than retrieval does (p50 2.74s vs 0.77s) — the Claude API round-trip
+(network + adaptive thinking) is the biggest single lever on user-perceived latency,
+not anything in this project's own retrieval code. **Caveat, stated plainly (same
+honesty standard as Step 5's multi-hop n=15 caveat): p95 over n=55 samples is just the
+~52nd-highest value — noisy, not a precise reproducible figure, especially for
+`generate_s` given Step 4/5's already-documented lack of `temperature` pinning.**
+
+**The reranker sweep** (`python scripts/sweep_reranker.py`, retrieval-only, 55
+questions, 50 answerable/scored, 0 errors):
+
+| Model | recall | hit_rate | MRR | rerank p50 | rerank p95 | total p50 | total p95 |
+|---|---|---|---|---|---|---|---|
+| `bge-reranker-base` (original baseline) | 0.830 | 0.900 | 0.695 | 552ms | 567ms | 571ms | 586ms |
+| `bge-reranker-v2-m3` (stronger) | 0.900 | 0.980 | 0.840 | 2775ms | 3331ms | 2808ms | 3345ms |
+| `ms-marco-MiniLM-L-6-v2` (faster) | 0.880 | 0.960 | 0.752 | 111ms | 128ms | 129ms | 147ms |
+
+**The decision: `ms-marco-MiniLM-L-6-v2` — the "faster" candidate — Pareto-dominates
+the original baseline, not just on latency.** It beats `bge-reranker-base` on every
+retrieval metric measured (recall 0.83→0.88, hit-rate 0.90→0.96, MRR 0.695→0.752)
+*while also* being ~4.4x faster on rerank p95 (567ms→128ms) and ~4x faster on total
+retrieval p95 (586ms→147ms). This is not a tradeoff call — there is no axis on which
+the original baseline was better. Adopted as the new default in `config.yaml`
+(`retrieval.reranker_model`). This is a genuinely surprising result (a 6-layer MiniLM
+cross-encoder outperforming a BGE-family reranker built specifically for retrieval) —
+plausibly explained by this corpus's heavy share of terse, tabular chunks (drop
+tables, XP tables, flattened infoboxes — the same chunk style Step 6 found general-
+domain NLI models struggle to read as natural premises) where a smaller, more
+generically-trained cross-encoder does just as well at distinguishing relevant from
+irrelevant, combined with the small eval set (n=50 answerable questions, so each
+additional correct retrieval moves hit-rate by 2 points) making the comparison
+noisier than a large-scale benchmark would be. Documented here as a measured finding
+on *this* corpus, not a general claim that MiniLM beats BGE-family rerankers broadly.
+`bge-reranker-v2-m3` is more accurate still (best of all three on every retrieval
+metric) but at a ~5.9x rerank-latency cost over the original baseline (and ~26x over
+the new MiniLM default) — given the project's own "latency-optimized inference"
+framing and that end-to-end latency is already dominated by generation (p95 ≈ 6.7s
+even with the fast reranker), that cost isn't justified by the incremental accuracy
+gain over the now-adopted MiniLM default. Not discarded — left documented here as the
+higher-accuracy/higher-latency alternative for a future latency-tolerant
+configuration, not enabled by default. No threshold-tuning or cherry-picking: this was
+a clean win on the measured numbers, not a judgment call requiring the "no vibes-based
+tuning" discipline Step 6 needed for its NLI threshold decision.
+
+**Known follow-up, not done in this step (deliberately out of scope):**
+`results/eval_report.json` and `results/sample_grounding.json` (Step 5/6's committed
+artifacts) were generated under the *original* default reranker (`bge-reranker-base`)
+and are not re-run here — the approved Step 7 plan scoped this step to latency
+measurement and the reranker decision only, not to refreshing Step 5/6's correctness/
+grounding numbers under the new default. Re-running `scripts/run_eval.py` (and
+`scripts/sample_grounding.py`) against the new `ms-marco-MiniLM-L-6-v2` default is a
+natural next action — likely at Step 9 (README polish), which needs current numbers
+anyway — but wasn't done unprompted here to stay within the approved scope.
+
+**Verification:** `pytest -q` — 160 passed, 6 deselected (unchanged slow-test set;
+one existing config test (`test_load_config_populates_retrieval_section`) updated to
+expect the new default reranker model name in the real `config.yaml`). Both scripts
+ran successfully against the real corpus/API with 0 errors.
+
+_Status: complete on `feat/latency-optimization`. Tell the user before starting Step
+8's in-depth plan._

@@ -57,7 +57,9 @@ indexing:
 retrieval:
   top_k_dense: 30
   top_k_final: 5
-  reranker_model: BAAI/bge-reranker-base
+  reranker_model: cross-encoder/ms-marco-MiniLM-L-6-v2  # Step 7 sweep: Pareto-dominates
+  # the prior default (BAAI/bge-reranker-base) on this corpus - higher recall/hit-rate/MRR
+  # AND ~4x faster. See CLAUDE.md Step 7 status note for the full comparison.
   reranker_batch_size: 32
   reranker_device: auto
   reranker_show_progress_bar: false
