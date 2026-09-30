@@ -1,0 +1,82 @@
+[
+  {
+    "query": "What items are required to start Monkey Madness I?",
+    "answer": "To start Monkey Madness I, you need: a gold bar, five empty inventory slots, a ball of wool, monkey bones or a corpse from Karamja (obtainable during the quest), and five bananas (obtainable during the quest).",
+    "answerable": true,
+    "grounding": {
+      "citation_verdicts": [
+        {
+          "chunk_id": "Monkey_Madness_I__002",
+          "claim": "Items required: A gold bar, Five empty inventory slots, A ball of wool, Monkey bones or corpse from Karamja (obtainable during quest), Five bananas (obtainable during quest)",
+          "entailment_prob": 0.002842999529093504,
+          "contradiction_prob": 0.0002513981016818434,
+          "neutral_prob": 0.9969056248664856,
+          "overlap_score": 1.0,
+          "label": "grounded"
+        }
+      ],
+      "all_grounded": true,
+      "any_contradicted": false
+    }
+  },
+  {
+    "query": "How much Slayer experience is needed for level 70?",
+    "answer": "The retrieved chunks do not contain the experience table showing how much XP is required to reach level 70 in Slayer. They only cover quest experience rewards, task assignments, and Slayer master access requirements, none of which state the XP needed for level 70.",
+    "answerable": false,
+    "grounding": {
+      "citation_verdicts": [],
+      "all_grounded": true,
+      "any_contradicted": false
+    }
+  },
+  {
+    "query": "What is the Abyssal whip's special attack?",
+    "answer": "The Abyssal whip's special attack is called \"Energy Drain.\" It uses 50% special attack energy and, in PvP, transfers 10% of the target's run energy to the user. Mechanically, it deals an attack with 25% increased accuracy that siphons 10% of the target's run energy, and it uses a Slash defence roll.",
+    "answerable": true,
+    "grounding": {
+      "citation_verdicts": [
+        {
+          "chunk_id": "Special_attacks__014",
+          "claim": "The Abyssal whip's special attack is named Energy Drain, uses 50% energy, transfers 10% of the target's run energy to the user in PvP, gives 25% increased accuracy, and uses a Slash defence roll.",
+          "entailment_prob": 0.1989220678806305,
+          "contradiction_prob": 0.0015927364584058523,
+          "neutral_prob": 0.7994852066040039,
+          "overlap_score": 0.8666666666666667,
+          "label": "grounded"
+        }
+      ],
+      "all_grounded": true,
+      "any_contradicted": false
+    }
+  },
+  {
+    "query": "What potions require Herblore level 78?",
+    "answer": "The retrieved chunks do not identify any potion specifically requiring Herblore level 78. The closest data points are level 77 (stamina potion) and level 76 (magic potion), but no potion at level 78 is mentioned in the available chunks.",
+    "answerable": true,
+    "grounding": {
+      "citation_verdicts": [],
+      "all_grounded": true,
+      "any_contradicted": false
+    }
+  },
+  {
+    "query": "How do you defeat Zooknock in Monkey Madness I?",
+    "answer": "The retrieved chunks don't indicate that Zooknock is an enemy to be \"defeated\" in combat. In Monkey Madness I, Zooknock is a gnome mage NPC who the player talks to and gives items (like a m'amulet mould, gold bar, monkey dentures, monkey talismans and bones) in order to receive an enchanted bar or Greegrees — he is not fought or killed as part of the quest. There is no information in the retrieved content about defeating Zooknock, so I cannot answer this question as asked.",
+    "answerable": false,
+    "grounding": {
+      "citation_verdicts": [],
+      "all_grounded": true,
+      "any_contradicted": false
+    }
+  },
+  {
+    "query": "What are the steps to complete the Cook's Assistant quest?",
+    "answer": "The retrieved chunks do not contain any information about the Cook's Assistant quest or its steps. They cover unrelated topics like Summer pie recipes, Prayer/Ranged quest experience rewards, and Clue scroll quest requirements. I cannot provide the quest steps without relevant source material.",
+    "answerable": false,
+    "grounding": {
+      "citation_verdicts": [],
+      "all_grounded": true,
+      "any_contradicted": false
+    }
+  }
+]
