@@ -34,7 +34,7 @@ quantified comparison against the managed alternative.
 - [x] **Step 2 — Embedding & indexing** ← 955/955 chunks embedded, FAISS flat-IP index built. See status note below.
 - [x] **Step 3 — Retrieval pipeline** ← dense top-k + cross-encoder reranking, verified against the real corpus. See status note below.
 - [x] **Step 4 — Generation** ← Claude Sonnet 5, structured tool-use citations, hallucinated-citation validation. See status note below.
-- [ ] **Step 5 — Eval harness** (retrieval precision + LLM-as-judge correctness, results report) ← harness + gold set (55 Q/A pairs) both built on `feat/eval-harness`; blocked only on `ANTHROPIC_API_KEY` access to run `scripts/run_eval.py` for real and commit `results/eval_report.json`. See status note below.
+- [x] **Step 5 — Eval harness** ← 55-question gold set, real run complete: correctness accuracy 0.84 (single-hop 0.97, multi-hop 0.53), retrieval hit rate 0.90. See status note below.
 - [ ] Step 6 — Grounding / hallucination check (entailment/overlap flag on cited chunks)
 - [ ] Step 7 — Latency instrumentation + one measured optimization (reranker sweep)
 - [ ] Step 8 — GCP deployment (Cloud Run, GCS, Artifact Registry, Secret Manager)
@@ -386,7 +386,7 @@ marker's `pyproject.toml` docstring was broadened to cover both cases.
 
 _Status: complete on `feat/generation`. Tell the user before starting Step 5's in-depth plan._
 
-### Step 5 — Eval harness (in progress — harness + gold set built, blocked on API access)
+### Step 5 — Eval harness (complete)
 
 **Goal:** run the full pipeline over a hand-labeled gold Q/A set and produce numbers —
 retrieval precision/recall/MRR/hit-rate and LLM-as-judge correctness, overall and broken
@@ -474,16 +474,48 @@ Steps 1-4 relied on.
   unanswerable bucket. Net effect: only 1 of the 2 candidate "gaps" was a real gap; the
   eval will now measure it directly instead of leaving it as an anecdote.
 
-**Verification so far:** `pytest -q` — 113 passed, 5 deselected (4 pre-existing `slow`
-tests + the new eval integration test, all correctly skipped without `ANTHROPIC_API_KEY`
-in this environment). `data/eval/qa_pairs.json` loads cleanly through
-`load_eval_questions()` end-to-end (55/55 questions, no schema violations). The real-API
-integration test and the real `scripts/run_eval.py` run have not yet happened (no API key
-available in this session).
+**Verification:** `pytest -q` — 113 passed, 5 deselected by default (the 4 pre-existing
+`slow` ML/API tests + the new eval integration test). With `ANTHROPIC_API_KEY` set:
+`pytest -q -m slow tests/eval/test_eval_integration.py tests/generation/test_generator_integration.py`
+— both pass against the real API. `data/eval/qa_pairs.json` loads cleanly through
+`load_eval_questions()` (55/55, no schema violations).
 
-**Remaining work (commit 7 of 7, blocked on `ANTHROPIC_API_KEY` access):** run
-`python scripts/run_eval.py` against the now-complete `data/eval/qa_pairs.json` (this makes
-up to 2 real Anthropic API calls per answerable question — generation, then judging — so
-~95 calls total across the 55 questions), spot-check a handful of judge verdicts by hand
-for sanity, commit `results/eval_report.json`, and update this section's status line to
-complete before starting Step 6's in-depth plan.
+**Real run against the full gold set** (`python scripts/run_eval.py`, 55 questions, 0
+errors, `results/eval_report.json` committed):
+
+| Metric | Value |
+|---|---|
+| Retrieval hit rate | 0.90 |
+| Retrieval mean recall | 0.83 |
+| Retrieval mean MRR | 0.70 |
+| Retrieval mean precision | 0.20 (expected — precision's denominator is `top_k_final=5` against a 1-2-chunk gold set, so even a perfect retrieval can't exceed ~0.2-0.4) |
+| Correctness accuracy (overall) | 0.84 |
+| Correctness accuracy (single-hop, n=38) | 0.97 (37/38) |
+| Correctness accuracy (multi-hop, n=17) | 0.53 (9/17) |
+| Label counts | `correct`: 41, `correct_abstention`: 5, `incorrectly_abstained`: 6, `partially_correct`: 1, `incorrect`: 2 |
+
+**The headline finding is the single-hop/multi-hop gap, and it has one consistent, traced
+cause, not several unrelated ones.** Every one of the 8 non-fully-correct multi-hop results
+has a 2-chunk `gold_chunk_ids` set, and in every case retrieval's `top_k_final=5` surfaced
+at most one of the two needed chunks (`recall` 0.0 or 0.5, never 1.0). Given only partial
+evidence, generation did the right thing in 6/8 cases (`incorrectly_abstained` — correctly
+declining rather than fabricating the missing fact) and got the arithmetic/fact wrong using
+adjacent-but-wrong context in the other 2 (`incorrect`). This is a **retrieval-recall
+limitation on multi-hop synthesis**, not a generation or grounding problem — the model is
+behaving exactly as designed (declining when it lacks a fact), it's just frequently missing
+one of two needed chunks. Directly relevant to Step 7: raising `top_k_final` or trying the
+stronger reranker variant (`bge-reranker-v2-m3`) are the natural levers to test against this
+specific number.
+
+**All 5 deliberately-unanswerable questions correctly triggered `correct_abstention`**
+(5/5) — zero `incorrectly_answered`, i.e. no hallucinated "yes" on a genuinely
+out-of-corpus question.
+
+**Judge sanity-checked by hand** against both directions: rewards correct answers with
+extra correct detail (q001, q027 — `correct`, judge notes "extra details do not detract");
+correctly dings a real missing fact rather than being lenient (q036, monkey archers
+aggressiveness — `partially_correct`, judge notes the Monkey Madness II exception was
+omitted). Verdicts read as calibrated, not rubber-stamped.
+
+_Status: complete on `feat/eval-harness`. Tell the user before starting Step 6's in-depth
+plan._
