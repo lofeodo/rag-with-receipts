@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from rag_receipts.eval.judge import Judge
 from rag_receipts.eval.models import EvalQuestion, EvalResult, EvalSummary
-from rag_receipts.eval.retrieval_metrics import score_retrieval
+from rag_receipts.eval.retrieval_metrics import aggregate_retrieval_scores, score_retrieval
 from rag_receipts.generation.generator import Generator
 from rag_receipts.generation.models import GeneratedAnswer
 from rag_receipts.grounding.checker import GroundingChecker, summarize_grounding
@@ -150,16 +150,7 @@ _CORRECT_LABELS = {"correct", "correct_abstention"}
 
 def _retrieval_stats(results: list[EvalResult]) -> dict:
     scores = [r.retrieval for r in results if r.retrieval is not None]
-    if not scores:
-        return {"mean_precision": 0.0, "mean_recall": 0.0, "mean_mrr": 0.0, "hit_rate": 0.0, "count": 0}
-    n = len(scores)
-    return {
-        "mean_precision": sum(s.precision for s in scores) / n,
-        "mean_recall": sum(s.recall for s in scores) / n,
-        "mean_mrr": sum(s.mrr for s in scores) / n,
-        "hit_rate": sum(1 for s in scores if s.hit) / n,
-        "count": n,
-    }
+    return aggregate_retrieval_scores(scores)
 
 
 def _correctness_stats(results: list[EvalResult]) -> dict:

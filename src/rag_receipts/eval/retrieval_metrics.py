@@ -46,3 +46,21 @@ def score_retrieval(retrieved: list[RetrievedChunk], gold_chunk_ids: list[str]) 
         hit=hit(retrieved_ids, gold_ids),
         retrieved_chunk_ids=retrieved_ids,
     )
+
+
+def aggregate_retrieval_scores(scores: list[RetrievalScore]) -> dict:
+    """Mean precision/recall/mrr and hit-rate over a list of per-question scores.
+
+    Shared by eval/runner.py's correctness eval and Step 7's reranker sweep, so both
+    report retrieval quality through the exact same aggregation logic.
+    """
+    if not scores:
+        return {"mean_precision": 0.0, "mean_recall": 0.0, "mean_mrr": 0.0, "hit_rate": 0.0, "count": 0}
+    n = len(scores)
+    return {
+        "mean_precision": sum(s.precision for s in scores) / n,
+        "mean_recall": sum(s.recall for s in scores) / n,
+        "mean_mrr": sum(s.mrr for s in scores) / n,
+        "hit_rate": sum(1 for s in scores if s.hit) / n,
+        "count": n,
+    }

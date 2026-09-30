@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from rag_receipts.eval.models import RetrievalScore
 from rag_receipts.eval.retrieval_metrics import (
+    aggregate_retrieval_scores,
     hit,
     mrr,
     precision_at_k,
@@ -96,3 +98,30 @@ def test_score_retrieval_no_gold_match():
     assert score.recall == 0.0
     assert score.mrr == 0.0
     assert score.hit is False
+
+
+def _score(precision: float, recall: float, mrr_value: float, hit_value: bool) -> RetrievalScore:
+    return RetrievalScore(
+        precision=precision, recall=recall, mrr=mrr_value, hit=hit_value, retrieved_chunk_ids=[]
+    )
+
+
+def test_aggregate_retrieval_scores_computes_means_and_hit_rate():
+    scores = [
+        _score(1.0, 1.0, 1.0, True),
+        _score(0.0, 0.0, 0.0, False),
+    ]
+
+    stats = aggregate_retrieval_scores(scores)
+
+    assert stats["mean_precision"] == 0.5
+    assert stats["mean_recall"] == 0.5
+    assert stats["mean_mrr"] == 0.5
+    assert stats["hit_rate"] == 0.5
+    assert stats["count"] == 2
+
+
+def test_aggregate_retrieval_scores_empty_list():
+    stats = aggregate_retrieval_scores([])
+
+    assert stats == {"mean_precision": 0.0, "mean_recall": 0.0, "mean_mrr": 0.0, "hit_rate": 0.0, "count": 0}
