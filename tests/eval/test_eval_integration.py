@@ -19,6 +19,7 @@ from rag_receipts.eval.dataset import load_eval_questions
 from rag_receipts.eval.judge import Judge
 from rag_receipts.eval.runner import run_eval, summarize
 from rag_receipts.generation.generator import Generator
+from rag_receipts.grounding.checker import GroundingChecker
 from rag_receipts.retrieval.pipeline import Retriever
 
 pytestmark = pytest.mark.slow
@@ -43,8 +44,15 @@ def test_eval_runs_end_to_end_against_real_pipeline():
     retriever = Retriever.from_config(cfg)
     generator = Generator.from_config(cfg.generation)
     judge = Judge.from_config(cfg.eval)
+    grounding_checker = GroundingChecker.from_config(cfg.grounding)
 
-    results = run_eval(questions, retriever=retriever, generator=generator, judge=judge)
+    results = run_eval(
+        questions,
+        retriever=retriever,
+        generator=generator,
+        judge=judge,
+        grounding_checker=grounding_checker,
+    )
     summary = summarize(results)
 
     assert summary.question_count == len(questions)
@@ -52,3 +60,5 @@ def test_eval_runs_end_to_end_against_real_pipeline():
     # At least one of the fixture's answerable questions should resolve to a real,
     # non-error correctness label - confirms the judge call path works end-to-end.
     assert any(r.correctness_label in {"correct", "partially_correct"} for r in results)
+    # At least one real citation should have been produced and grounding-checked.
+    assert any(r.grounding is not None for r in results)

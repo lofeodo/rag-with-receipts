@@ -24,6 +24,7 @@ from rag_receipts.eval.dataset import load_eval_questions
 from rag_receipts.eval.judge import Judge
 from rag_receipts.eval.runner import run_eval, summarize
 from rag_receipts.generation.generator import Generator
+from rag_receipts.grounding.checker import GroundingChecker
 from rag_receipts.retrieval.pipeline import Retriever
 
 
@@ -39,11 +40,18 @@ def main() -> None:
     retriever = Retriever.from_config(cfg)
     generator = Generator.from_config(cfg.generation)
     judge = Judge.from_config(cfg.eval)
+    grounding_checker = GroundingChecker.from_config(cfg.grounding)
 
     results = []
     for question in tqdm(questions, desc="Running eval"):
         results.extend(
-            run_eval([question], retriever=retriever, generator=generator, judge=judge)
+            run_eval(
+                [question],
+                retriever=retriever,
+                generator=generator,
+                judge=judge,
+                grounding_checker=grounding_checker,
+            )
         )
 
     summary = summarize(results)
@@ -65,6 +73,19 @@ def main() -> None:
     for qtype, stats in summary.correctness_by_type.items():
         print(f"  {qtype}: {stats['accuracy']:.3f} (n={stats['count']})")
     print(f"Label counts: {summary.correctness_label_counts}")
+    print(
+        f"Grounding - grounded: {summary.grounding['grounded_rate']:.3f}  "
+        f"contradicted: {summary.grounding['contradicted_rate']:.3f}  "
+        f"ungrounded: {summary.grounding['ungrounded_rate']:.3f}  "
+        f"fully-grounded answers: {summary.grounding['fully_grounded_answer_rate']:.3f} "
+        f"(citations={summary.grounding['citation_count']}, answers={summary.grounding['answer_count']})"
+    )
+    for label, stats in summary.grounding_by_correctness_label.items():
+        if stats["citation_count"]:
+            print(
+                f"  {label}: grounded={stats['grounded_rate']:.3f} "
+                f"contradicted={stats['contradicted_rate']:.3f} (n={stats['citation_count']})"
+            )
 
 
 if __name__ == "__main__":

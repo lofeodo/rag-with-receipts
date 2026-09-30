@@ -1,12 +1,14 @@
-"""Result shapes for the eval harness (Step 5): gold questions, retrieval scores,
-judge verdicts, and the per-question / aggregate report shapes."""
+"""Result shapes for the eval harness (Step 5, extended in Step 6): gold questions,
+retrieval scores, judge verdicts, grounding verdicts, and the per-question / aggregate
+report shapes."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 from rag_receipts.generation.models import GeneratedAnswer
+from rag_receipts.grounding.models import AnswerGrounding
 
 QuestionType = Literal["single_hop", "multi_hop"]
 Verdict = Literal["correct", "partially_correct", "incorrect"]
@@ -70,6 +72,8 @@ class EvalResult:
     generated: GeneratedAnswer | None  # None if generation raised
     judge: JudgeVerdict | None  # None when resolved without a judge call, or generation raised
     correctness_label: CorrectnessLabel
+    grounding: AnswerGrounding | None = None  # None when generation raised or the answer
+    # had no real citations to check (e.g. an answerable=False response)
     error: str | None = None  # populated when generation or judging raised
 
 
@@ -82,3 +86,6 @@ class EvalSummary:
     correctness_by_type: dict
     correctness_label_counts: dict[str, int]
     error_count: int
+    grounding: dict = field(default_factory=dict)
+    grounding_by_type: dict = field(default_factory=dict)
+    grounding_by_correctness_label: dict = field(default_factory=dict)

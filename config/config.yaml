@@ -72,3 +72,12 @@ eval:
   judge_max_tokens: 1024
   dataset_path: data/eval/qa_pairs.json
   output_path: results/eval_report.json
+
+grounding:
+  nli_model: cross-encoder/nli-deberta-v3-base   # local, sentence-transformers CrossEncoder
+  nli_device: auto                               # auto | cpu | cuda
+  nli_batch_size: 32
+  nli_show_progress_bar: false
+  entailment_threshold: 0.5
+  contradiction_threshold: 0.5
+  overlap_threshold: 0.3
