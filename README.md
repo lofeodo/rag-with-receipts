@@ -199,16 +199,16 @@ GPU (RTX 3060). Cloud Run has no GPU, so all inference runs on its allocated
 real timed `/query` calls against the live deployment (steady-state, after
 the first cold-start call):
 
-| Stage | Local GPU (Step 7, `measure_latency.py`) | Local Docker, CPU | Cloud Run, 2 vCPU |
+| Stage | Local GPU (`measure_latency.py`) | Local Docker, CPU | Cloud Run, 2 vCPU |
 |---|---|---|---|
-| embed_query | 50ms p50 | ~100ms | ~500ms |
-| rerank | 111ms p50 (MiniLM) | ~700ms | ~5000ms |
-| generate | 2737ms p50 | ~3400ms | ~3400ms |
-| total | 3510ms p50 | ~4200ms | ~9000ms |
+| embed_query | 80ms p50 | ~100ms | ~500ms |
+| rerank | 276ms p50 (MiniLM) | ~700ms | ~5000ms |
+| generate | 2918ms p50 | ~3400ms | ~3400ms |
+| total | 3256ms p50 | ~4200ms | ~9000ms |
 
 Rerank is the stage that degrades the most on Cloud Run — about 7x slower
-than the same model on the same machine's CPU outside a container, and ~45x
-slower than the GPU numbers Step 7 reported. This wasn't chased further in
+than the same model on the same machine's CPU outside a container, and ~18x
+slower than the local-GPU number measured here. This wasn't chased further in
 Step 8 (which is a deployment step, not a second latency-optimization pass) -
 documented here as a known, measured gap rather than papered over. Candidates
 for a future pass, not done here: tuning `OMP_NUM_THREADS`/torch thread
