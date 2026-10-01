@@ -24,7 +24,38 @@ as described above.
 
 ## Architecture
 
-_Coming as each step lands — see CLAUDE.md for the planned pipeline and current progress._
+Two offline stages build the index once; four online stages run per query;
+`eval`/`telemetry` measure the pipeline and `api` serves it.
+
+```mermaid
+flowchart LR
+    subgraph Offline["Offline (build-time)"]
+        ING["Ingestion<br/>fetch + parse + chunk"]
+        IDX["Indexing<br/>embed + FAISS build"]
+        ING --> IDX
+    end
+
+    subgraph Online["Online (per query)"]
+        Q["Query"] --> RET["Retrieval<br/>dense top-k"]
+        RET --> RR["Rerank<br/>cross-encoder"]
+        RR --> GEN["Generation<br/>Claude + citations"]
+        GEN --> GRD["Grounding check<br/>NLI + lexical overlap"]
+        GRD --> OUT["Answer + citations<br/>+ grounding verdicts"]
+    end
+
+    IDX -. "FAISS index +\nmetadata" .-> RET
+```
+
+| Stage | Key design choice | Package |
+|---|---|---|
+| Ingestion | MediaWiki API fetch over a scoped corpus (combat category + 2 skill-training guides + 1 questline + its one-hop-linked item/monster pages); header-aware chunking, ~380 target tokens | [`src/rag_receipts/ingestion/`](src/rag_receipts/ingestion/) |
+| Indexing | Local `BAAI/bge-large-en-v1.5` embeddings; FAISS flat index, in-process, zero recurring cost | [`src/rag_receipts/indexing/`](src/rag_receipts/indexing/) |
+| Retrieval | Dense top-30 → cross-encoder rerank to top-5; reranker is `ms-marco-MiniLM-L-6-v2`, adopted after a measured sweep (Pareto-dominates the original default) | [`src/rag_receipts/retrieval/`](src/rag_receipts/retrieval/) |
+| Generation | Claude Sonnet 5, forced tool-use for structured per-claim citations, hallucinated-citation validation against the retrieved set | [`src/rag_receipts/generation/`](src/rag_receipts/generation/) |
+| Grounding check | NLI cross-encoder entailment/contradiction + lexical overlap per citation, combined into a grounded/contradicted/ungrounded verdict | [`src/rag_receipts/grounding/`](src/rag_receipts/grounding/) |
+| Eval harness *(offline)* | LLM-as-judge correctness + retrieval metrics + grounding, run over a 55-question hand-authored gold set | [`src/rag_receipts/eval/`](src/rag_receipts/eval/) |
+| Telemetry *(offline)* | Per-stage p50/p95/mean latency instrumentation on the real hot path | [`src/rag_receipts/telemetry/`](src/rag_receipts/telemetry/) |
+| API *(serving)* | FastAPI wrapper (`/query`, `/livez`, `/readyz`) deployed on Cloud Run — see [Deployment](#deployment) | [`src/rag_receipts/api/`](src/rag_receipts/api/) |
 
 ## Benchmarks
 
