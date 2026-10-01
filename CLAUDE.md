@@ -40,7 +40,8 @@ quantified comparison against the managed alternative.
 - [x] Step 8 — GCP deployment ← live on Cloud Run at
       `rag-receipts-api-374659103328.northamerica-northeast1.run.app`, gated by a shared
       demo key (pivoted from the original IAP plan — see status note below).
-- [ ] Step 9 — README polish (architecture explanation, benchmark numbers front and center)
+- [x] **Step 9 — README polish** ← Architecture/Benchmarks sections written, stale
+      pre-reranker-swap artifacts regenerated, MIT LICENSE added. See status note below.
 - [ ] Stretch — Vertex AI Search benchmark comparison (retrieval precision, correctness,
       grounding, end-to-end latency; note in the report that the retrieval/generation latency
       *split* is ours-only, Vertex only exposes end-to-end)
@@ -891,3 +892,116 @@ IAP→shared-key pivot explained for a reader who wasn't in this session).
 
 _Status: complete on `feat/gcp-deployment`. Tell the user before starting Step 9's
 in-depth plan._
+
+### Step 9 — README polish (complete)
+
+**Goal:** fill in the README's two still-literally-stub sections
+(`## Architecture`, `## Benchmarks`, unchanged since the Step 0 scaffold) with
+real content, and make sure every number in them reflects the pipeline as it
+actually ships today rather than a stale snapshot from before Step 7's
+reranker-default swap.
+
+**A real inconsistency was found before writing anything new.** The existing
+Deployment section's latency table spliced two different measurement runs
+under two different reranker configs into one row: the "111ms rerank" figure
+came from `results/reranker_sweep.json`'s isolated per-model sweep of
+`ms-marco-MiniLM-L-6-v2`, while the "3510ms total" in the same row came from
+`results/latency_report.json`, which — per Step 7's own status note — was
+measured under the *old* `bge-reranker-base` default before that commit's
+config swap. Separately, `results/eval_report.json` and
+`results/sample_grounding.json` had never been re-run since the swap either.
+Fixed by regenerating all of `eval_report.json`, `latency_report.json`,
+`sample_grounding.json`, `sample_answers.json`, and `sample_retrievals.json`
+against the current config before writing a single number into the README.
+`results/reranker_sweep.json` itself was left as-is — it's the historical
+3-way comparison that justified the current default, not a stale snapshot.
+
+**A genuinely surprising, reproducibility-checked finding surfaced while
+regenerating the latency numbers.** `measure_latency.py`'s isolated rerank
+p50 came back at 268ms, then 276ms on a second isolated run (GPU confirmed
+idle both times, no concurrent GPU-bound process) — stable and reproducible,
+but ~2.4x higher than `reranker_sweep.json`'s isolated measurement of the
+same model on the same hardware (111ms). This is *not* Step 7's documented
+GPU-contention bug (that was two scripts genuinely sharing the GPU
+concurrently; here, nothing else was running either time). Plausible
+explanation, not deeply investigated: `measure_latency.py` interleaves each
+question's rerank call with a real Claude API round-trip (2.5-3s), unlike
+`sweep_reranker.py`, which reranks all 55 questions back-to-back with no
+gaps — the GPU may be dropping to a lower clock/power state between calls in
+the former. Documented as an open, measured observation rather than a
+confirmed root cause (same epistemic discipline Step 7 used for the smaller,
+~1.3x version of this same gap it saw with `bge-reranker-base`). The
+Deployment section's latency table and its "Nx slower on Cloud Run" prose
+multipliers were recomputed against the new numbers (~45x → ~18x for the
+GPU-vs-Cloud-Run rerank comparison; the CPU-vs-Cloud-Run ~7x multiplier was
+unaffected, since it doesn't depend on the local GPU number).
+
+**The regenerated `eval_report.json` surfaced one more small, honest wrinkle
+worth recording rather than smoothing over.** Of the 5 deliberately
+unanswerable gold questions, 4 correctly triggered `correct_abstention` but
+one (`q051`, "What are the full rewards for completing the Recipe for
+Disaster quest?") was scored `incorrectly_answered` this run. Inspecting the
+actual generated answer: it is not a hallucination — the model found real,
+relevant chunks (quest-reward tables mentioning partial Recipe for Disaster
+sub-quest rewards on the `Ranged` and `Slayer training` pages) and explicitly
+said the retrieved excerpts don't contain a *complete* reward list, only
+partial figures. This is the same "the gold `answerable:false` label assumed
+total absence, but the corpus actually contains tangentially relevant real
+facts" pattern Step 4 first flagged with the Dragon Slayer II question — a
+gold-set labeling nuance, not a grounding or retrieval defect. Not fixed here
+(relabeling the gold set is out of this step's scope and would be exactly
+the kind of after-the-fact, unmeasured tuning the project avoids elsewhere);
+noted here for whoever revisits the gold set next.
+
+**What was actually done (`feat/readme-polish`, 10 commits):**
+- Corrected a stale fact in this very checklist: Step 5's one-liner said
+  "0.84 (single-hop 0.97, multi-hop 0.53)," which never matched the actually
+  committed `eval_report.json` or Step 5's own detailed table below it
+  (0.80/0.97/0.33). Fixed to match.
+- Regenerated `eval_report.json`, `latency_report.json`, `sample_grounding.json`,
+  `sample_answers.json`, `sample_retrievals.json` under the current
+  `ms-marco-MiniLM-L-6-v2` default, each run in isolation with the GPU
+  confirmed idle beforehand. Retrieval numbers (hit rate 0.96, recall 0.88,
+  MRR 0.75) landed almost exactly on `reranker_sweep.json`'s MiniLM row, as
+  expected for deterministic local inference — cross-checked before trusting
+  the rest of the run.
+- Added a Mermaid pipeline diagram (ingestion → indexing → retrieval → rerank
+  → generation → grounding) plus a per-stage design-choice table to
+  `## Architecture`, replacing the Step 0 stub. Verified against the real
+  `src/rag_receipts/` package list (`ingestion`, `indexing`, `retrieval`,
+  `generation`, `grounding`, `eval`, `telemetry`, `api`) rather than assumed.
+- Replaced the `## Benchmarks` stub with retrieval/correctness/grounding
+  tables (overall + single-hop/multi-hop split), the reranker sweep
+  comparison, and the per-stage latency table — each carrying forward the
+  specific caveat a reader needs to not misread the number (multi-hop n=15
+  noise, grounding's NLI-false-positive-on-`contradicted` finding from
+  Step 6), without re-deriving the full investigation already documented
+  here.
+- Added a root `LICENSE` (MIT, copyright Daniel Lofeodo) and a README
+  `## License` section clarifying it covers the code only — the OSRS Wiki
+  corpus stays CC BY-NC-SA 3.0 as already documented.
+- Mid-step, the user asked to also surface the live demo on GitHub itself:
+  set the GitHub repo's homepage/website field to the live Cloud Run URL
+  (`gh repo edit --homepage`), and replaced the README's and the static demo
+  page's vague "ask the author for it" with a concrete
+  `daniel.lofeodo@gmail.com` contact for requesting a demo key — deliberately
+  *not* publishing the real key value itself, since the per-IP rate limiter
+  from Step 8 bounds abuse but doesn't eliminate the API-cost risk of a
+  public, crawler-indexable key.
+- Updated the README's intro "Status" line, which still read "early
+  scaffold" after all 8 pipeline steps had shipped.
+
+**Verification:** every regenerated JSON file was spot-checked against an
+independent cross-reference before being trusted (retrieval metrics against
+`reranker_sweep.json`'s MiniLM row; the two latency runs against each other
+for reproducibility) rather than written down on a single run. The Mermaid
+diagram's node set and the Architecture table's file paths were checked
+against the real `src/rag_receipts/` directory listing, not assumed from
+memory. `pytest -q` was not re-run in this step since no file under `src/`
+changed — only `results/*.json`, `README.md`, `CLAUDE.md`, `LICENSE`, and
+`static/index.html` were touched.
+
+_Status: complete on `feat/readme-polish`. This closes out the step
+sequence's core 0-9 scope — only the stretch goals (Vertex AI Search
+comparison, Haiku-vs-Sonnet generation, pgvector backend swap) remain, and
+none are required for the project to be considered done._
