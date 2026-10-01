@@ -10,6 +10,13 @@ logic lives here.
 create_app() takes retriever/generator directly so tests can inject fakes
 and skip the real model-loading path in `lifespan` entirely - `app`
 (module-level, for uvicorn) uses the real pipeline via config.yaml + GCS.
+
+Access control: the deployed service is public (`--allow-unauthenticated`),
+gated by a shared secret (DEMO_API_KEY, see _check_demo_key) rather than
+per-user auth - native Cloud Run IAP was tried first but requires the GCP
+project to belong to an Organization (this account has none), so a shared
+demo key is the fallback that still lets a recruiter self-serve the live URL
+without per-account setup.
 """
 
 from __future__ import annotations
@@ -59,12 +66,25 @@ class GeneratorLike(Protocol):
 
 
 def _extract_identity(request: Request) -> str:
-    """IAP sets 'accounts.google.com:user@example.com'; fall back to client IP
-    (local dev / direct Cloud Run access without IAP in front)."""
-    iap_header = request.headers.get("X-Goog-Authenticated-User-Email")
-    if iap_header:
-        return iap_header.rsplit(":", 1)[-1]
+    """Rate-limiter key. The service is gated by a shared demo key (see
+    _check_demo_key below), not per-user auth, so client IP is the best
+    identity signal available - not perfect (a shared corporate NAT could
+    lump distinct recruiters together), but good enough to stop one caller
+    from hammering the real Anthropic API."""
     return request.client.host if request.client else "unknown"
+
+
+def _check_demo_key(request: Request) -> None:
+    """Shared-secret gate for /query (Secret Manager -> DEMO_API_KEY env var
+    at deploy time). Deliberately reads the env var per-call rather than at
+    import time so it's test-controllable via monkeypatch, and so local dev
+    with no DEMO_API_KEY set stays fully open (same no-op-when-unset
+    convention as ensure_index_artifacts' INDEX_GCS_BUCKET)."""
+    expected = os.environ.get("DEMO_API_KEY")
+    if not expected:
+        return
+    if request.headers.get("X-Demo-Key") != expected:
+        raise HTTPException(status_code=401, detail="missing or invalid X-Demo-Key header")
 
 
 def create_app(
@@ -114,6 +134,8 @@ def create_app(
 
     @app.post("/query", response_model=QueryResponse)
     def query(req: QueryRequest, request: Request) -> QueryResponse:
+        _check_demo_key(request)
+
         if not request.app.state.ready:
             raise HTTPException(status_code=503, detail="not ready")
 

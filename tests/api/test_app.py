@@ -118,7 +118,7 @@ def test_query_rejects_empty_query():
     assert resp.status_code == 422
 
 
-def test_rate_limiter_429s_same_identity_then_other_identity_unaffected():
+def test_rate_limiter_429s_after_threshold():
     app = _app(rate_limiter=RateLimiter(max_requests=2, window_seconds=60))
     app.state.ready = True
     client = TestClient(app)
@@ -127,12 +127,38 @@ def test_rate_limiter_429s_same_identity_then_other_identity_unaffected():
         assert client.post("/query", json={"query": "x"}).status_code == 200
     assert client.post("/query", json={"query": "x"}).status_code == 429
 
-    other_identity_resp = client.post(
-        "/query",
-        json={"query": "x"},
-        headers={"X-Goog-Authenticated-User-Email": "accounts.google.com:other@example.com"},
-    )
-    assert other_identity_resp.status_code == 200
+
+def test_query_401_when_demo_key_set_and_header_missing(monkeypatch):
+    monkeypatch.setenv("DEMO_API_KEY", "shh-secret")
+    app = _app()
+    app.state.ready = True
+    client = TestClient(app)
+
+    resp = client.post("/query", json={"query": "x"})
+
+    assert resp.status_code == 401
+
+
+def test_query_401_when_demo_key_set_and_header_wrong(monkeypatch):
+    monkeypatch.setenv("DEMO_API_KEY", "shh-secret")
+    app = _app()
+    app.state.ready = True
+    client = TestClient(app)
+
+    resp = client.post("/query", json={"query": "x"}, headers={"X-Demo-Key": "wrong"})
+
+    assert resp.status_code == 401
+
+
+def test_query_200_when_demo_key_set_and_header_correct(monkeypatch):
+    monkeypatch.setenv("DEMO_API_KEY", "shh-secret")
+    app = _app()
+    app.state.ready = True
+    client = TestClient(app)
+
+    resp = client.post("/query", json={"query": "x"}, headers={"X-Demo-Key": "shh-secret"})
+
+    assert resp.status_code == 200
 
 
 def test_index_page_404_when_static_missing(tmp_path):

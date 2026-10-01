@@ -32,8 +32,16 @@
   header { margin-bottom: 1.75rem; }
   h1 { font-size: 1.4rem; margin: 0 0 0.35rem; }
   .subtitle { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+  .key-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
+  }
+  .key-row label { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+  .key-row input { flex: 1; max-width: 260px; }
   form { display: flex; gap: 0.5rem; margin-bottom: 1.75rem; }
-  input[type=text] {
+  input[type=text], input[type=password] {
     flex: 1;
     background: var(--panel);
     border: 1px solid var(--border);
@@ -42,7 +50,7 @@
     padding: 0.7rem 0.9rem;
     font-size: 0.95rem;
   }
-  input[type=text]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  input[type=text]:focus, input[type=password]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   button {
     background: var(--accent);
     color: #fff;
@@ -98,6 +106,11 @@
     </div>
   </header>
 
+  <div class="key-row">
+    <label for="key-input">Demo key</label>
+    <input id="key-input" type="password" autocomplete="off" placeholder="paste the key you were given" />
+  </div>
+
   <form id="query-form">
     <input id="query-input" type="text" autocomplete="off"
            placeholder="e.g. What items are required to start Monkey Madness I?" />
@@ -111,9 +124,19 @@
 <script>
   const form = document.getElementById('query-form');
   const input = document.getElementById('query-input');
+  const keyInput = document.getElementById('key-input');
   const button = document.getElementById('submit-btn');
   const status = document.getElementById('status');
   const result = document.getElementById('result');
+
+  try {
+    const savedKey = localStorage.getItem('demoKey');
+    if (savedKey) keyInput.value = savedKey;
+  } catch (err) { /* private browsing / storage disabled - fine, just won't persist */ }
+
+  keyInput.addEventListener('change', () => {
+    try { localStorage.setItem('demoKey', keyInput.value); } catch (err) { /* ignore */ }
+  });
 
   function escapeHtml(s) {
     const d = document.createElement('div');
@@ -176,10 +199,16 @@
     try {
       const resp = await fetch('/query', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Demo-Key': keyInput.value,
+        },
         body: JSON.stringify({ query }),
       });
 
+      if (resp.status === 401) {
+        throw new Error('Missing or incorrect demo key.');
+      }
       if (!resp.ok) {
         const body = await resp.json().catch(() => ({}));
         throw new Error(body.detail || `Request failed (${resp.status})`);
