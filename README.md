@@ -5,8 +5,7 @@ Wiki](https://oldschool.runescape.wiki/), built to demonstrate retrieval accurac
 and cited answers, and latency-optimized inference — not just chat-with-a-doc.
 
 **Status:** complete and live on Cloud Run — see [Benchmarks](#benchmarks) for
-measured numbers and [Deployment](#deployment) for the live URL. Full
-step-by-step build history and design rationale is in [CLAUDE.md](CLAUDE.md).
+measured numbers and [Deployment](#deployment) for the live URL.
 
 ## Why the OSRS Wiki
 
@@ -29,21 +28,10 @@ Two offline stages build the index once; four online stages run per query;
 
 ```mermaid
 flowchart LR
-    subgraph Offline["Offline (build-time)"]
-        ING["Ingestion<br/>fetch + parse + chunk"]
-        IDX["Indexing<br/>embed + FAISS build"]
-        ING --> IDX
-    end
-
-    subgraph Online["Online (per query)"]
-        Q["Query"] --> RET["Retrieval<br/>dense top-k"]
-        RET --> RR["Rerank<br/>cross-encoder"]
-        RR --> GEN["Generation<br/>Claude + citations"]
-        GEN --> GRD["Grounding check<br/>NLI + lexical overlap"]
-        GRD --> OUT["Answer + citations<br/>+ grounding verdicts"]
-    end
-
-    IDX -. "FAISS index +\nmetadata" .-> RET
+    ING["Ingestion<br/>fetch + parse + chunk"] --> IDX["Indexing<br/>embed + FAISS"]
+    Q["Query"] --> RET["Retrieval + rerank<br/>dense top-k, cross-encoder"]
+    IDX -.-> RET
+    RET --> GEN["Generation<br/>Claude + citations"] --> VER["Grounding check<br/>+ answer"]
 ```
 
 | Stage | Key design choice | Package |
@@ -88,7 +76,7 @@ treat it as "meaningfully worse than single-hop," not a precise figure.
 And the gap is dominantly a **retrieval** story, not a reasoning failure:
 most non-fully-correct multi-hop cases trace back to the retrieved top-k
 missing one of two gold chunks, with generation correctly declining rather
-than fabricating the missing fact (full trace in CLAUDE.md's Step 5 notes).
+than fabricating the missing fact.
 
 ### Grounding (citation-level entailment + overlap check)
 
@@ -97,11 +85,10 @@ than fabricating the missing fact (full trace in CLAUDE.md's Step 5 notes).
 | 0.95 | 0.05 | 0.00 | 0.91 |
 
 (77 citations checked across 44 answers.) Read `contradicted` as "flagged
-for human review," not "confirmed error" — in the original run, all 3
-flagged citations were manually confirmed to be false positives from the
-general-domain NLI model misreading this corpus's flattened-table/telegraphic
-chunk style, not real contradictions (full writeup in CLAUDE.md's Step 6
-notes).
+for human review," not "confirmed error" — manual inspection found the
+flagged cases were false positives from the general-domain NLI model
+misreading this corpus's flattened-table/telegraphic chunk style, not real
+contradictions.
 
 ### Reranker sweep (what justified the current default)
 
@@ -141,16 +128,9 @@ A live version runs on GCP Cloud Run:
 **https://rag-receipts-api-374659103328.northamerica-northeast1.run.app**
 
 The service is public but gated by a shared demo key (`/query` requires an
-`X-Demo-Key` header matching a value kept in Secret Manager) — paste it into
-the "Demo key" field on the page. Don't have one? Email
-[daniel.lofeodo@gmail.com](mailto:daniel.lofeodo@gmail.com) to request it.
-This was a
-fallback from the original plan (Cloud Run's native IAP, gating access behind
-Google sign-in): IAP's OAuth consent setup turns out to require the GCP
-project to belong to an Organization, which a personal-account project isn't
-part of, and even where that requirement is met the resulting brand only
-admits users from the same Workspace domain — not the "any recruiter, any
-Google account" goal — so a shared key is what's actually deployed.
+`X-Demo-Key` header) — paste it into the "Demo key" field on the page. Don't
+have one? Email [daniel.lofeodo@gmail.com](mailto:daniel.lofeodo@gmail.com)
+to request it.
 
 ### GCP resources used
 
@@ -191,13 +171,13 @@ gcloud run deploy rag-receipts-api \
   --max-instances=2 --memory=4Gi --cpu=2 --timeout=60 --cpu-boost
 ```
 
-### A note on latency: Cloud Run numbers are not the Step 7 numbers
+### A note on latency: Cloud Run vs. local hardware
 
-Step 7's measured p50/p95 latency table was taken on local hardware with a
-GPU (RTX 3060). Cloud Run has no GPU, so all inference runs on its allocated
-2 vCPUs — and the gap is larger than "CPU vs GPU" alone would suggest. A few
-real timed `/query` calls against the live deployment (steady-state, after
-the first cold-start call):
+The latency table above was measured on local hardware with a GPU (RTX
+3060). Cloud Run has no GPU, so all inference runs on its allocated 2 vCPUs
+— and the gap is larger than "CPU vs GPU" alone would suggest. A few real
+timed `/query` calls against the live deployment (steady-state, after the
+first cold-start call):
 
 | Stage | Local GPU (`measure_latency.py`) | Local Docker, CPU | Cloud Run, 2 vCPU |
 |---|---|---|---|
@@ -208,8 +188,6 @@ the first cold-start call):
 
 Rerank is the stage that degrades the most on Cloud Run — about 7x slower
 than the same model on the same machine's CPU outside a container, and ~18x
-slower than the local-GPU number measured here. This wasn't chased further in
-Step 8 (which is a deployment step, not a second latency-optimization pass) -
-documented here as a known, measured gap rather than papered over. Candidates
-for a future pass, not done here: tuning `OMP_NUM_THREADS`/torch thread
-count for the 2-vCPU environment, or bumping Cloud Run's CPU allocation.
+slower than the local-GPU number measured here. Not chased further here;
+candidates for a future pass: tuning `OMP_NUM_THREADS`/torch thread count
+for the 2-vCPU environment, or bumping Cloud Run's CPU allocation.
