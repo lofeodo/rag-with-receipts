@@ -9,9 +9,24 @@ match, at the cost of not exercising Vertex's own chunking.
 
 from __future__ import annotations
 
+import json
+from typing import Protocol
+
 import pandas as pd
 
 from rag_receipts.ingestion.utils import breadcrumb
+
+
+class UploadBlobLike(Protocol):
+    def upload_from_string(self, data: str, content_type: str = "text/plain") -> None: ...
+
+
+class UploadBucketLike(Protocol):
+    def blob(self, blob_name: str) -> UploadBlobLike: ...
+
+
+class GCSUploadClientLike(Protocol):
+    def bucket(self, bucket_name: str) -> UploadBucketLike: ...
 
 
 def chunk_text_for_upload(page_title: str, section_path: str, text: str) -> str:
@@ -50,3 +65,32 @@ def build_manifest_records(metadata: pd.DataFrame, *, bucket: str, prefix: str) 
             }
         )
     return records
+
+
+def upload_corpus_to_gcs(
+    metadata: pd.DataFrame,
+    *,
+    client: GCSUploadClientLike,
+    bucket: str,
+    prefix: str,
+) -> str:
+    """Uploads one chunks/<chunk_id>.txt object per chunk plus manifest.jsonl.
+
+    Returns the manifest's gs:// URI (what Discovery Engine's import_documents
+    call is pointed at).
+    """
+    gcs_bucket = client.bucket(bucket)
+
+    for row in metadata.itertuples():
+        text = chunk_text_for_upload(row.page_title, row.section_path, row.text)
+        blob = gcs_bucket.blob(f"{prefix}/chunks/{row.chunk_id}.txt")
+        blob.upload_from_string(text, content_type="text/plain")
+
+    records = build_manifest_records(metadata, bucket=bucket, prefix=prefix)
+    manifest_text = "\n".join(json.dumps(record) for record in records)
+    manifest_blob_name = f"{prefix}/manifest.jsonl"
+    gcs_bucket.blob(manifest_blob_name).upload_from_string(
+        manifest_text, content_type="application/jsonl"
+    )
+
+    return f"gs://{bucket}/{manifest_blob_name}"
