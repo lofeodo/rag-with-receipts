@@ -34,7 +34,7 @@ quantified comparison against the managed alternative.
 - [x] **Step 2 — Embedding & indexing** ← 955/955 chunks embedded, FAISS flat-IP index built. See status note below.
 - [x] **Step 3 — Retrieval pipeline** ← dense top-k + cross-encoder reranking, verified against the real corpus. See status note below.
 - [x] **Step 4 — Generation** ← Claude Sonnet 5, structured tool-use citations, hallucinated-citation validation. See status note below.
-- [x] **Step 5 — Eval harness** ← 55-question gold set, real run complete: correctness accuracy 0.84 (single-hop 0.97, multi-hop 0.53), retrieval hit rate 0.90. See status note below.
+- [x] **Step 5 — Eval harness** ← 55-question gold set, real run complete: correctness accuracy 0.80 (single-hop 0.97, multi-hop 0.33), retrieval hit rate 0.90. See status note below.
 - [x] **Step 6 — Grounding / hallucination check** ← NLI cross-encoder + lexical overlap per citation, wired into the eval harness: 96.0% grounded, 4.0% flagged contradicted (all 3 flagged cases manually confirmed as false positives). See status note below.
 - [x] **Step 7 — Latency instrumentation + one measured optimization (reranker sweep)** ← per-stage p50/p95 measured on the real hot path; reranker sweep found `ms-marco-MiniLM-L-6-v2` Pareto-dominates the original `bge-reranker-base` default (higher recall/hit-rate/MRR AND ~4x faster) — adopted as the new default. See status note below.
 - [x] Step 8 — GCP deployment ← live on Cloud Run at
