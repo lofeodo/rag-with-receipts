@@ -37,7 +37,9 @@ quantified comparison against the managed alternative.
 - [x] **Step 5 — Eval harness** ← 55-question gold set, real run complete: correctness accuracy 0.84 (single-hop 0.97, multi-hop 0.53), retrieval hit rate 0.90. See status note below.
 - [x] **Step 6 — Grounding / hallucination check** ← NLI cross-encoder + lexical overlap per citation, wired into the eval harness: 96.0% grounded, 4.0% flagged contradicted (all 3 flagged cases manually confirmed as false positives). See status note below.
 - [x] **Step 7 — Latency instrumentation + one measured optimization (reranker sweep)** ← per-stage p50/p95 measured on the real hot path; reranker sweep found `ms-marco-MiniLM-L-6-v2` Pareto-dominates the original `bge-reranker-base` default (higher recall/hit-rate/MRR AND ~4x faster) — adopted as the new default. See status note below.
-- [ ] Step 8 — GCP deployment (Cloud Run, GCS, Artifact Registry, Secret Manager)
+- [x] Step 8 — GCP deployment ← live on Cloud Run at
+      `rag-receipts-api-374659103328.northamerica-northeast1.run.app`, gated by a shared
+      demo key (pivoted from the original IAP plan — see status note below).
 - [ ] Step 9 — README polish (architecture explanation, benchmark numbers front and center)
 - [ ] Stretch — Vertex AI Search benchmark comparison (retrieval precision, correctness,
       grounding, end-to-end latency; note in the report that the retrieval/generation latency
@@ -783,3 +785,109 @@ ran successfully against the real corpus/API with 0 errors.
 
 _Status: complete on `feat/latency-optimization`. Tell the user before starting Step
 8's in-depth plan._
+
+### Step 8 — GCP deployment (complete)
+
+**Goal:** wrap the existing retrieval+generation pipeline in a FastAPI service and stand
+it up on Cloud Run (+ Artifact Registry + GCS + Secret Manager + Cloud Logging, per the
+locked deploy-substrate decision), so the project has a live, callable URL.
+
+**Design decisions actually implemented (9 commits, `feat/gcp-deployment`):**
+- New package `rag_receipts/api/`: `app.py` (`create_app()` factory + FastAPI lifespan
+  loading `Retriever`/`Generator` once, mirroring every prior step's load-once/query-cheap
+  pattern), `models.py` (Pydantic request/response schemas), `rate_limit.py` (in-memory
+  sliding-window `RateLimiter`), `startup.py` (`ensure_index_artifacts` — GCS pull on cold
+  start). Routes: `/livez` (liveness), `/readyz` (readiness, 503 until models+index loaded),
+  `/query` (the real endpoint), `/` (static demo page). No changes to any existing package —
+  `Retriever`/`Generator`/`RetrievedChunk`/`GeneratedAnswer` reused as-is.
+- `static/index.html` — single self-contained demo page (no framework, no external assets),
+  served by the same FastAPI app.
+- `Dockerfile` — `python:3.11-slim`, CPU-only torch wheel (Cloud Run has no GPU), bakes the
+  embedding + reranker models into the image at build time by reading them straight out of
+  `config.yaml` (so the image can't drift from whatever models are actually configured —
+  directly motivated by Step 7 changing the default reranker), `HF_HUB_OFFLINE=1` at runtime
+  so model loading makes zero Hugging Face Hub calls.
+- `/query` emits one structured JSON log line per request (full per-stage timing, caller
+  identity, citation/hallucination counts) — satisfies the locked "Cloud Logging (latency
+  metrics)" decision via Cloud Run's automatic stdout capture, no extra plumbing.
+
+**Access model pivoted mid-implementation — a real, live-verified finding, not a
+preference change.** The approved plan called for native Cloud Run IAP (`gcloud run
+deploy --iap`) open to any signed-in Google account, chosen specifically so a recruiter
+could self-serve the live URL. Provisioning hit a hard blocker: `gcloud iap oauth-brands
+create` (required before `--iap` works) returned `INVALID_ARGUMENT: Project must belong
+to an organization` — confirmed via `gcloud organizations list` that the account has zero
+organizations (personal Gmail-based GCP projects aren't in one). Reading the command's own
+help text further showed that even where the org requirement is met, the brand it creates
+is **internal only** (restricted to the same Workspace domain), which would not have met
+the "any Google account" goal regardless. The API is also mid-deprecation per gcloud's own
+warning. Given the user's explicit goal (recruiter self-serve, no org, no pre-registration),
+the fallback — proposed and approved — is a **shared demo key**: `/query` checks an
+`X-Demo-Key` header against `DEMO_API_KEY` (Secret Manager), 401ing on missing/wrong;
+no-ops (open) when `DEMO_API_KEY` is unset, so local dev is unaffected. The static page
+gained a "Demo key" field (localStorage-persisted). The per-identity rate limiter's
+identity source simplified to client IP only (the IAP-header branch was dead code once IAP
+was dropped — removed rather than left half-wired).
+
+**Two more real bugs caught by actually running the built container, not just unit
+tests against fakes:**
+- `retrieval/pipeline.py` imports `pandas` (to read `index_metadata.parquet`), but
+  `pandas`/`pyarrow` were declared only under the `ingest` extra, not `index`. A
+  `pip install -e ".[index,serve,gcp]"` install (what the Dockerfile uses) crashed on
+  startup with `ModuleNotFoundError: No module named 'pandas'`. Fixed by moving
+  `pandas`/`pyarrow` into the `index` extra (they're genuinely indexing/retrieval
+  dependencies, not ingestion-only ones).
+- After the first real Cloud Run deploy, `/healthz` consistently 404'd — but with a
+  **generic Google-branded HTML 404**, not the app's own JSON 404. Diagnosed by comparing
+  response headers across routes: every real app response (`/`, `/readyz`, a bogus path,
+  even `/health-check-test`) carries `server: Google Frontend` and `x-cloud-trace-context`;
+  the `/healthz` response has neither, meaning it never reaches the container — Google's
+  own infrastructure intercepts the exact literal path `/healthz` on `*.run.app` domains
+  before it gets to Cloud Run. Confirmed reproducibly (not a one-off blip) before concluding
+  this, not assumed from a single odd response. Fixed by renaming the liveness route to
+  `/livez`.
+
+**Windows/Git-Bash tooling notes (environment-specific, not code bugs):** `gcloud`'s shell
+wrapper on this machine needs `CLOUDSDK_PYTHON` pointed at a real Python (the default
+`python` on PATH is a Windows Store app-execution-alias stub that fails immediately).
+Docker bind-mount paths from Git Bash need `MSYS_NO_PATHCONV=1` plus a literal
+`C:\...` host path — otherwise MSYS path-conversion mangles both the host path and, more
+surprisingly, the *container-side* path in `docker exec` arguments (e.g. `/app/data/index`
+silently became `C:/Program Files/Git/app/data/index`).
+
+**GCP resources provisioned** (new project `rag-with-receipts`,
+region `northamerica-northeast1`, account `daniel.lofeodo@gmail.com`, billing linked to
+"My Billing Account 1"): Artifact Registry repo `rag-receipts`, GCS bucket
+`rag-with-receipts-index` (index artifacts uploaded, 4.16MiB total), Secret Manager secrets
+`anthropic-api-key` and `demo-api-key` (both granted to the Cloud Run runtime service
+account via `roles/secretmanager.secretAccessor`; the bucket granted
+`roles/storage.objectViewer` to the same account), Cloud Run service `rag-receipts-api`
+(`--allow-unauthenticated`, `--max-instances=2`, `--memory=4Gi --cpu=2 --timeout=60
+--cpu-boost`, no `--min-instances` → scale-to-zero confirmed via the deployed revision's
+annotations).
+
+**Live verification, real deployed service (not local/mocked):** `/livez` → `{"status":
+"ok"}`; `/readyz` → `{"status":"ready"}`; `/` serves the demo page
+(`text/html`); `/query` without `X-Demo-Key` → 401; `/query` with the correct key → a real
+grounded, cited answer (`"What items are required to start Monkey Madness I?"` →
+correctly cites `Monkey_Madness_I__003`, zero hallucinated citations) — confirmed against
+the live Anthropic API and the real 955-chunk index pulled from GCS, not a fake.
+
+**Latency on Cloud Run is substantially worse than Step 7's GPU numbers — measured, not
+estimated, and not chased further here (out of scope for a deployment step).** A few
+real timed `/query` calls against the live service (steady-state, excluding the first
+cold-start call) show rerank specifically degrading the most: ~5000ms on Cloud Run's
+2 vCPUs vs ~700ms in a local CPU Docker run vs 111ms on local GPU (Step 7). Total
+end-to-end: ~9000ms on Cloud Run vs ~4200ms local-CPU-Docker vs 3510ms local-GPU. Full
+comparison table and candidates for a future pass (thread-count tuning, more CPU) are in
+the README's Deployment section rather than duplicated here.
+
+**Verification:** `pytest -q` — 182 passed, 6 deselected (unchanged slow-test set).
+Local Docker build+run verified before any GCP resource existed (caught the pandas/pyarrow
+bug here, for free). Real Cloud Build + Cloud Run deploy verified live (caught the
+`/healthz` interception here). README gained a "Deployment" section (live URL, GCP
+resource table, local-run/redeploy commands, the latency comparison table, and the
+IAP→shared-key pivot explained for a reader who wasn't in this session).
+
+_Status: complete on `feat/gcp-deployment`. Tell the user before starting Step 9's
+in-depth plan._
