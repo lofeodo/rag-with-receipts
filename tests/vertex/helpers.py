@@ -146,3 +146,52 @@ def make_search_result(chunk_id: str, *, document_id: str | None = None) -> Fake
     return FakeSearchResult(
         FakeDocument(id=document_id if document_id is not None else chunk_id, struct_data={"chunk_id": chunk_id})
     )
+
+
+class FakeReference:
+    def __init__(self, struct_data: dict):
+        self.struct_data = struct_data
+
+
+class FakeCitationSource:
+    def __init__(self, reference_id: str):
+        self.reference_id = reference_id
+
+
+class FakeCitation:
+    def __init__(self, sources: list[FakeCitationSource], start_index: int, end_index: int):
+        self.sources = sources
+        self.start_index = start_index
+        self.end_index = end_index
+
+
+class FakeAnswer:
+    def __init__(
+        self,
+        *,
+        answer_text: str,
+        citations: list[FakeCitation] | None = None,
+        references: list[FakeReference] | None = None,
+        grounding_score: float | None = None,
+    ):
+        self.answer_text = answer_text
+        self.citations = citations or []
+        self.references = references or []
+        self.grounding_score = grounding_score
+
+
+class FakeAnswerQueryResponse:
+    def __init__(self, answer: FakeAnswer):
+        self.answer = answer
+
+
+class FakeConversationalSearchServiceClient:
+    """Satisfies VertexAnswerClientLike. Records every request it receives."""
+
+    def __init__(self, response: FakeAnswerQueryResponse):
+        self._response = response
+        self.requests: list[object] = []
+
+    def answer_query(self, request):
+        self.requests.append(request)
+        return self._response

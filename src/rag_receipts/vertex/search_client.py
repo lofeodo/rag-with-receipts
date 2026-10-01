@@ -18,22 +18,11 @@ import pandas as pd
 from rag_receipts.retrieval.models import RetrievedChunk
 from rag_receipts.retrieval.pipeline import load_metadata
 from rag_receipts.vertex.config import VertexConfig
-from rag_receipts.vertex.resolve import resolve_chunk
+from rag_receipts.vertex.resolve import resolve_chunk, struct_to_dict
 
 
 class VertexSearchClientLike(Protocol):
     def search(self, request: Any) -> Iterable[Any]: ...
-
-
-def _struct_to_dict(struct_data: Any) -> dict:
-    """struct_data is a protobuf Struct on a real response; unit tests hand back
-    a plain dict directly, so this short-circuits rather than requiring the
-    real protobuf type."""
-    if isinstance(struct_data, dict):
-        return struct_data
-    from google.protobuf.json_format import MessageToDict
-
-    return MessageToDict(struct_data)
 
 
 def _build_search_request(query: str, config: VertexConfig) -> Any:
@@ -57,7 +46,7 @@ def _resolve_chunk_id(result: Any) -> str | None:
     so a transformation/escaping quirk in either channel alone doesn't silently
     drop a resolvable chunk."""
     document = result.document
-    struct_data = _struct_to_dict(document.struct_data)
+    struct_data = struct_to_dict(document.struct_data)
     struct_chunk_id = struct_data.get("chunk_id")
     document_id = document.id
 
