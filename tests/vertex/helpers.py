@@ -6,6 +6,89 @@ from __future__ import annotations
 
 import pandas as pd
 
+from rag_receipts.eval.models import EvalQuestion
+from rag_receipts.retrieval.models import RetrievedChunk
+
+
+def make_chunks(n: int = 3) -> list[RetrievedChunk]:
+    return [
+        RetrievedChunk(
+            chunk_id=f"Test_page__{i:03d}",
+            page_title="Test page",
+            url="https://oldschool.runescape.wiki/w/Test_page",
+            section_path="Section A" if i % 2 == 0 else "",
+            heading_anchor="Section_A" if i % 2 == 0 else "",
+            source_type="prose",
+            text=f"This is synthetic chunk number {i}.",
+            token_count=50 + i,
+            dense_score=0.0,
+            rerank_score=0.0,
+            dense_rank=i + 1,
+            final_rank=i + 1,
+        )
+        for i in range(n)
+    ]
+
+
+def make_eval_questions(n: int = 3) -> list[EvalQuestion]:
+    return [
+        EvalQuestion(
+            id=f"q{i:03d}",
+            question=f"Synthetic question {i}?",
+            type="single_hop",
+            answerable=True,
+            gold_chunk_ids=[f"Test_page__{i:03d}"],
+            gold_answer=f"Synthetic gold answer {i}.",
+        )
+        for i in range(n)
+    ]
+
+
+class FakeVertexRetriever:
+    def __init__(self, chunks_by_query: dict[str, list]):
+        self._chunks_by_query = chunks_by_query
+
+    def retrieve(self, query):
+        return self._chunks_by_query.get(query, [])
+
+
+class FakeGenerator:
+    def __init__(self, responses: dict[str, object]):
+        self._responses = responses
+        self.calls: list[str] = []
+
+    def generate(self, query, chunks):
+        self.calls.append(query)
+        response = self._responses[query]
+        if isinstance(response, Exception):
+            raise response
+        return response
+
+
+class FakeJudge:
+    def __init__(self, responses: dict[str, object]):
+        self._responses = responses
+        self.calls: list[str] = []
+
+    def score(self, question, gold_answer, generated_answer):
+        self.calls.append(question)
+        response = self._responses[question]
+        if isinstance(response, Exception):
+            raise response
+        return response
+
+
+class FakeGroundingChecker:
+    def __init__(self, verdicts=None):
+        self._verdicts = verdicts if verdicts is not None else []
+        self.calls: list[list] = []
+
+    def check(self, citations):
+        self.calls.append(citations)
+        if not citations:
+            return []
+        return self._verdicts
+
 
 def make_metadata_df() -> pd.DataFrame:
     return pd.DataFrame(
