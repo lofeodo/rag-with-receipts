@@ -32,6 +32,10 @@ serve = [
 gcp = [
     "google-cloud-storage",
 ]
+vertex = [
+    "google-cloud-discoveryengine",
+    "google-cloud-storage",
+]
 eval = [
     "anthropic",
     "tqdm",
