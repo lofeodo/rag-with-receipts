@@ -26,6 +26,9 @@ serve = [
     "uvicorn",
     "anthropic",
 ]
+gcp = [
+    "google-cloud-storage",
+]
 eval = [
     "anthropic",
     "tqdm",
@@ -36,6 +39,7 @@ generation = [
 dev = [
     "pytest",
     "ruff",
+    "httpx",  # required by fastapi.testclient.TestClient
 ]
 
 [build-system]
