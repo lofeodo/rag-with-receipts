@@ -20,11 +20,17 @@ ingest = [
 index = [
     "sentence-transformers",
     "faiss-cpu",
+    "pandas",   # index_metadata.parquet read/write (indexing/output.py, retrieval/pipeline.py)
+    "pyarrow",  # parquet engine for pandas
 ]
 serve = [
     "fastapi",
     "uvicorn",
     "anthropic",
+    "pyyaml",  # rag_receipts.config.load_config
+]
+gcp = [
+    "google-cloud-storage",
 ]
 eval = [
     "anthropic",
@@ -36,6 +42,7 @@ generation = [
 dev = [
     "pytest",
     "ruff",
+    "httpx",  # required by fastapi.testclient.TestClient
 ]
 
 [build-system]
