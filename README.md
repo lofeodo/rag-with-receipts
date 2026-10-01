@@ -59,7 +59,81 @@ flowchart LR
 
 ## Benchmarks
 
-_Coming after the eval harness (Step 5) is built._
+All numbers below are from one clean run of the full 55-question hand-authored
+gold set (`data/eval/qa_pairs.json`), under the pipeline's current default
+config (`ms-marco-MiniLM-L-6-v2` reranker). Reproduce with
+`python scripts/run_eval.py` / `python scripts/measure_latency.py`.
+
+### Retrieval
+
+| | Overall | Single-hop (n=35) | Multi-hop (n=15) |
+|---|---|---|---|
+| Hit rate | 0.96 | 0.97 | 0.93 |
+| Recall | 0.88 | 0.97 | 0.67 |
+| MRR | 0.75 | 0.81 | 0.61 |
+
+Precision (not shown) is deliberately low by construction — the denominator
+is `top_k_final=5` against a 1-2-chunk gold set, so even perfect retrieval
+can't clear ~0.2-0.4.
+
+### Correctness (LLM-as-judge)
+
+| | Overall | Single-hop | Multi-hop |
+|---|---|---|---|
+| Accuracy | 0.84 | 1.00 | 0.47 |
+
+Two caveats worth reading before trusting the multi-hop number: it's n=15,
+small enough that a couple of borderline verdicts move it several points —
+treat it as "meaningfully worse than single-hop," not a precise figure.
+And the gap is dominantly a **retrieval** story, not a reasoning failure:
+most non-fully-correct multi-hop cases trace back to the retrieved top-k
+missing one of two gold chunks, with generation correctly declining rather
+than fabricating the missing fact (full trace in CLAUDE.md's Step 5 notes).
+
+### Grounding (citation-level entailment + overlap check)
+
+| Grounded | Contradicted | Ungrounded | Fully-grounded answers |
+|---|---|---|---|
+| 0.95 | 0.05 | 0.00 | 0.91 |
+
+(77 citations checked across 44 answers.) Read `contradicted` as "flagged
+for human review," not "confirmed error" — in the original run, all 3
+flagged citations were manually confirmed to be false positives from the
+general-domain NLI model misreading this corpus's flattened-table/telegraphic
+chunk style, not real contradictions (full writeup in CLAUDE.md's Step 6
+notes).
+
+### Reranker sweep (what justified the current default)
+
+| Model | Recall | Hit rate | MRR | Rerank p50 | Rerank p95 |
+|---|---|---|---|---|---|
+| `bge-reranker-base` (original default) | 0.83 | 0.90 | 0.70 | 552ms | 567ms |
+| `bge-reranker-v2-m3` (stronger) | 0.90 | 0.98 | 0.84 | 2775ms | 3331ms |
+| **`ms-marco-MiniLM-L-6-v2` (adopted)** | **0.88** | **0.96** | **0.75** | **111ms** | **128ms** |
+
+The adopted model Pareto-dominates the original default: higher recall,
+hit-rate, and MRR, *and* ~5x lower rerank latency (552ms→111ms p50) — not a
+tradeoff call.
+`bge-reranker-v2-m3` is more accurate still, but at a ~26x latency cost over
+the adopted default that isn't justified once end-to-end latency is already
+dominated by generation (see below).
+
+### Latency (per-stage, local GPU)
+
+| Stage | p50 | p95 |
+|---|---|---|
+| embed_query | 80ms | 154ms |
+| dense_search | 0.3ms | 0.7ms |
+| rerank | 276ms | 340ms |
+| retrieval_total | 349ms | 425ms |
+| generate | 2918ms | 7224ms |
+| end_to_end | 3256ms | 7577ms |
+
+Generation (the Claude API round-trip) dominates end-to-end latency, not
+retrieval. Treat p95 as directional, not precise — it's the ~52nd-highest
+value out of 55 samples, and `generate_s` in particular varies run to run
+since generation isn't temperature-pinned (adaptive thinking doesn't accept
+sampling params on this model).
 
 ## Deployment
 
