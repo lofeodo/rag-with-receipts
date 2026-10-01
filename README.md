@@ -37,7 +37,9 @@ A live version runs on GCP Cloud Run:
 
 The service is public but gated by a shared demo key (`/query` requires an
 `X-Demo-Key` header matching a value kept in Secret Manager) — paste it into
-the "Demo key" field on the page, or ask the author for it. This was a
+the "Demo key" field on the page. Don't have one? Email
+[daniel.lofeodo@gmail.com](mailto:daniel.lofeodo@gmail.com) to request it.
+This was a
 fallback from the original plan (Cloud Run's native IAP, gating access behind
 Google sign-in): IAP's OAuth consent setup turns out to require the GCP
 project to belong to an Organization, which a personal-account project isn't
