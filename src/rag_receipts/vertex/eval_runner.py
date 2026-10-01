@@ -19,6 +19,8 @@ from rag_receipts.generation.generator import Generator
 from rag_receipts.generation.models import GeneratedAnswer
 from rag_receipts.grounding.checker import GroundingChecker, summarize_grounding
 from rag_receipts.grounding.models import AnswerGrounding
+from rag_receipts.vertex.answer_client import VertexAnswerer
+from rag_receipts.vertex.models import VertexEvalResult
 from rag_receipts.vertex.search_client import VertexRetriever
 
 
@@ -128,6 +130,123 @@ def run_vertex_eval_search(
                 judge=verdict,
                 correctness_label=verdict.verdict,
                 grounding=grounding,
+            )
+        )
+
+    return results
+
+
+def run_vertex_eval_answer(
+    questions: list[EvalQuestion],
+    *,
+    vertex_answerer: VertexAnswerer,
+    judge: Judge,
+    grounding_checker: GroundingChecker,
+) -> list[VertexEvalResult]:
+    """Config B: no Retriever/Generator call at all - Vertex's Answer API owns
+    retrieval+generation end-to-end. Retrieval precision is scored against the
+    chunk_ids Vertex actually cited (via each Citation's resolved .chunk), not
+    a separate ranked search-results list - the Answer API doesn't expose one
+    the way the Search API does, so "what was retrieved" here means "what was
+    cited," a narrower signal than config A/baseline's full top-k. This
+    asymmetry must be stated wherever config B's retrieval numbers are
+    reported (see compare_vertex.py's methodology_notes)."""
+    results: list[VertexEvalResult] = []
+    for question in questions:
+        try:
+            generated, vertex_grounding_score = vertex_answerer.answer(question.question)
+        except RuntimeError as exc:
+            results.append(
+                VertexEvalResult(
+                    question=question,
+                    retrieval=None,
+                    generated=None,
+                    judge=None,
+                    correctness_label="error",
+                    grounding=None,
+                    error=f"vertex answer failed: {exc}",
+                    vertex_grounding_score=None,
+                )
+            )
+            continue
+
+        retrieval_score = (
+            score_retrieval([c.chunk for c in generated.citations], question.gold_chunk_ids)
+            if question.answerable
+            else None
+        )
+        grounding = _compute_grounding(generated, grounding_checker)
+
+        if question.answerable and not generated.answerable:
+            results.append(
+                VertexEvalResult(
+                    question=question,
+                    retrieval=retrieval_score,
+                    generated=generated,
+                    judge=None,
+                    correctness_label="incorrectly_abstained",
+                    grounding=grounding,
+                    vertex_grounding_score=vertex_grounding_score,
+                )
+            )
+            continue
+
+        if not question.answerable and generated.answerable:
+            results.append(
+                VertexEvalResult(
+                    question=question,
+                    retrieval=retrieval_score,
+                    generated=generated,
+                    judge=None,
+                    correctness_label="incorrectly_answered",
+                    grounding=grounding,
+                    vertex_grounding_score=vertex_grounding_score,
+                )
+            )
+            continue
+
+        if not question.answerable and not generated.answerable:
+            results.append(
+                VertexEvalResult(
+                    question=question,
+                    retrieval=retrieval_score,
+                    generated=generated,
+                    judge=None,
+                    correctness_label="correct_abstention",
+                    grounding=grounding,
+                    vertex_grounding_score=vertex_grounding_score,
+                )
+            )
+            continue
+
+        # Both sides say "yes" - the only case that actually spends a judge call.
+        assert question.gold_answer is not None  # enforced by load_eval_questions
+        try:
+            verdict = judge.score(question.question, question.gold_answer, generated.answer)
+        except RuntimeError as exc:
+            results.append(
+                VertexEvalResult(
+                    question=question,
+                    retrieval=retrieval_score,
+                    generated=generated,
+                    judge=None,
+                    correctness_label="error",
+                    grounding=grounding,
+                    error=f"judging failed: {exc}",
+                    vertex_grounding_score=vertex_grounding_score,
+                )
+            )
+            continue
+
+        results.append(
+            VertexEvalResult(
+                question=question,
+                retrieval=retrieval_score,
+                generated=generated,
+                judge=verdict,
+                correctness_label=verdict.verdict,
+                grounding=grounding,
+                vertex_grounding_score=vertex_grounding_score,
             )
         )
 

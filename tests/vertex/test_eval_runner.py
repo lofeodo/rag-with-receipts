@@ -3,9 +3,16 @@ from __future__ import annotations
 from rag_receipts.eval.models import EvalQuestion, JudgeVerdict
 from rag_receipts.generation.models import Citation, GeneratedAnswer
 from rag_receipts.grounding.models import GroundingVerdict
-from rag_receipts.vertex.eval_runner import run_vertex_eval_search
+from rag_receipts.vertex.eval_runner import run_vertex_eval_answer, run_vertex_eval_search
 
-from .helpers import FakeGenerator, FakeGroundingChecker, FakeJudge, FakeVertexRetriever, make_chunks
+from .helpers import (
+    FakeGenerator,
+    FakeGroundingChecker,
+    FakeJudge,
+    FakeVertexAnswerer,
+    FakeVertexRetriever,
+    make_chunks,
+)
 
 
 def _grounding_verdict(chunk_id: str, label: str) -> GroundingVerdict:
@@ -136,3 +143,89 @@ def test_grounding_computed_when_answer_has_citations():
     assert results[0].grounding is not None
     assert results[0].grounding.all_grounded is True
     assert grounding_checker.calls == [[citation]]
+
+
+def _vertex_answer(
+    query: str, *, answerable: bool, answer: str = "some answer", citations: list[Citation] | None = None
+) -> GeneratedAnswer:
+    return GeneratedAnswer(
+        query=query,
+        answer=answer,
+        citations=citations if citations is not None else [],
+        answerable=answerable,
+        hallucinated_citation_ids=[],
+        has_hallucinated_citations=False,
+        model="vertex-answer-api",
+        input_tokens=0,
+        output_tokens=0,
+        stop_reason="vertex_answer",
+    )
+
+
+def test_run_vertex_eval_answer_correct_abstention_needs_no_judge_call():
+    q = _question("q1", answerable=False)
+    answerer = FakeVertexAnswerer({"q1": (_vertex_answer("q1", answerable=False), 0.9)})
+    judge = FakeJudge({})
+
+    results = run_vertex_eval_answer(
+        [q], vertex_answerer=answerer, judge=judge, grounding_checker=FakeGroundingChecker()
+    )
+
+    assert results[0].correctness_label == "correct_abstention"
+    assert results[0].judge is None
+    assert results[0].vertex_grounding_score == 0.9
+    assert judge.calls == []
+
+
+def test_run_vertex_eval_answer_both_answerable_calls_judge():
+    q = _question("q1", answerable=True)
+    chunk = make_chunks(1)[0]
+    citation = Citation(chunk_id=chunk.chunk_id, claim="claim", chunk=chunk)
+    answerer = FakeVertexAnswerer(
+        {"q1": (_vertex_answer("q1", answerable=True, citations=[citation]), 0.75)}
+    )
+    judge = FakeJudge({"q1": _verdict("correct")})
+
+    results = run_vertex_eval_answer(
+        [q], vertex_answerer=answerer, judge=judge, grounding_checker=FakeGroundingChecker()
+    )
+
+    assert results[0].correctness_label == "correct"
+    assert results[0].retrieval is not None
+    assert results[0].retrieval.hit is True  # cited chunk matches gold_chunk_ids
+    assert results[0].vertex_grounding_score == 0.75
+    assert judge.calls == ["q1"]
+
+
+def test_run_vertex_eval_answer_failure_recorded_as_error():
+    q = _question("q1", answerable=True)
+    answerer = FakeVertexAnswerer({"q1": RuntimeError("vertex api down")})
+    judge = FakeJudge({})
+
+    results = run_vertex_eval_answer(
+        [q], vertex_answerer=answerer, judge=judge, grounding_checker=FakeGroundingChecker()
+    )
+
+    assert results[0].correctness_label == "error"
+    assert results[0].generated is None
+    assert "vertex api down" in results[0].error
+    assert results[0].vertex_grounding_score is None
+
+
+def test_run_vertex_eval_answer_grounding_computed_from_citations():
+    q = _question("q1", answerable=True)
+    chunk = make_chunks(1)[0]
+    citation = Citation(chunk_id=chunk.chunk_id, claim="claim", chunk=chunk)
+    answerer = FakeVertexAnswerer(
+        {"q1": (_vertex_answer("q1", answerable=True, citations=[citation]), None)}
+    )
+    judge = FakeJudge({"q1": _verdict("correct")})
+    grounding_checker = FakeGroundingChecker([_grounding_verdict(chunk.chunk_id, "grounded")])
+
+    results = run_vertex_eval_answer(
+        [q], vertex_answerer=answerer, judge=judge, grounding_checker=grounding_checker
+    )
+
+    assert results[0].grounding is not None
+    assert results[0].grounding.all_grounded is True
+    assert results[0].vertex_grounding_score is None

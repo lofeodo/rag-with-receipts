@@ -28,7 +28,8 @@ from rag_receipts.eval.judge import Judge
 from rag_receipts.eval.runner import summarize
 from rag_receipts.generation.generator import Generator
 from rag_receipts.grounding.checker import GroundingChecker
-from rag_receipts.vertex.eval_runner import run_vertex_eval_search
+from rag_receipts.vertex.answer_client import VertexAnswerer
+from rag_receipts.vertex.eval_runner import run_vertex_eval_answer, run_vertex_eval_search
 from rag_receipts.vertex.search_client import VertexRetriever
 
 
@@ -74,6 +75,57 @@ def _run_search_mode(cfg, questions) -> None:
     )
 
 
+def _run_answer_mode(cfg, questions) -> None:
+    index_dir = Path(cfg.indexing.output.index_dir)
+    metadata_path = index_dir / cfg.indexing.output.metadata_filename
+
+    vertex_answerer = VertexAnswerer.from_config(cfg.vertex, metadata_path)
+    judge = Judge.from_config(cfg.eval)
+    grounding_checker = GroundingChecker.from_config(cfg.grounding)
+
+    results = []
+    for question in tqdm(questions, desc="Running Vertex Answer eval (config B)"):
+        results.extend(
+            run_vertex_eval_answer(
+                [question],
+                vertex_answerer=vertex_answerer,
+                judge=judge,
+                grounding_checker=grounding_checker,
+            )
+        )
+
+    summary = summarize(results)
+    output_path = Path(cfg.vertex.answer_results_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    scored_grounding_scores = [r.vertex_grounding_score for r in results if r.vertex_grounding_score is not None]
+    mean_vertex_grounding_score = (
+        sum(scored_grounding_scores) / len(scored_grounding_scores) if scored_grounding_scores else None
+    )
+    report = {
+        "summary": asdict(summary),
+        "mean_vertex_grounding_score": mean_vertex_grounding_score,
+        "results": [asdict(r) for r in results],
+    }
+    output_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    print(f"\n[config B - Vertex Answer API] Wrote {len(results)} results to {output_path}")
+    print(f"Questions: {summary.question_count}  Errors: {summary.error_count}")
+    print(
+        "Retrieval (scored from cited chunk_ids only, not a full ranked search result list) - "
+        f"precision: {summary.retrieval['mean_precision']:.3f}  "
+        f"recall: {summary.retrieval['mean_recall']:.3f}  "
+        f"MRR: {summary.retrieval['mean_mrr']:.3f}  "
+        f"hit rate: {summary.retrieval['hit_rate']:.3f}"
+    )
+    print(f"Correctness accuracy: {summary.correctness_accuracy:.3f}")
+    print(
+        f"Grounding (our checker) - grounded: {summary.grounding['grounded_rate']:.3f}  "
+        f"contradicted: {summary.grounding['contradicted_rate']:.3f}"
+    )
+    if mean_vertex_grounding_score is not None:
+        print(f"Vertex's own self-reported grounding_score (mean): {mean_vertex_grounding_score:.3f}")
+
+
 def main() -> None:
     config_path = "config/config.yaml"
     if "--config" in sys.argv:
@@ -91,7 +143,7 @@ def main() -> None:
     if mode in ("search", "both"):
         _run_search_mode(cfg, questions)
     if mode in ("answer", "both"):
-        print("\n--mode answer is not implemented yet (config B lands in a later commit).")
+        _run_answer_mode(cfg, questions)
 
 
 if __name__ == "__main__":

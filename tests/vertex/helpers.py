@@ -78,6 +78,19 @@ class FakeJudge:
         return response
 
 
+class FakeVertexAnswerer:
+    def __init__(self, responses: dict[str, object]):
+        self._responses = responses
+        self.calls: list[str] = []
+
+    def answer(self, query):
+        self.calls.append(query)
+        response = self._responses[query]
+        if isinstance(response, Exception):
+            raise response
+        return response
+
+
 class FakeGroundingChecker:
     def __init__(self, verdicts=None):
         self._verdicts = verdicts if verdicts is not None else []
