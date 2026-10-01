@@ -115,8 +115,15 @@ def create_app(
         max_requests=RATE_LIMIT_MAX_REQUESTS, window_seconds=RATE_LIMIT_WINDOW_SECONDS
     )
 
-    @app.get("/healthz")
-    def healthz() -> dict:
+    @app.get("/livez")
+    def livez() -> dict:
+        # Not /healthz: confirmed live against the deployed Cloud Run service
+        # that the literal path "/healthz" is intercepted and 404'd by
+        # Google's infrastructure before it ever reaches the container
+        # (every other path, including ones containing "health", reaches the
+        # app fine - verified by comparing response headers: the intercepted
+        # response has no `server: Google Frontend` / `x-cloud-trace-context`
+        # that every real app response carries).
         return {"status": "ok"}
 
     @app.get("/readyz")

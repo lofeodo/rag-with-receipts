@@ -15,9 +15,9 @@ def _app(**overrides):
     return create_app(**kwargs)
 
 
-def test_healthz_always_ok():
+def test_livez_always_ok():
     client = TestClient(_app())
-    resp = client.get("/healthz")
+    resp = client.get("/livez")
     assert resp.status_code == 200
 
 
