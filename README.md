@@ -4,9 +4,9 @@ A retrieval-augmented generation pipeline over a scoped slice of the [Old School
 Wiki](https://oldschool.runescape.wiki/), built to demonstrate retrieval accuracy, grounded
 and cited answers, and latency-optimized inference — not just chat-with-a-doc.
 
-**Status:** early scaffold. Architecture notes, setup instructions, and benchmark numbers
-will land here as each pipeline stage is built — see [CLAUDE.md](CLAUDE.md) for the current
-step and full plan.
+**Status:** complete and live on Cloud Run — see [Benchmarks](#benchmarks) for
+measured numbers and [Deployment](#deployment) for the live URL. Full
+step-by-step build history and design rationale is in [CLAUDE.md](CLAUDE.md).
 
 ## Why the OSRS Wiki
 
