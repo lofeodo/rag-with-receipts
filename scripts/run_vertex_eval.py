@@ -28,6 +28,7 @@ from rag_receipts.eval.judge import Judge
 from rag_receipts.eval.runner import summarize
 from rag_receipts.generation.generator import Generator
 from rag_receipts.grounding.checker import GroundingChecker
+from rag_receipts.telemetry.timing import Stopwatch, summarize_durations
 from rag_receipts.vertex.answer_client import VertexAnswerer
 from rag_receipts.vertex.eval_runner import run_vertex_eval_answer, run_vertex_eval_search
 from rag_receipts.vertex.search_client import VertexRetriever
@@ -43,21 +44,27 @@ def _run_search_mode(cfg, questions) -> None:
     grounding_checker = GroundingChecker.from_config(cfg.grounding)
 
     results = []
+    durations_s: list[float] = []
     for question in tqdm(questions, desc="Running Vertex Search eval (config A)"):
-        results.extend(
-            run_vertex_eval_search(
+        with Stopwatch() as sw:
+            question_results = run_vertex_eval_search(
                 [question],
                 vertex_retriever=vertex_retriever,
                 generator=generator,
                 judge=judge,
                 grounding_checker=grounding_checker,
             )
-        )
+        durations_s.append(sw.elapsed_seconds)
+        results.extend(question_results)
 
     summary = summarize(results)
+    # end-to-end only: Vertex's Search API exposes one wall-clock number per
+    # call, no retrieval/generation stage split the way the baseline's
+    # staged measure_latency.py gets from Vertex's own internals.
+    latency = summarize_durations(durations_s)
     output_path = Path(cfg.vertex.search_results_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    report = {"summary": asdict(summary), "results": [asdict(r) for r in results]}
+    report = {"summary": asdict(summary), "latency_end_to_end_s": latency, "results": [asdict(r) for r in results]}
     output_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"\n[config A - Vertex Search] Wrote {len(results)} results to {output_path}")
@@ -73,6 +80,7 @@ def _run_search_mode(cfg, questions) -> None:
         f"Grounding - grounded: {summary.grounding['grounded_rate']:.3f}  "
         f"contradicted: {summary.grounding['contradicted_rate']:.3f}"
     )
+    print(f"End-to-end latency (Vertex Search call + our own generate call) - p50: {latency['p50']:.3f}s  p95: {latency['p95']:.3f}s")
 
 
 def _run_answer_mode(cfg, questions) -> None:
@@ -84,17 +92,22 @@ def _run_answer_mode(cfg, questions) -> None:
     grounding_checker = GroundingChecker.from_config(cfg.grounding)
 
     results = []
+    durations_s: list[float] = []
     for question in tqdm(questions, desc="Running Vertex Answer eval (config B)"):
-        results.extend(
-            run_vertex_eval_answer(
+        with Stopwatch() as sw:
+            question_results = run_vertex_eval_answer(
                 [question],
                 vertex_answerer=vertex_answerer,
                 judge=judge,
                 grounding_checker=grounding_checker,
             )
-        )
+        durations_s.append(sw.elapsed_seconds)
+        results.extend(question_results)
 
     summary = summarize(results)
+    # end-to-end only: Vertex's Answer API is retrieval+generation in one call,
+    # with no internal stage split exposed the way our own staged pipeline has.
+    latency = summarize_durations(durations_s)
     output_path = Path(cfg.vertex.answer_results_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     scored_grounding_scores = [r.vertex_grounding_score for r in results if r.vertex_grounding_score is not None]
@@ -103,6 +116,7 @@ def _run_answer_mode(cfg, questions) -> None:
     )
     report = {
         "summary": asdict(summary),
+        "latency_end_to_end_s": latency,
         "mean_vertex_grounding_score": mean_vertex_grounding_score,
         "results": [asdict(r) for r in results],
     }
@@ -124,6 +138,7 @@ def _run_answer_mode(cfg, questions) -> None:
     )
     if mean_vertex_grounding_score is not None:
         print(f"Vertex's own self-reported grounding_score (mean): {mean_vertex_grounding_score:.3f}")
+    print(f"End-to-end latency (Vertex Answer API call only) - p50: {latency['p50']:.3f}s  p95: {latency['p95']:.3f}s")
 
 
 def main() -> None:
