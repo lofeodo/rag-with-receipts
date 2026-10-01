@@ -15,6 +15,13 @@ requirements, drop mechanics), which makes for a stronger eval set — both for 
 retrieval questions and for the hallucination/grounding check. Content is CC BY-NC-SA 3.0;
 used here for non-commercial, personal portfolio purposes.
 
+## License
+
+This project's code is MIT-licensed (see [LICENSE](LICENSE)). That covers the
+pipeline, scripts, and config only — it does not relicense the OSRS Wiki
+content itself, which remains CC BY-NC-SA 3.0, non-commercial, and attributed,
+as described above.
+
 ## Architecture
 
 _Coming as each step lands — see CLAUDE.md for the planned pipeline and current progress._
