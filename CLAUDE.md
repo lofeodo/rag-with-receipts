@@ -1193,11 +1193,38 @@ currently invisible inside a measurement artifact of the missing abstention
 signal, not a real correctness difference this comparison can isolate as
 reported.
 
+**Teardown, confirmed complete:** the engine, data store, and
+`rag-with-receipts-vertex-corpus` bucket were all deleted via the Discovery
+Engine REST API / `gsutil rm -r`. One side effect not anticipated in the
+original plan: `import_documents` auto-created its own staging bucket
+(`374659103328_476272032_northamerica_northeast1_import_docume`, holding a
+6-byte error log) that isn't mentioned anywhere in the data store/engine
+resources themselves — caught by listing all buckets in the project after
+the planned teardown and noticing one that didn't match anything expected,
+rather than assuming the three-resource teardown list from the plan was
+complete. Deleted too. Final state confirmed via a clean bucket list (only
+Step 8's pre-existing `rag-with-receipts-index` and
+`rag-with-receipts_cloudbuild` remain) and empty `{}` responses from the
+Discovery Engine data stores/engines list endpoints.
+
+**Before any of this, a real cost discussion happened and is worth recording
+since it corrected an assumption baked into the original plan.** The
+approved plan said to tear resources down immediately "to avoid ongoing
+cost," but when the user asked directly whether they actually cost money,
+checking real pricing showed the honest answer was no: Discovery Engine
+includes the first 10GB of indexed data free (this corpus is a few MB), GCS
+storage for the same few MB is a fraction of a cent/month, and there's no
+flat/subscription fee at this scale — so leaving it running had no real
+ticking cost. The user chose to tear down anyway once this was clarified,
+but as a hygiene decision, not a forced one. Lesson: the plan's own
+cost-urgency framing wasn't re-verified against real pricing before being
+stated as fact to the user — worth checking "does this actually cost money"
+empirically rather than carrying forward an unverified assumption from the
+planning phase, same discipline this step already applied to the Enterprise-
+tier-minimum-commitment question.
+
 _Status: complete on `feat/vertex-comparison`. README gained a "Vertex AI
 Search comparison" subsection under Benchmarks with the headline table and
-all four methodology asymmetries. The Discovery Engine data store, engine,
-and GCS bucket were torn down after these numbers were captured and
-committed — this was a one-time measurement, not a second production
-surface, consistent with the project's zero/near-zero recurring cost stance
-everywhere else. Tell the user before starting the next stretch goal
-(Haiku-vs-Sonnet generation comparison, per the checklist order)._
+all four methodology asymmetries. Tell the user before starting the next
+stretch goal (Haiku-vs-Sonnet generation comparison, per the checklist
+order)._
