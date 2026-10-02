@@ -203,6 +203,62 @@ one quota-triggered retry) was $0 — comfortably inside Vertex AI Search's
 10,000-free-queries/month tier. The data store, engine, and GCS bucket were
 torn down immediately after these numbers were captured.
 
+### Haiku vs Sonnet generation comparison (stretch goal)
+
+Generation model is a config parameter, not hardcoded (see Architecture
+above) — this swaps only that one parameter and re-runs the full 55-question
+gold set, holding retrieval, the LLM-as-judge model (always Sonnet 5, so
+grading itself doesn't become a second variable), and the grounding checker
+fixed, to isolate what the generation model alone changes.
+
+| Metric | Claude Sonnet 5 | Claude Haiku 4.5 |
+|---|---|---|
+| Correctness accuracy | **0.836** | 0.818 |
+| — single-hop (n=35) | **1.000** | 0.971 |
+| — multi-hop (n=15) | **0.467** | 0.400 |
+| Grounded rate | 0.951 | **0.973** |
+| Latency p50 / p95 | 2.55s / 6.17s | **2.38s / 3.90s** |
+| Generation + judge cost (55 questions) | $0.683 | **$0.348** |
+
+Retrieval metrics are identical across both arms (same `Retriever`, same
+questions) — confirms the two runs are isolating the generation model and
+nothing else, not just claimed.
+
+**The honest read: this is not a clean win for either model.** Sonnet 5 is
+marginally more accurate overall, but the gap (0.836 vs 0.818, ~1 extra
+question out of 55) is within the non-determinism band this project has
+already documented for ungrounded generation calls (Steps 5-7) — not a
+confident win. Haiku 4.5 is *more* often correctly grounded (0.973 vs 0.951)
+despite being the cheaper model, meaningfully faster at the tail (p95 3.90s
+vs 6.17s, driven by Sonnet's adaptive-thinking overhead), and costs roughly
+half as much for generation + judging combined. The two models also fail
+differently, not just by a different amount: Sonnet produced 1 hallucinated
+answer on a question it should have abstained on
+(`incorrectly_answered: 1`) and 0 for Haiku, while Haiku incorrectly
+abstained more often than Sonnet (5 vs 3) — i.e. Haiku is the more
+conservative of the two, never answering when it shouldn't but giving up
+slightly more often when it could have answered. For a project framed around
+grounded, cited answers over raw correctness, Haiku 4.5 is a genuinely
+reasonable default candidate on this corpus, not just a cheaper fallback —
+though Sonnet 5 remains the production default here since this comparison
+alone isn't a strong enough signal to change a locked decision.
+
+Every parameter sent to the API is logged per arm in
+`results/generation_model_comparison.json`'s `request_config` field (model,
+`max_tokens`, the forced `tool_choice` schema, and explicit notes on two real
+asymmetries that exist *despite* sending an identical request to both
+models): neither call sets `thinking`, but Sonnet 5 runs adaptive thinking by
+default when it's omitted while Haiku 4.5 runs no thinking at all; and
+neither call pins `temperature`/`top_p`/`top_k`, because Sonnet 5 would
+reject them outright (sampling params 400 while adaptive thinking is active)
+while Haiku 4.5 would accept them — the two models aren't equally capable of
+being made deterministic, so neither is pinned rather than pinning one and
+not the other. A live smoke test confirmed Haiku 4.5 accepts the same forced
+`tool_choice` schema Sonnet 5 uses for structured citations before trusting
+it across the full batch. Pricing ($2/$10 per 1M input/output tokens for
+Sonnet 5, $1/$5 for Haiku 4.5) is Anthropic's first-party API rate captured
+2026-10-02.
+
 ## Deployment
 
 A live version runs on GCP Cloud Run:

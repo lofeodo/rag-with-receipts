@@ -46,7 +46,11 @@ quantified comparison against the managed alternative.
       55-question gold set: Vertex's managed retrieval beat the hand-built pipeline on every
       retrieval/correctness metric measured, with four documented structural asymmetries
       limiting how far that generalizes. See status note below.
-- [ ] Stretch — Haiku vs Sonnet generation comparison
+- [x] **Stretch — Haiku vs Sonnet generation comparison** ← real run against the live
+      55-question gold set: Sonnet 5 accuracy 0.836 vs Haiku 4.5 0.818 (within the
+      already-documented non-determinism band), Haiku *better* grounded (0.973 vs 0.951)
+      at ~half the generation+judge cost and a meaningfully lower p95 latency. See status
+      note below.
 - [ ] Stretch — pgvector-on-Cloud-SQL backend swap
 - [ ] Stretch — Demo site benchmarks panel: static charts for the already-measured metrics
       (retrieval hit-rate/recall/MRR, correctness accuracy by question type, grounding rates,
@@ -1228,3 +1232,120 @@ Search comparison" subsection under Benchmarks with the headline table and
 all four methodology asymmetries. Tell the user before starting the next
 stretch goal (Haiku-vs-Sonnet generation comparison, per the checklist
 order)._
+
+### Stretch — Haiku vs Sonnet generation comparison (complete)
+
+**Goal:** swap only the generation model (Sonnet 5 → Haiku 4.5) across the full
+55-question gold set, holding retrieval, the LLM-as-judge model (always Sonnet 5 —
+grading itself must not become a second variable), and the grounding checker fixed,
+and report a latency/cost/correctness table — not a core metric, per the locked
+decisions table's own framing of this as a stretch goal.
+
+**A real fairness requirement surfaced before implementation, direct from the
+user:** before approving the plan, the user asked explicitly whether every
+model-relevant configuration detail (thinking budget, and "whatever else there may
+be") would be logged so the comparison is actually fair, not just claimed to be.
+This reshaped the design: `scripts/compare_generation_models.py` logs a declarative
+`request_config` per arm (model, `max_tokens`, the literal system prompt, the
+`tools`/`tool_choice` schema, and explicit notes on two real asymmetries that exist
+even though the request sent to each model is otherwise identical) directly into
+`results/generation_model_comparison.json`, rather than asserting fairness only in
+prose:
+- **Thinking default asymmetry:** neither arm sets `thinking` at all, but Sonnet 5
+  runs adaptive thinking by default when it's omitted, while Haiku 4.5 runs no
+  thinking at all when omitted (Haiku only thinks via the older
+  `{"type":"enabled","budget_tokens":N}` shape, not used here).
+- **Sampling-capability asymmetry:** neither arm pins `temperature`/`top_p`/
+  `top_k`. Sonnet 5 would reject them with a 400 (sampling params are incompatible
+  with active adaptive thinking); Haiku 4.5 would accept them. The two models are
+  not equally capable of being made deterministic — leaving both unset keeps the
+  *request* identical rather than pinning one model and not the other, and this is
+  recorded as a methodology note rather than silently glossed over.
+- SDK version (`anthropic==1.9.0` at run time) and a UTC run timestamp are also
+  captured once at the report's top level, so a future reader knows exactly which
+  API surface produced these numbers if model behavior drifts later.
+
+**Design, mirroring Step 7's reranker-sweep shape but with the eval harness reused
+unmodified (unlike the Vertex comparison, which needed real duplicated runners
+because the retrieval/answer *shapes* differed there — here only the model string
+changes, so `eval/runner.py::run_eval()` needed zero modification):**
+`TimingGenerator` (defined locally in the script, not a new package) subclasses
+`Generator` and wraps `.generate()` in a `time.perf_counter()` stopwatch, appending
+to a `durations_s` list — captures wall-clock latency with no changes to
+`eval/runner.py`/`eval/models.py`, neither of which track timing today. Cost is
+computed from `GeneratedAnswer.input_tokens`/`output_tokens` (already captured
+since Step 4) against a small `PRICING_PER_MILLION_TOKENS` table in the script
+itself (Sonnet 5 $2/$10, Haiku 4.5 $1/$5 per 1M input/output tokens, Anthropic
+first-party rates captured 2026-10-02 — not tracked anywhere else in this repo).
+Judge cost is priced at Sonnet 5's rate in both arms, since the judge model never
+changes. No change to `config/config.yaml`'s `generation.model` default (stays
+Sonnet 5, the locked production default) — `claude-haiku-4-5` is a local candidate
+constant in the script, the same way the reranker sweep's three candidates weren't
+config-driven before one was promoted to default.
+
+**Before trusting the full batch, a live smoke test confirmed Haiku 4.5 accepts
+the exact forced `tool_choice` schema (`{"type": "tool", "name": "submit_answer"}`)
+`Generator` already uses for Sonnet 5** — verified empirically (a single real API
+call returning a clean `tool_use` block, correct citation, no refusal/text-leak)
+rather than trusted from documentation alone, same "verify before trust" discipline
+as Step 1's wiki-markup check and Step 6's NLI label-order check.
+
+**Real run against the full 55-question gold set, 0 errors in both arms**
+(`python scripts/compare_generation_models.py`,
+`results/generation_model_comparison.json` committed):
+
+| Metric | Claude Sonnet 5 | Claude Haiku 4.5 |
+|---|---|---|
+| Correctness accuracy | 0.836 | 0.818 |
+| — single-hop (n=35) | 1.000 (35/35) | 0.971 (34/35) |
+| — multi-hop (n=15) | 0.467 (7/15) | 0.400 (6/15) |
+| Grounded rate | 0.951 | 0.973 |
+| Fully-grounded-answer rate | 0.911 | 0.956 |
+| Latency p50 / p95 | 2.549s / 6.168s | 2.385s / 3.903s |
+| Generation cost | $0.535 | $0.206 |
+| Judge cost (always Sonnet 5) | $0.148 | $0.142 |
+| Total cost (55 questions) | $0.683 | $0.348 |
+
+Retrieval metrics (`mean_recall=0.88`, `hit_rate=0.96`, `mean_mrr=0.752`) are
+**identical** across both arms — same `Retriever`, same questions — confirming the
+harness correctly isolates the generation-model variable and nothing else, not
+just asserted. `request_config` was diffed by eye between the two arms before
+trusting the comparison: every field matched except `model` itself, as expected.
+
+**The honest read: this is not a clean Pareto win for either model, unlike Step
+7's reranker sweep.** Sonnet 5 is marginally more accurate overall (0.836 vs
+0.818 — a 1-question gap out of 55), but that gap sits inside the non-determinism
+band already documented for ungrounded generation/judge calls since Step 5 (no
+`temperature` pinning on either model), so it isn't a confident win on its own.
+Haiku 4.5 is *more often correctly grounded* (0.973 vs 0.951) despite being the
+cheaper model, has a meaningfully lower p95 (3.90s vs 6.17s — Sonnet 5's adaptive
+thinking is the likely driver of its heavier tail), and costs roughly half as much
+for generation+judging combined ($0.348 vs $0.683 over 55 questions). The two
+models also fail in different *shapes*, not just by a different amount:
+`correctness_label_counts` shows Sonnet 5 produced 1 `incorrectly_answered`
+(a hallucinated answer on a question it should have abstained on) and 0 for Haiku,
+while Haiku 4.5 racked up more `incorrectly_abstained` (5 vs 3) — i.e. Haiku is the
+more conservative model here: it never answers when it shouldn't, but gives up on
+slightly more questions it could have actually answered. For a project framed
+around grounded, cited answers over raw correctness, Haiku 4.5 reads as a
+genuinely reasonable default candidate on this corpus, not merely a cheaper
+fallback — though Sonnet 5 remains the production default in `config.yaml`, since
+one comparison run isn't a strong enough signal on its own to revisit a locked
+decision.
+
+**Verification:** both arms completed with `error_count: 0` over 55 questions each
+(110 generate calls, 90 judge calls total). Hand-computed cost math
+(`tokens × price/1M`) matched the script's own `cost_usd` output exactly for both
+arms before trusting the aggregate. The Sonnet-5 arm's correctness accuracy (0.836)
+and grounded rate (0.951) landed almost exactly on the already-known baseline
+numbers from the Vertex comparison's own baseline row (0.836 / 0.948) — cross-
+checked before trusting the Haiku arm's numbers, same discipline as Step 9's
+cross-checks against `reranker_sweep.json`. No new unit tests were added, matching
+the precedent set by `measure_latency.py`/`sweep_reranker.py`/`run_vertex_eval.py`
+— these are one-off measurement/comparison scripts verified by running them for
+real, not by tests against fakes.
+
+_Status: complete on `feat/haiku-sonnet-comparison`. README gained a "Haiku vs
+Sonnet generation comparison" subsection under Benchmarks. Tell the user before
+starting the next stretch goal (pgvector-on-Cloud-SQL backend swap, per the
+checklist order)._
