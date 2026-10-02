@@ -3,9 +3,10 @@
 Deliberately thin: Retriever (Step 3) and Generator (Step 4) are already
 designed as load-once/query-cheap components (see their own module
 docstrings), so this module's only job is wiring - load both once at
-startup, expose them over three routes, and translate their existing result
-dataclasses into the HTTP response shape. No retrieval/generation/citation
-logic lives here.
+startup, expose them over a handful of routes, and translate their existing
+result dataclasses into the HTTP response shape. No retrieval/generation/
+citation logic lives here. GET /benchmarks follows the same load-once
+pattern for the committed results/*.json files (see benchmarks.py).
 
 create_app() takes retriever/generator directly so tests can inject fakes
 and skip the real model-loading path in `lifespan` entirely - `app`
@@ -32,6 +33,8 @@ from typing import Protocol
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 
+from rag_receipts.api.benchmark_models import BenchmarksResponse
+from rag_receipts.api.benchmarks import load_benchmarks
 from rag_receipts.api.models import CitationOut, QueryRequest, QueryResponse, TimingOut
 from rag_receipts.api.rate_limit import RateLimiter
 from rag_receipts.api.startup import ensure_index_artifacts
@@ -91,9 +94,11 @@ def create_app(
     *,
     config_path: str | Path = "config/config.yaml",
     static_dir: str | Path | None = None,
+    results_dir: str | Path | None = None,
     retriever: RetrieverLike | None = None,
     generator: GeneratorLike | None = None,
     rate_limiter: RateLimiter | None = None,
+    benchmarks: BenchmarksResponse | None = None,
 ) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -102,14 +107,18 @@ def create_app(
             ensure_index_artifacts(cfg)
             app.state.retriever = app.state.retriever or Retriever.from_config(cfg)
             app.state.generator = app.state.generator or Generator.from_config(cfg.generation)
+        if app.state.benchmarks is None:
+            app.state.benchmarks = load_benchmarks(app.state.results_dir)
         app.state.ready = True
         yield
 
     app = FastAPI(title="RAG With Receipts", lifespan=lifespan)
     app.state.config_path = config_path
     app.state.static_dir = Path(static_dir or os.environ.get("STATIC_DIR", "static"))
+    app.state.results_dir = Path(results_dir or os.environ.get("RESULTS_DIR", "results"))
     app.state.retriever = retriever
     app.state.generator = generator
+    app.state.benchmarks = benchmarks
     app.state.ready = False
     app.state.rate_limiter = rate_limiter or RateLimiter(
         max_requests=RATE_LIMIT_MAX_REQUESTS, window_seconds=RATE_LIMIT_WINDOW_SECONDS
@@ -138,6 +147,13 @@ def create_app(
         if not path.exists():
             raise HTTPException(status_code=404, detail="demo page not found")
         return FileResponse(path)
+
+    @app.get("/benchmarks", response_model=BenchmarksResponse)
+    def benchmarks(request: Request) -> BenchmarksResponse:
+        # No demo-key gate, no rate limit: static local JSON, no external API
+        # cost. Never 404s/500s on its own - a missing/malformed results file
+        # just leaves that one section None (see benchmarks.py's loader).
+        return request.app.state.benchmarks
 
     @app.post("/query", response_model=QueryResponse)
     def query(req: QueryRequest, request: Request) -> QueryResponse:
