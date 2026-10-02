@@ -1,6 +1,6 @@
 import pytest
 
-from rag_receipts.vertex.answer_client import VertexAnswerer
+from rag_receipts.vertex.answer_client import VertexAnswerer, _extract_reference_chunk_id
 from rag_receipts.vertex.config import VertexConfig
 
 from .helpers import (
@@ -9,6 +9,7 @@ from .helpers import (
     FakeCitation,
     FakeCitationSource,
     FakeConversationalSearchServiceClient,
+    FakeDocumentMetadata,
     FakeReference,
     make_metadata_df,
 )
@@ -101,6 +102,20 @@ def test_answer_missing_answer_field_raises_runtime_error():
 
     with pytest.raises(RuntimeError, match="no 'answer' field"):
         answerer.answer("some query")
+
+
+def test_extract_reference_chunk_id_falls_back_to_document_metadata_without_chunk_info():
+    """A reference with no chunk_info at all (e.g. a plain document reference)
+    should still resolve via the document_metadata/document-resource-name
+    fallback path, not just the chunk_info.document_metadata primary path."""
+
+    class BareReference:
+        def __init__(self, document_metadata):
+            self.document_metadata = document_metadata
+
+    reference = BareReference(FakeDocumentMetadata(document="projects/p/.../documents/Attack_range__004"))
+
+    assert _extract_reference_chunk_id(reference) == "Attack_range__004"
 
 
 def test_answer_no_citations_returns_empty_citations_not_error():

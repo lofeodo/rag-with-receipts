@@ -50,6 +50,19 @@ METHODOLOGY_NOTES = {
         "baseline's or config A's full top-k - treat config B's retrieval "
         "numbers as 'what Vertex chose to cite,' not 'everything it retrieved.'"
     ),
+    "config_b_abstention_asymmetry": (
+        "Confirmed live against a true out-of-corpus question: Vertex's Answer "
+        "API has no structured abstention signal - a query it can't answer "
+        "still gets a normal non-empty answer_text (prose explaining no "
+        "information was found), and answer_skipped_reasons stays empty. Our "
+        "own pipeline's Generator returns an explicit answerable=false via a "
+        "forced tool schema; Vertex has no equivalent. Config B's "
+        "answerable flag is therefore a bool(answer_text) heuristic, not a "
+        "verified equivalent signal - expect config B's correctness breakdown "
+        "to show more 'incorrectly_answered' on the deliberately unanswerable "
+        "gold questions than the baseline does, as an artifact of this gap "
+        "rather than a true hallucination-rate difference."
+    ),
 }
 
 

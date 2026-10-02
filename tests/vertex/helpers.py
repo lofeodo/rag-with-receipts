@@ -161,9 +161,24 @@ def make_search_result(chunk_id: str, *, document_id: str | None = None) -> Fake
     )
 
 
-class FakeReference:
-    def __init__(self, struct_data: dict):
+class FakeDocumentMetadata:
+    def __init__(self, struct_data: dict | None = None, document: str | None = None):
         self.struct_data = struct_data
+        self.document = document
+
+
+class FakeChunkInfo:
+    def __init__(self, document_metadata: FakeDocumentMetadata):
+        self.document_metadata = document_metadata
+
+
+class FakeReference:
+    """Mirrors the real AnswerQueryResponse shape confirmed live (2026-10-02):
+    chunk_id lives at reference.chunk_info.document_metadata.struct_data, not
+    directly on the reference."""
+
+    def __init__(self, struct_data: dict):
+        self.chunk_info = FakeChunkInfo(FakeDocumentMetadata(struct_data=struct_data))
 
 
 class FakeCitationSource:

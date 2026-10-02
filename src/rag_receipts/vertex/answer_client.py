@@ -2,13 +2,17 @@
 Vertex's own citations) end-to-end - the "fully managed alternative" half of
 the Vertex AI Search comparison stretch goal.
 
-The exact AnswerQueryResponse field paths used below (answer.citations,
-answer.references, answer.grounding_score) are sourced from Discovery Engine's
-public API docs and are NOT yet confirmed against a live response - the API
-has had v1/v1beta/v1alpha field differences historically. CLAUDE.md's Vertex
-stretch-goal status note requires printing one raw response and confirming
-these paths before trusting a full batch run (see scripts/run_vertex_eval.py's
---mode answer).
+Field paths below were confirmed against a live AnswerQueryResponse (2026-10-02,
+rag-receipts-corpus data store) - two real surprises vs. the public docs-only
+assumption this module started with:
+  1. citations/references/grounding_score are all empty/zero unless the
+     request explicitly sets answer_generation_spec.include_citations=True and
+     grounding_spec.include_grounding_supports=True - they are NOT populated
+     by default. _build_answer_request() sets both.
+  2. a reference's chunk_id lives at reference.chunk_info.document_metadata.
+     struct_data - NOT reference.struct_data or reference.chunk_info.struct_data
+     (the shapes _extract_reference_chunk_id originally guessed at before this
+     was confirmed live).
 
 Citations are resolved against this project's own index_metadata.parquet via
 resolve_chunk() rather than trusted from whatever inline text Vertex itself
@@ -44,26 +48,36 @@ def _build_answer_request(query: str, config: VertexConfig) -> Any:
     return discoveryengine.AnswerQueryRequest(
         serving_config=serving_config,
         query=discoveryengine.Query(text=query),
+        answer_generation_spec=discoveryengine.AnswerQueryRequest.AnswerGenerationSpec(
+            include_citations=True
+        ),
+        grounding_spec=discoveryengine.AnswerQueryRequest.GroundingSpec(
+            include_grounding_supports=True
+        ),
     )
 
 
 def _extract_reference_chunk_id(reference: Any) -> str | None:
-    """Reference shape varies by API surface; checks known candidate field
-    paths in order, returns None (not raise) if none match - an unresolvable
-    reference is dropped by the caller, same discipline as a Search API miss."""
-    struct_data = getattr(reference, "struct_data", None)
+    """A reference's chunk_id lives at reference.chunk_info.document_metadata.
+    struct_data on a live response (confirmed 2026-10-02 - see module
+    docstring); the other candidate paths below are kept as fallbacks for a
+    differently-shaped reference (e.g. an unstructured-document reference with
+    no chunk_info at all) rather than assumed to be the primary path. Returns
+    None (not raise) if nothing matches - an unresolvable reference is dropped
+    by the caller, same discipline as a Search API miss."""
     chunk_info = getattr(reference, "chunk_info", None)
-    if struct_data is None and chunk_info is not None:
-        struct_data = getattr(chunk_info, "struct_data", None)
-    if struct_data is not None:
-        data = struct_to_dict(struct_data)
-        if data.get("chunk_id"):
-            return data["chunk_id"]
+    document_metadata = getattr(chunk_info, "document_metadata", None) if chunk_info is not None else None
+    if document_metadata is None:
+        document_metadata = getattr(reference, "document_metadata", None) or getattr(
+            reference, "unstructured_document_info", None
+        )
 
-    document_metadata = getattr(reference, "document_metadata", None) or getattr(
-        reference, "unstructured_document_info", None
-    )
     if document_metadata is not None:
+        struct_data = getattr(document_metadata, "struct_data", None)
+        if struct_data is not None:
+            data = struct_to_dict(struct_data)
+            if data.get("chunk_id"):
+                return data["chunk_id"]
         doc_ref = getattr(document_metadata, "document", None) or getattr(document_metadata, "uri", None)
         if doc_ref:
             return str(doc_ref).rsplit("/", maxsplit=1)[-1]
@@ -144,9 +158,22 @@ class VertexAnswerer:
             query=query,
             answer=answer_text,
             citations=citations,
-            # Heuristic pending live-API confirmation (see module docstring): treat a
-            # non-empty answer_text as "answered". Vertex may expose a dedicated
-            # no-answer signal - verify before trusting this on real out-of-corpus queries.
+            # Confirmed live (2026-10-02) against a true out-of-corpus question
+            # (Cook's Assistant quest, outside this project's scoped corpus):
+            # Vertex's Answer API has NO structured abstention signal - it wrote
+            # a full prose explanation ("there is no information regarding...")
+            # as a normal non-empty answer_text, and answer_skipped_reasons
+            # stayed empty (not populated the way the field's existence implied
+            # it might be). There is no clean binary "answerable" signal to read
+            # off this API the way our own forced-tool-schema Generator provides
+            # one. answerable=bool(answer_text) is therefore a known-imprecise
+            # heuristic, not a verified equivalent of our own answerable flag -
+            # it will likely score some genuine Vertex abstentions as
+            # "incorrectly_answered" rather than "correct_abstention" in the
+            # eval harness. Documented here and in compare_vertex.py's
+            # methodology_notes rather than patched with fragile text-matching
+            # on Vertex's phrasing (the same "don't vibes-tune around a model
+            # limitation" discipline Step 6 applied to the NLI false positives).
             answerable=bool(answer_text.strip()),
             hallucinated_citation_ids=hallucinated,
             has_hallucinated_citations=bool(hallucinated),

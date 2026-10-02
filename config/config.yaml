@@ -85,16 +85,17 @@ grounding:
   overlap_threshold: 0.3
 
 vertex:
-  # Stretch goal: Vertex AI Search benchmark comparison. Fields below are placeholders
-  # until the data store is provisioned - project_id/gcs_bucket must be set for real use.
-  project_id: ""
+  # Stretch goal: Vertex AI Search benchmark comparison. Data store provisioned
+  # 2026-10-02 in the rag-with-receipts project (northamerica-northeast1 GCS bucket,
+  # global Discovery Engine data store/engine) - see CLAUDE.md status note.
+  project_id: rag-with-receipts
   location: global                          # verify at provisioning time - Answer API may be global-only
   data_store_id: rag-receipts-corpus
   engine_id: rag-receipts-search-app        # config B (Answer API) only
   search_serving_config: default_search
   answer_serving_config: default_serving_config  # verify exact id at provisioning time
   search_top_k: 10                          # no local rerank stage, so > top_k_final=5
-  gcs_bucket: ""
+  gcs_bucket: rag-with-receipts-vertex-corpus
   gcs_prefix: corpus
   search_results_path: results/vertex_search_eval.json
   answer_results_path: results/vertex_answer_eval.json

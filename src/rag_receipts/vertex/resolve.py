@@ -18,14 +18,15 @@ from rag_receipts.retrieval.models import RetrievedChunk
 
 
 def struct_to_dict(struct_data: Any) -> dict:
-    """struct_data is a protobuf Struct on a real Discovery Engine response;
-    unit tests hand back a plain dict directly, so this short-circuits rather
-    than requiring the real protobuf type to be installed."""
+    """struct_data is a proto-plus MapComposite on a real Discovery Engine
+    response (confirmed empirically against a live SearchServiceClient.search()
+    call - NOT a raw protobuf Struct/MessageToDict shape, despite that being
+    the documented field type; dict(map_composite) round-trips correctly).
+    Unit tests hand back a plain dict directly, so this short-circuits rather
+    than requiring any real proto type to be installed."""
     if isinstance(struct_data, dict):
         return struct_data
-    from google.protobuf.json_format import MessageToDict
-
-    return MessageToDict(struct_data)
+    return dict(struct_data)
 
 
 def resolve_chunk(
