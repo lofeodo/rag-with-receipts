@@ -51,7 +51,14 @@ quantified comparison against the managed alternative.
       already-documented non-determinism band), Haiku *better* grounded (0.973 vs 0.951)
       at ~half the generation+judge cost and a meaningfully lower p95 latency. See status
       note below.
-- [ ] Stretch — pgvector-on-Cloud-SQL backend swap
+- [x] **Stretch — pgvector-on-Cloud-SQL backend swap** ← config-driven `VectorStore`
+      swap behind `Retriever.from_config`; real run against the live 955-chunk
+      corpus confirmed exact equivalence with FAISS (55/55 gold questions,
+      max score diff 1.71e-07) and measured the real latency cost of a
+      network-backed vector store (dense-search stage ~75x slower, end-to-end
+      only ~4% slower since generation dominates). Not a retrieval-quality
+      comparison by design — see status note below. Instance torn down after
+      the demo; no ongoing cost.
 - [ ] Stretch — Demo site benchmarks panel: static charts for the already-measured metrics
       (retrieval hit-rate/recall/MRR, correctness accuracy by question type, grounding rates,
       per-stage latency, reranker sweep) sourced from the committed `results/*.json`, placed on
@@ -1342,6 +1349,197 @@ the precedent set by `measure_latency.py`/`sweep_reranker.py`/`run_vertex_eval.p
 real, not by tests against fakes.
 
 _Status: complete on `feat/haiku-sonnet-comparison`. README gained a "Haiku vs
-Sonnet generation comparison" subsection under Benchmarks. Tell the user before
-starting the next stretch goal (pgvector-on-Cloud-SQL backend swap, per the
-checklist order)._
+Sonnet generation comparison" subsection under Benchmarks._
+
+### Stretch — pgvector-on-Cloud-SQL backend swap (complete)
+
+**Goal:** add pgvector on Cloud SQL as a swappable second vector-store backend,
+config-driven, behind the existing `Retriever` — the "managed vector DB on GCP"
+resume line from the locked decisions table.
+
+**A real scope correction happened before any design work, raised by the user
+directly, and it reshaped the whole stretch goal.** If pgvector is configured
+to do *exact* nearest-neighbor search (no HNSW/IVFFlat index) over the same
+embeddings FAISS already has, it is mathematically guaranteed to retrieve the
+same chunks for the same query, modulo floating-point tie noise — unlike the
+reranker sweep (different models) or the Vertex AI Search stretch (different
+embeddings/chunking entirely), there is no retrieval-quality question this
+backend swap can answer. Re-running the Step 5/6 eval harness against it would
+manufacture a "finding" from a predetermined result. So, unlike every other
+benchmarked step in this project, **this one is explicitly not a quality
+comparison** — the value is architectural (a genuinely swappable, config-driven
+vector-store abstraction) and operational (a real, not-predetermined latency
+measurement: a network round trip to Cloud SQL vs. an in-process FAISS lookup,
+which *can* genuinely differ, and did).
+
+**Design decisions actually implemented (10 commits, `feat/pgvector-backend`):**
+- New package `src/rag_receipts/vectorstore/`: `base.py` (`VectorStore` Protocol
+  — one method, `search(query_vector, top_k) -> list[ScoredChunk]` — and
+  `ScoredChunk`, the backend-agnostic single-round-trip result), `faiss_store.py`
+  (`FaissVectorStore`, `dense_search`/`load_metadata` moved here from
+  `retrieval/pipeline.py`), `pgvector_store.py` (`PgvectorStore`,
+  `upsert_chunks`, `ensure_schema`), `config.py` (`PgvectorConfig`, nested into
+  `IndexingConfig.pgvector`, following the same flat-YAML convention as every
+  other step). `IndexingConfig.vector_index` (a field that existed since Step 2
+  but was never read by anything) is now the real dispatch flag:
+  `Retriever.from_config` branches on it via a new `build_vector_store()`
+  helper in `retrieval/pipeline.py`, constructing `FaissVectorStore` or
+  (lazily imported, so the optional Cloud SQL Connector dependency is never
+  required on the default FAISS path) `PgvectorStore`. Every downstream caller
+  — `api/app.py`, every CLI script, the eval harness — goes through
+  `Retriever` unchanged; the only other real caller of the old
+  `index=`/`metadata=` signature found via grep was `scripts/sweep_reranker.py`,
+  updated to build a `FaissVectorStore` once outside its candidate loop.
+- **Build path is a separate script (`scripts/build_index_pgvector.py`), not a
+  branch in `build_index.py`** — matches the Vertex stretch's own "duplicate
+  the upload script" precedent, since the two backends' persistence steps
+  (write two local files vs. upsert into a live Cloud SQL instance that only
+  exists during the demo window) share nothing operationally. `build_index.py`
+  and `indexing/pipeline.py::run_index` are completely untouched — the live
+  Cloud Run deployment's rebuild workflow depends on that path and this
+  stretch goal never touches it. Guarded by a new
+  `indexing.pgvector.enabled_for_build` config flag (default `false`) so a
+  stale `vector_index: pgvector` left in a future config can't silently try to
+  write to a torn-down instance — verified this refusal path end-to-end before
+  ever touching the real instance.
+- **A real, verify-before-trust library finding, caught before writing a line
+  against it (not from documentation):** the Cloud SQL Python Connector's
+  `driver="pg8000"` path always returns a `pg8000.dbapi.Connection` (checked
+  directly against the installed package's source) — `pgvector.pg8000.register_vector()`
+  requires `.run()`, which only exists on `pg8000.native.Connection`, so it is
+  NOT compatible with what the Connector actually returns, despite both living
+  under the pg8000 name. Routed around entirely by passing vectors as
+  pgvector's own text literal format (`'[v0,v1,...]'`) cast to `::vector`
+  directly in SQL via ordinary `%s` parameters — no type adapter needed in
+  either direction, since `search()` never selects the embedding column back
+  out, only the derived `score`.
+- **Auth: IAM database authentication, not a Secret-Manager password** — the
+  Secret-Manager-credential pattern (`anthropic-api-key`/`demo-api-key`) exists
+  because the *live Cloud Run service* needs the credential at runtime; this
+  backend is explicitly never deployed there, so the credential only needed to
+  work for one developer's local scripts during the provisioning window, which
+  is exactly what IAM auth (reusing the same ADC login already set up for the
+  Vertex stretch) is for — zero secret created, confirmed by the teardown
+  check below.
+- **Driver: Cloud SQL Python Connector + `pg8000`**, not the Auth Proxy binary
+  (extra process to run for a throwaway window) or `asyncpg` (the whole
+  retrieval path is sync; no reason to introduce async for a never-
+  productionized, one-query-at-a-time backend) or `psycopg2` (pg8000 is a pure
+  -Python wheel — avoids repeating the native-build friction Step 2 already
+  hit with CUDA wheels on this machine).
+- Exact search only, by construction: no `CREATE INDEX ... USING ivfflat/hnsw`
+  anywhere in `SCHEMA_SQL` — verified automatically (not just by the absence of
+  a line in source) by the live integration test's `EXPLAIN` assertion
+  (`Seq Scan` present, `Index Scan` absent).
+- `scripts/verify_pgvector_equivalence.py` reuses the real 55
+  `data/eval/qa_pairs.json` questions (the only hand-authored, domain-realistic
+  query set this project has) rather than inventing a synthetic sample. Checks
+  chunk_id **set** equality at `top_k_dense=30` (the actual `VectorStore`
+  contract surface, checked before reranking could hide any ordering noise) as
+  the pass/fail criterion; an order mismatch with set-equality intact is
+  automatically classified `tie_flip` (score gap < 1e-4) or `real_divergence`
+  (≥ 1e-4, which fails the run) rather than eyeballed by hand.
+- `scripts/measure_latency.py` gained a `--vector-index {faiss,pgvector}`
+  override flag instead of a new script — running the *literal same*
+  measurement code against both backends is itself part of what makes the
+  comparison apples-to-apples, not just a claim. Omitting the flag keeps the
+  existing `results/latency_report.json` behavior byte-for-byte unchanged.
+- `tests/vectorstore/`: unit tests against fakes for every new module
+  (`FakeConnection`/`FakeCursor`/`FakeConnector`, mirroring
+  `tests/api/test_startup.py`'s capture-the-call-args idiom), plus one
+  `slow`-marked, `PGVECTOR_INSTANCE_CONNECTION_NAME`-gated integration test
+  using its own throwaway table (dropped at the end, never touching the real
+  `chunks` table).
+
+**Two real Postgres-permission findings surfaced only by running against a
+real, fresh Cloud SQL instance — neither documented clearly enough ahead of
+time to have been planned for, both resolved live with the user's help since
+they required superuser access my IAM user intentionally doesn't have:**
+1. `gcloud sql instances create --tier=db-f1-micro` failed outright:
+   `Invalid Tier (db-f1-micro) for (ENTERPRISE_PLUS) Edition` — new Cloud SQL
+   instances default to the Enterprise Plus edition, which doesn't support
+   shared-core tiers at all. Fixed with `--edition=enterprise` (verified via
+   `gcloud sql instances create --help` before retrying, not guessed).
+2. `CREATE EXTENSION vector` requires database superuser, which the IAM user
+   does not have (by design — only the built-in `postgres` user is a
+   superuser). Then, after the extension was installed, `CREATE TABLE`
+   still failed with `permission denied for schema public` — Postgres 15+
+   revokes `CREATE` on the `public` schema from non-owners by default, a
+   second, independent permission gap from the first. Both fixed with two
+   one-time SQL statements (`CREATE EXTENSION IF NOT EXISTS vector;` and
+   `GRANT ALL ON SCHEMA public TO "daniel.lofeodo@gmail.com";`) run as
+   `postgres` via Cloud SQL Studio in the browser — `gcloud sql connect`
+   doesn't work on this machine (no local `psql` client installed), and
+   setting the `postgres` user's password through `gcloud sql users
+   set-password` was blocked by this session's own credential-handling
+   safeguard (generating/piping a plaintext DB password through a command
+   whose output could be logged is exactly the pattern the Vertex stretch's
+   leaked-key incident already flagged as risky) — correctly caught, not
+   routed around; the user set the password directly in the Cloud Console
+   instead, which the safeguard has no visibility into and therefore no
+   objection to. Neither permission gap affects runtime query behavior
+   (search/upsert both work fine as the regular IAM user once the table
+   exists) — both were one-time, instance-setup-only requirements.
+
+**Real results, full 55-question gold set, live Cloud SQL instance
+(`rag-receipts-pgvector`, Postgres 16, `db-f1-micro`,
+`northamerica-northeast1`), 0 errors:**
+
+Equivalence (`results/pgvector_equivalence.json`,
+`python scripts/verify_pgvector_equivalence.py`, `top_k_dense=30`):
+
+| Metric | Value |
+|---|---|
+| Set match | 55/55 |
+| Order match | 55/55 |
+| Tie flips | 0 |
+| Real divergences | 0 |
+| Max score diff | 1.71e-07 |
+
+Confirms the locked requirement — exact search + the same embeddings produces
+the same retrieval — held against the real corpus and a real network-backed
+Postgres instance, not just in theory.
+
+Latency (`results/latency_report_faiss.json` vs.
+`results/latency_report_pgvector.json`, both measured in isolation in the same
+session, same 55 questions, same `measure_latency.py` code path):
+
+| Stage | FAISS p50 | pgvector p50 | FAISS p95 | pgvector p95 |
+|---|---|---|---|---|
+| dense_search_s | 1.3ms | 98.2ms | 2.5ms | 110.3ms |
+| retrieval_total_s | 333.4ms | 470.8ms | 431.7ms | 584.4ms |
+| end_to_end_s | 2884.1ms | 3010.1ms | 6104.7ms | 6079.9ms |
+
+The dense-search stage specifically is ~75x slower under pgvector (an
+in-process FAISS lookup vs. a real network round trip to Cloud SQL) — a real,
+not-predetermined finding, and the expected shape of this comparison. But the
+end-to-end impact is modest (~4% at p50) because Claude generation dominates
+total latency regardless of vector-store backend, consistent with Step 7's own
+finding that generation — not retrieval — is the biggest lever on
+user-perceived latency in this pipeline.
+
+**No retrieval/correctness/grounding metrics are reported here, by design, not
+by omission** — see the scope-correction note above. Treat this stretch goal's
+contribution as: a working, tested, config-driven second backend, plus a real
+measured answer to "what does it cost in latency to move the vector store off
+-box," not as evidence about retrieval quality.
+
+**Teardown, confirmed complete, same discipline as the Vertex stretch (list
+everything afterward, not just what was named):** `gcloud sql instances delete
+rag-receipts-pgvector` succeeded; `gcloud sql instances list` returned 0 items;
+`gsutil ls` showed only the two pre-existing buckets
+(`rag-with-receipts-index`, `rag-with-receipts_cloudbuild` — no surprise
+staging bucket this time, unlike the Vertex stretch's `import_documents` side
+effect); `gcloud secrets list` showed only the two pre-existing secrets
+(`anthropic-api-key`, `demo-api-key`) — confirming the IAM-auth decision held
+and no password secret was ever created. No ongoing GCP cost.
+
+**Verification:** `pytest -q` — 238 passed, 7 deselected (6 pre-existing `slow`
+tests + the new pgvector integration test, which was additionally run for real
+against the live instance and passed: real IAM connection, extension present,
+self-similarity ≈1.0 on a known stored vector, `EXPLAIN` confirms `Seq Scan`
+only). `scripts/build_index.py` (FAISS path) was not re-run in this step since
+`indexing/pipeline.py` was never touched by this work.
+
+_Status: complete on `feat/pgvector-backend`. Tell the user before starting the
+next stretch goal (demo site benchmarks panel, per the checklist order)._
