@@ -1,0 +1,24 @@
+{
+  "summary": {
+    "question_count": 2,
+    "retrieval": {"mean_precision": 0.2, "mean_recall": 0.9, "mean_mrr": 0.75, "hit_rate": 0.95, "count": 2},
+    "retrieval_by_type": {
+      "single_hop": {"mean_precision": 0.2, "mean_recall": 1.0, "mean_mrr": 0.9, "hit_rate": 1.0, "count": 1},
+      "multi_hop": {"mean_precision": 0.2, "mean_recall": 0.8, "mean_mrr": 0.6, "hit_rate": 0.9, "count": 1}
+    },
+    "correctness_accuracy": 0.8,
+    "correctness_by_type": {
+      "single_hop": {"accuracy": 1.0, "count": 1},
+      "multi_hop": {"accuracy": 0.6, "count": 1}
+    },
+    "correctness_label_counts": {"correct": 1, "incorrect": 1},
+    "error_count": 0,
+    "grounding": {
+      "grounded_rate": 0.95, "contradicted_rate": 0.05, "ungrounded_rate": 0.0,
+      "fully_grounded_answer_rate": 0.9, "citation_count": 4, "answer_count": 2
+    },
+    "grounding_by_type": {},
+    "grounding_by_correctness_label": {}
+  },
+  "results": []
+}

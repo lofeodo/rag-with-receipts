@@ -1,0 +1,32 @@
+{
+  "methodology_notes": {
+    "chunking_asymmetry": "fixture note one.",
+    "latency_split_asymmetry": "fixture note two."
+  },
+  "retrieval": {
+    "baseline": {"hit_rate": 0.96, "mean_recall": 0.88, "mean_mrr": 0.75, "mean_precision": 0.22},
+    "config_a_vertex_search": {"hit_rate": 0.98, "mean_recall": 0.96, "mean_mrr": 0.82, "mean_precision": 0.15},
+    "config_b_vertex_answer": {"hit_rate": 0.96, "mean_recall": 0.94, "mean_mrr": 0.86, "mean_precision": 0.6}
+  },
+  "correctness_accuracy": {
+    "baseline": 0.84, "config_a_vertex_search": 0.93, "config_b_vertex_answer": 0.85
+  },
+  "grounding": {
+    "baseline": {"grounded_rate": 0.95, "contradicted_rate": 0.05, "ungrounded_rate": 0.0, "fully_grounded_answer_rate": 0.91},
+    "config_a_vertex_search": {"grounded_rate": 0.97, "contradicted_rate": 0.02, "ungrounded_rate": 0.01, "fully_grounded_answer_rate": 0.94},
+    "config_b_vertex_answer": {"grounded_rate": 0.84, "contradicted_rate": 0.12, "ungrounded_rate": 0.04, "fully_grounded_answer_rate": 0.63},
+    "config_b_vertex_self_reported_grounding_score": 0.69
+  },
+  "latency": {
+    "baseline_staged": {
+      "embed_query_s": {"p50": 0.08, "p95": 0.15, "mean": 0.08, "count": 2},
+      "dense_search_s": {"p50": 0.0003, "p95": 0.0007, "mean": 0.0004, "count": 2},
+      "rerank_s": {"p50": 0.28, "p95": 0.34, "mean": 0.27, "count": 2},
+      "retrieval_total_s": {"p50": 0.35, "p95": 0.43, "mean": 0.34, "count": 2},
+      "generate_s": {"p50": 2.9, "p95": 7.2, "mean": 3.4, "count": 2},
+      "end_to_end_s": {"p50": 3.3, "p95": 7.6, "mean": 3.7, "count": 2}
+    },
+    "config_a_vertex_search_end_to_end": {"p50": 5.0, "p95": 9.3, "mean": 5.3, "count": 2},
+    "config_b_vertex_answer_end_to_end": {"p50": 6.4, "p95": 8.9, "mean": 6.6, "count": 2}
+  }
+}
