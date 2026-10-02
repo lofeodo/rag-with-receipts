@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from rag_receipts.vectorstore.config import PgvectorConfig, _build_pgvector_config
+
 
 @dataclass
 class EmbeddingConfig:
@@ -28,13 +30,15 @@ class IndexOutputConfig:
 
 @dataclass
 class IndexingConfig:
-    vector_index: str = "faiss"
+    vector_index: str = "faiss"  # faiss | pgvector
     embedding: EmbeddingConfig = field(default_factory=EmbeddingConfig)
     output: IndexOutputConfig = field(default_factory=IndexOutputConfig)
+    pgvector: PgvectorConfig = field(default_factory=PgvectorConfig)
 
 
 def _build_indexing_config(raw: dict) -> IndexingConfig:
     output = raw.get("output", {})
+    pgvector = _build_pgvector_config(raw.get("pgvector", {}))
     embedding = EmbeddingConfig(
         model_name=raw.get("embedding_model", "BAAI/bge-large-en-v1.5"),
         batch_size=raw.get("batch_size", 32),
@@ -56,4 +60,5 @@ def _build_indexing_config(raw: dict) -> IndexingConfig:
         vector_index=raw.get("vector_index", "faiss"),
         embedding=embedding,
         output=output_config,
+        pgvector=pgvector,
     )
