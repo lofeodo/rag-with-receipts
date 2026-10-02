@@ -59,12 +59,11 @@ quantified comparison against the managed alternative.
       only ~4% slower since generation dominates). Not a retrieval-quality
       comparison by design — see status note below. Instance torn down after
       the demo; no ongoing cost.
-- [ ] Stretch — Demo site benchmarks panel: static charts for the already-measured metrics
-      (retrieval hit-rate/recall/MRR, correctness accuracy by question type, grounding rates,
-      per-stage latency, reranker sweep) sourced from the committed `results/*.json`, placed on
-      the same page as the live demo, below the query UI — a condensed, lower-detail
-      README-equivalent rather than a duplicate of it. Also add a prominent GitHub button/link
-      on the page pointing at the repo.
+- [x] **Stretch — Demo site benchmarks panel** ← condensed benchmarks panel (retrieval,
+      correctness by question type, grounding, per-stage latency, reranker sweep, plus the
+      Vertex AI Search / Haiku-vs-Sonnet / pgvector extra comparisons) live on the demo page
+      below the query UI, served by a new `GET /benchmarks` route; GitHub link added to the
+      header. See status note below.
 - [ ] Stretch — Aesthetic pass on the demo site: once the benchmarks panel, GitHub button, and
       live dashboard above all exist, iterate on the whole page's visual design via MCP
       (browser tooling, screenshot-and-adjust) until it reads as a cohesive, polished piece of
@@ -1543,3 +1542,98 @@ only). `scripts/build_index.py` (FAISS path) was not re-run in this step since
 
 _Status: complete on `feat/pgvector-backend`. Tell the user before starting the
 next stretch goal (demo site benchmarks panel, per the checklist order)._
+
+### Stretch — Demo site benchmarks panel (complete)
+
+**Goal:** surface the already-measured, already-committed benchmark numbers
+(retrieval, correctness, grounding, latency, reranker sweep, plus the three
+completed extra comparisons) directly on the live demo page, below the query
+UI, as a condensed version of the README's Benchmarks section rather than a
+duplicate of it — and add a prominent GitHub link. Two scope decisions were
+confirmed with the user before implementation: data delivery via a new
+`GET /benchmarks` API route (not a raw `StaticFiles` mount of `results/`),
+and panel scope covering the checklist's "core 5" metrics *plus* the three
+already-measured extra comparisons (Vertex AI Search, Haiku vs Sonnet,
+FAISS-vs-pgvector) rather than the core 5 alone.
+
+**A real deployment gap was caught before it could ship silently.**
+`Dockerfile` copies `pyproject.toml`, `src/`, `config/`, `static/` into the
+image but never `results/` — confirmed by reading the file directly, not
+assumed. Without fixing this, `/benchmarks` would have worked in local dev
+(where `results/` exists on disk relative to repo root) but silently
+returned an all-`None`-sections payload on the real deployed Cloud Run
+service. Fixed with one `COPY results/ ./results/` line (2.2MB, trivial to
+bake in) — this is exactly the kind of local-works/prod-silently-degrades
+gap Step 8's `/healthz`-interception catch and Step 9's stale-artifact catch
+were both examples of; caught here the same way, by reading the actual
+Dockerfile rather than assuming the new route would just work.
+
+**Design decisions actually implemented (4 commits, `feat/benchmarks-panel`):**
+- New `src/rag_receipts/api/benchmarks.py` — one small parsing function per
+  source file/section (`eval_report.json`'s `summary`, `latency_report.json`,
+  `reranker_sweep.json`, `vertex_comparison.json`,
+  `generation_model_comparison.json`, and the 3-file
+  `pgvector_equivalence.json` + `latency_report_{faiss,pgvector}.json`
+  bundle), each wrapped in a `_safe()` helper that catches
+  `(OSError, json.JSONDecodeError, KeyError, TypeError, ValueError)` and
+  returns `None` on any failure rather than raising — so one missing or
+  malformed results file omits only its own section of the panel, never the
+  whole route. The pgvector bundle is deliberately all-or-nothing (its three
+  files are one logical artifact set), confirmed by a dedicated test.
+- New `src/rag_receipts/api/benchmark_models.py` — ~15 small Pydantic
+  classes (`BenchmarksResponse` + nested `EvalSummaryOut`/`LatencyReportOut`/
+  `RerankerSweepEntryOut`/`VertexComparisonOut`/`GenerationComparisonOut`/
+  `PgvectorComparisonOut`, etc.), kept separate from the existing
+  `models.py` (scoped tightly to `/query`'s shape) rather than appended to
+  it. All six top-level sections are `Optional`, mirroring the loader's
+  graceful-partial contract.
+- `app.py` gained `results_dir`/`benchmarks` params on `create_app`
+  (mirroring the existing `static_dir`/`STATIC_DIR` pattern exactly, plus
+  direct test injection like `retriever=`/`generator=`), an independent
+  `app.state.benchmarks` load in `lifespan` alongside the retriever/
+  generator load, and `GET /benchmarks` — no demo-key gate, no rate limit
+  (static local JSON, zero external API cost), no readiness gate (benchmarks
+  load before the app accepts traffic, same as retriever/generator).
+- Frontend: `static/index.html` gained a `<section id="benchmarks">` below
+  the existing `#result` div, fetching `/benchmarks` once on page load and
+  rendering plain CSS width-based bars (new `.bar-row`/`.bar-track`/
+  `.bar-fill` classes) for rate-style metrics and small `.bench-table`s for
+  inherently tabular ones (latency by stage, reranker sweep, the three extra
+  comparisons) — no charting library, preserving the page's existing
+  zero-external-dependency convention. Each section is guarded by a null
+  check so a missing one (per the loader's contract) is silently skipped,
+  never shown as an error. The `<header>` was restructured into a flex row
+  with a new `.github-link` pill (hand-inlined SVG octocat mark, not fetched
+  from any icon CDN) linking to `https://github.com/lofeodo/rag-with-receipts`.
+  The frontend and GitHub-link work landed as one commit rather than the
+  originally-planned two, since the header flex layout and the generalized
+  `.section-label` CSS rule are shared by both pieces and a clean split
+  wasn't possible without an artificial intermediate state.
+- `tests/api/test_benchmarks.py` + `tests/api/fixtures/` (minimal
+  hand-written JSON, not copies of the real multi-hundred-KB files): loader
+  tests for the happy path, a missing file omitting only its section,
+  malformed JSON doing the same, and the pgvector bundle's all-or-nothing
+  contract; route tests for direct-injection 200, an empty `results_dir`
+  still returning 200 with every section `None` (confirms the route never
+  404s/500s just because results are unavailable), and the real
+  `load_benchmarks` path wiring up correctly through `lifespan`.
+
+**Verification:** `pytest -q` — 246 passed, 7 deselected (unchanged slow-test
+set; 8 new tests added, all passing). The real app was run locally
+(`uvicorn`, real model cold start) and `GET /benchmarks` was hit directly
+against the real `results/` directory — confirmed all six sections populated
+with real numbers (hit rate 0.96, recall 0.88, etc., matching the README).
+The live page was then opened in a browser (Playwright `browser_navigate` +
+`browser_snapshot` + a full-page screenshot) and visually/structurally
+confirmed: all eight panel sections render with the real numbers, the
+GitHub link opens the correct repo URL, and no JS console errors beyond an
+unrelated pre-existing `/favicon.ico` 404. The optional Docker-image check
+(`docker build` + `ls /app/results`) was **not** run in this session — the
+local Docker daemon wasn't running, and starting it for a one-line, standard
+`COPY` directive (directly mirroring the already-proven `COPY static/
+./static/` line immediately above it) wasn't judged worth the time; this
+remains worth a quick confirmation on the next real deploy.
+
+_Status: complete on `feat/benchmarks-panel`. Tell the user before starting
+the next stretch goal (aesthetic pass on the demo site, per the checklist
+order)._
