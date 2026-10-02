@@ -29,9 +29,31 @@
     margin: 0 auto;
     padding: 2.5rem 1.25rem 4rem;
   }
-  header { margin-bottom: 1.75rem; }
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+  }
   h1 { font-size: 1.4rem; margin: 0 0 0.35rem; }
   .subtitle { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+  .github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.45rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .github-link:hover { border-color: var(--accent); }
   .key-row {
     display: flex;
     align-items: center;
@@ -82,7 +104,7 @@
   .badge.answerable { background: #1f3a2a; color: #6fcf8f; }
   .badge.not-answerable { background: #3a2e1f; color: var(--warn); }
   .citations { margin-top: 0.4rem; }
-  .citations h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 1.2rem 0 0.5rem; }
+  .citations h2, .section-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 1.2rem 0 0.5rem; }
   .citation { padding: 0.55rem 0; border-top: 1px solid var(--border); font-size: 0.88rem; }
   .citation:first-child { border-top: none; }
   .citation a { color: var(--accent); text-decoration: none; }
@@ -94,16 +116,45 @@
     color: var(--error);
   }
   .timing { color: var(--muted); font-size: 0.78rem; margin-top: 1rem; }
+
+  .bench-title { font-size: 1.1rem; margin: 2.5rem 0 0.25rem; }
+  .bench-group { margin-top: 1.75rem; }
+  .bench-group:first-child { margin-top: 0; }
+  .bar-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; margin: 0.35rem 0; }
+  .bar-label { flex: 0 0 160px; color: var(--muted); }
+  .bar-track { flex: 1; background: var(--border); border-radius: 4px; height: 8px; overflow: hidden; }
+  .bar-fill { background: var(--accent); height: 100%; }
+  .bar-value { flex: 0 0 56px; text-align: right; }
+  .bench-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.5rem 0 1rem; }
+  .bench-table th, .bench-table td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); }
+  .bench-table th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.03em; }
+  .bench-notes { margin: 0.4rem 0 0; padding-left: 1.1rem; color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+  .bench-notes li { margin-bottom: 0.3rem; }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <h1>RAG With Receipts</h1>
-    <div class="subtitle">
-      Grounded, cited answers over a scoped slice of the Old School RuneScape Wiki.
-      Every claim below cites the exact retrieved chunk it came from.
+    <div>
+      <h1>RAG With Receipts</h1>
+      <div class="subtitle">
+        Grounded, cited answers over a scoped slice of the Old School RuneScape Wiki.
+        Every claim below cites the exact retrieved chunk it came from.
+      </div>
     </div>
+    <a class="github-link" href="https://github.com/lofeodo/rag-with-receipts" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+          0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+          -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+          .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+          -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27
+          .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+          .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+          0 1.07-.02 1.93-.02 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      GitHub
+    </a>
   </header>
 
   <div class="key-row">
@@ -122,6 +173,15 @@
 
   <div id="status"></div>
   <div id="result"></div>
+
+  <section id="benchmarks">
+    <h2 class="bench-title">Benchmarks</h2>
+    <div class="subtitle" style="margin-bottom: 0.75rem;">
+      Measured once against the real pipeline and committed to the repo &mdash; condensed from
+      the README's full Benchmarks section.
+    </div>
+    <div id="benchmarks-content" class="card">Loading benchmarks&hellip;</div>
+  </section>
 </main>
 
 <script>
@@ -147,8 +207,11 @@
     return d.innerHTML;
   }
 
+  const ms = (s) => Math.round(s * 1000);
+  const pct = (x) => (x * 100).toFixed(1) + '%';
+  const label = (s) => s.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+
   function renderTiming(t) {
-    const ms = (s) => Math.round(s * 1000);
     return `retrieval ${ms(t.embed_query_s + t.dense_search_s + t.rerank_s)}ms `
          + `&middot; generation ${ms(t.generate_s)}ms &middot; total ${ms(t.total_s)}ms`;
   }
@@ -189,6 +252,191 @@
     `;
   }
 
+  function bar(labelText, value) {
+    const width = Math.max(0, Math.min(100, value * 100));
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${escapeHtml(labelText)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${width}%"></div></div>
+        <div class="bar-value">${pct(value)}</div>
+      </div>`;
+  }
+
+  function renderRetrievalSection(ev) {
+    const r = ev.retrieval;
+    const typeRows = Object.entries(ev.retrieval_by_type).map(([type, m]) => `
+      <tr>
+        <td>${escapeHtml(label(type))}</td>
+        <td>${pct(m.hit_rate)}</td>
+        <td>${pct(m.mean_recall)}</td>
+        <td>${m.mean_mrr.toFixed(3)}</td>
+      </tr>`).join('');
+    return `
+      <div class="bench-group">
+        <div class="section-label">Retrieval</div>
+        ${bar('Hit rate', r.hit_rate)}
+        ${bar('Recall', r.mean_recall)}
+        ${bar('MRR', r.mean_mrr)}
+        ${bar('Precision', r.mean_precision)}
+        <table class="bench-table">
+          <thead><tr><th>Question type</th><th>Hit rate</th><th>Recall</th><th>MRR</th></tr></thead>
+          <tbody>${typeRows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderCorrectnessSection(ev) {
+    const rows = [['Overall', ev.correctness_accuracy]]
+      .concat(Object.entries(ev.correctness_by_type).map(([type, m]) => [label(type), m.accuracy]));
+    return `
+      <div class="bench-group">
+        <div class="section-label">Correctness by question type</div>
+        ${rows.map(([l, v]) => bar(l, v)).join('')}
+      </div>`;
+  }
+
+  function renderGroundingSection(ev) {
+    const g = ev.grounding;
+    return `
+      <div class="bench-group">
+        <div class="section-label">Grounding</div>
+        ${bar('Grounded', g.grounded_rate)}
+        ${bar('Contradicted', g.contradicted_rate)}
+        ${bar('Ungrounded', g.ungrounded_rate)}
+        ${bar('Fully grounded answers', g.fully_grounded_answer_rate)}
+      </div>`;
+  }
+
+  function renderLatencySection(latency) {
+    const rows = Object.entries(latency.stages).map(([stage, s]) => `
+      <tr>
+        <td>${escapeHtml(label(stage.replace(/_s$/, '')))}</td>
+        <td>${ms(s.p50)}ms</td>
+        <td>${ms(s.p95)}ms</td>
+        <td>${ms(s.mean)}ms</td>
+      </tr>`).join('');
+    return `
+      <div class="bench-group">
+        <div class="section-label">Latency by stage</div>
+        <table class="bench-table">
+          <thead><tr><th>Stage</th><th>p50</th><th>p95</th><th>Mean</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderRerankerSection(sweep) {
+    const rows = sweep.map((m) => `
+      <tr>
+        <td>${escapeHtml(m.model_name)}</td>
+        <td>${pct(m.retrieval.mean_recall)}</td>
+        <td>${pct(m.retrieval.hit_rate)}</td>
+        <td>${m.retrieval.mean_mrr.toFixed(3)}</td>
+        <td>${ms(m.rerank_latency.p50)}ms</td>
+      </tr>`).join('');
+    return `
+      <div class="bench-group">
+        <div class="section-label">Reranker sweep</div>
+        <table class="bench-table">
+          <thead><tr><th>Model</th><th>Recall</th><th>Hit rate</th><th>MRR</th><th>Rerank p50</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderVertexSection(v) {
+    const configs = [
+      ['Baseline (ours)', v.retrieval.baseline, v.correctness_accuracy.baseline, v.grounding.baseline, v.latency.baseline_staged.end_to_end_s],
+      ['Vertex Search', v.retrieval.config_a_vertex_search, v.correctness_accuracy.config_a_vertex_search, v.grounding.config_a_vertex_search, v.latency.config_a_vertex_search_end_to_end],
+      ['Vertex Answer', v.retrieval.config_b_vertex_answer, v.correctness_accuracy.config_b_vertex_answer, v.grounding.config_b_vertex_answer, v.latency.config_b_vertex_answer_end_to_end],
+    ];
+    const cols = configs.map(([name]) => `<th>${escapeHtml(name)}</th>`).join('');
+    const metricRow = (title, fn) => `<tr><td>${title}</td>${configs.map(([, r, c, g, l]) => `<td>${fn(r, c, g, l)}</td>`).join('')}</tr>`;
+    const notesHtml = Object.values(v.methodology_notes).map((n) => `<li>${escapeHtml(n)}</li>`).join('');
+    return `
+      <div class="bench-group">
+        <div class="section-label">Vertex AI Search comparison</div>
+        <table class="bench-table">
+          <thead><tr><th>Metric</th>${cols}</tr></thead>
+          <tbody>
+            ${metricRow('Hit rate', (r) => pct(r.hit_rate))}
+            ${metricRow('Recall', (r) => pct(r.mean_recall))}
+            ${metricRow('MRR', (r) => r.mean_mrr.toFixed(3))}
+            ${metricRow('Correctness accuracy', (r, c) => pct(c))}
+            ${metricRow('Grounded rate', (r, c, g) => pct(g.grounded_rate))}
+            ${metricRow('End-to-end p50', (r, c, g, l) => ms(l.p50) + 'ms')}
+          </tbody>
+        </table>
+        <ul class="bench-notes">${notesHtml}</ul>
+      </div>`;
+  }
+
+  function renderGenerationSection(g) {
+    const rows = g.models.map((m) => `
+      <tr>
+        <td>${escapeHtml(m.model_id)}</td>
+        <td>${pct(m.correctness_accuracy)}</td>
+        <td>${pct(m.grounded_rate)}</td>
+        <td>$${m.cost_usd_total.toFixed(3)}</td>
+        <td>${ms(m.latency_p50_s)}ms</td>
+        <td>${ms(m.latency_p95_s)}ms</td>
+      </tr>`).join('');
+    return `
+      <div class="bench-group">
+        <div class="section-label">Haiku vs Sonnet generation</div>
+        <table class="bench-table">
+          <thead><tr><th>Model</th><th>Accuracy</th><th>Grounded</th><th>Cost (55 q)</th><th>p50</th><th>p95</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderPgvectorSection(p) {
+    return `
+      <div class="bench-group">
+        <div class="section-label">FAISS vs pgvector backend</div>
+        <table class="bench-table">
+          <thead><tr><th>Stage (p50)</th><th>FAISS</th><th>pgvector</th></tr></thead>
+          <tbody>
+            <tr><td>Dense search</td><td>${ms(p.faiss_latency.dense_search_p50)}ms</td><td>${ms(p.pgvector_latency.dense_search_p50)}ms</td></tr>
+            <tr><td>Retrieval total</td><td>${ms(p.faiss_latency.retrieval_total_p50)}ms</td><td>${ms(p.pgvector_latency.retrieval_total_p50)}ms</td></tr>
+            <tr><td>End to end</td><td>${ms(p.faiss_latency.end_to_end_p50)}ms</td><td>${ms(p.pgvector_latency.end_to_end_p50)}ms</td></tr>
+          </tbody>
+        </table>
+        <div class="subtitle">${p.set_match_count}/${p.questions_checked} exact chunk-id match, max score diff ${p.max_score_diff_overall.toExponential(2)}.</div>
+      </div>`;
+  }
+
+  async function loadBenchmarks() {
+    const content = document.getElementById('benchmarks-content');
+    try {
+      const resp = await fetch('/benchmarks');
+      if (!resp.ok) throw new Error(`Request failed (${resp.status})`);
+      const data = await resp.json();
+
+      let html = '';
+      if (data.eval_summary) {
+        html += renderRetrievalSection(data.eval_summary);
+        html += renderCorrectnessSection(data.eval_summary);
+        html += renderGroundingSection(data.eval_summary);
+      }
+      if (data.latency) html += renderLatencySection(data.latency);
+      if (data.reranker_sweep) html += renderRerankerSection(data.reranker_sweep);
+
+      const extras = [];
+      if (data.vertex_comparison) extras.push(renderVertexSection(data.vertex_comparison));
+      if (data.generation_comparison) extras.push(renderGenerationSection(data.generation_comparison));
+      if (data.pgvector_comparison) extras.push(renderPgvectorSection(data.pgvector_comparison));
+      if (extras.length > 0) {
+        html += '<div class="section-label" style="margin-top: 1.75rem;">Extra comparisons</div>' + extras.join('');
+      }
+
+      content.innerHTML = html || '<div class="subtitle">Benchmarks unavailable.</div>';
+    } catch (err) {
+      content.innerHTML = '<div class="subtitle">Benchmarks unavailable.</div>';
+    }
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const query = input.value.trim();
@@ -227,6 +475,8 @@
       button.disabled = false;
     }
   });
+
+  loadBenchmarks();
 </script>
 </body>
 </html>
