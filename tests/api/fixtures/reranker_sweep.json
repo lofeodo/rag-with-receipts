@@ -1,0 +1,14 @@
+[
+  {
+    "model_name": "fixture-base",
+    "retrieval": {"mean_precision": 0.2, "mean_recall": 0.83, "mean_mrr": 0.69, "hit_rate": 0.9, "count": 2},
+    "rerank_latency": {"p50": 0.55, "p95": 0.57, "mean": 0.55, "count": 2},
+    "total_retrieval_latency": {"p50": 0.57, "p95": 0.59, "mean": 0.57, "count": 2}
+  },
+  {
+    "model_name": "fixture-fast",
+    "retrieval": {"mean_precision": 0.22, "mean_recall": 0.88, "mean_mrr": 0.75, "hit_rate": 0.96, "count": 2},
+    "rerank_latency": {"p50": 0.11, "p95": 0.13, "mean": 0.11, "count": 2},
+    "total_retrieval_latency": {"p50": 0.13, "p95": 0.15, "mean": 0.13, "count": 2}
+  }
+]

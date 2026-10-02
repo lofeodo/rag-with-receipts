@@ -1,0 +1,32 @@
+{
+  "methodology_notes": {"thinking_default_asymmetry": "fixture note."},
+  "pricing_captured": "2026-01-01",
+  "pricing_per_million_tokens": {},
+  "run_metadata": {},
+  "models": {
+    "claude-sonnet-5": {
+      "generation_model": "claude-sonnet-5",
+      "request_config": {},
+      "results": [],
+      "eval_summary": {
+        "correctness_accuracy": 0.84,
+        "grounding": {"grounded_rate": 0.95, "contradicted_rate": 0.05, "ungrounded_rate": 0.0, "fully_grounded_answer_rate": 0.91}
+      },
+      "cost_usd": {"generation": 0.53, "judge": 0.15, "total": 0.68},
+      "latency_s": {"p50": 2.55, "p95": 6.17, "mean": 3.02, "count": 2},
+      "tokens": {}
+    },
+    "claude-haiku-4-5": {
+      "generation_model": "claude-haiku-4-5",
+      "request_config": {},
+      "results": [],
+      "eval_summary": {
+        "correctness_accuracy": 0.82,
+        "grounding": {"grounded_rate": 0.97, "contradicted_rate": 0.03, "ungrounded_rate": 0.0, "fully_grounded_answer_rate": 0.96}
+      },
+      "cost_usd": {"generation": 0.21, "judge": 0.14, "total": 0.35},
+      "latency_s": {"p50": 2.38, "p95": 3.9, "mean": 2.51, "count": 2},
+      "tokens": {}
+    }
+  }
+}

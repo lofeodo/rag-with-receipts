@@ -1,0 +1,13 @@
+{
+  "question_count": 2,
+  "error_count": 0,
+  "errors": [],
+  "stages": {
+    "embed_query_s": {"p50": 0.08, "p95": 0.15, "mean": 0.08, "count": 2},
+    "dense_search_s": {"p50": 0.098, "p95": 0.11, "mean": 0.1, "count": 2},
+    "rerank_s": {"p50": 0.26, "p95": 0.34, "mean": 0.26, "count": 2},
+    "retrieval_total_s": {"p50": 0.47, "p95": 0.58, "mean": 0.47, "count": 2},
+    "generate_s": {"p50": 2.53, "p95": 5.76, "mean": 3.0, "count": 2},
+    "end_to_end_s": {"p50": 3.01, "p95": 6.08, "mean": 3.46, "count": 2}
+  }
+}
