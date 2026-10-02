@@ -42,9 +42,10 @@ quantified comparison against the managed alternative.
       demo key (pivoted from the original IAP plan — see status note below).
 - [x] **Step 9 — README polish** ← Architecture/Benchmarks sections written, stale
       pre-reranker-swap artifacts regenerated, MIT LICENSE added. See status note below.
-- [ ] Stretch — Vertex AI Search benchmark comparison (retrieval precision, correctness,
-      grounding, end-to-end latency; note in the report that the retrieval/generation latency
-      *split* is ours-only, Vertex only exposes end-to-end)
+- [x] **Stretch — Vertex AI Search benchmark comparison** ← real run against the live
+      55-question gold set: Vertex's managed retrieval beat the hand-built pipeline on every
+      retrieval/correctness metric measured, with four documented structural asymmetries
+      limiting how far that generalizes. See status note below.
 - [ ] Stretch — Haiku vs Sonnet generation comparison
 - [ ] Stretch — pgvector-on-Cloud-SQL backend swap
 - [ ] Stretch — Demo site benchmarks panel: static charts for the already-measured metrics
@@ -1019,3 +1020,184 @@ _Status: complete on `feat/readme-polish`. This closes out the step
 sequence's core 0-9 scope — only the stretch goals (Vertex AI Search
 comparison, Haiku-vs-Sonnet generation, pgvector backend swap) remain, and
 none are required for the project to be considered done._
+
+### Stretch — Vertex AI Search benchmark comparison (complete)
+
+**Goal:** turn this project's own "why not a fully-managed RAG service?"
+argument into a measured comparison — stand up Vertex AI Search (Discovery
+Engine) over the same 955-chunk corpus and the same 55-question gold set, and
+report real numbers against it, reusing the existing eval/grounding machinery
+wherever apples-to-apples was actually possible.
+
+**Decisions locked with the user before implementation:**
+1. **Ingestion unit: one GCS object per existing chunk (955 objects), not per
+   raw page.** Letting Vertex do its own chunking was considered and declined
+   in favor of simplicity — pre-chunked objects let Vertex's results be
+   scored against `gold_chunk_ids` via exact chunk_id match, reusing
+   `score_retrieval()` unchanged. Deliberate tradeoff: Vertex's own chunking
+   is not exercised or measured by this comparison.
+2. **Both configs measured, both grounding-checked with our own checker:**
+   config A (Vertex Search API → our own `Generator`/`Judge`/
+   `GroundingChecker`) and config B (Vertex's Answer API end-to-end, also run
+   through our `GroundingChecker`, plus Vertex's self-reported
+   `grounding_score` captured separately).
+
+**New package `src/rag_receipts/vertex/`** (mirrors every prior step's
+Protocol + `@dataclass` + `from_config` shape): `config.py` (`VertexConfig`),
+`resolve.py` (`resolve_chunk`/`struct_to_dict` — the one piece both configs
+share), `search_client.py` (`VertexRetriever`, config A), `answer_client.py`
+(`VertexAnswerer`, config B), `models.py` (`VertexEvalResult` — `EvalResult` +
+`vertex_grounding_score`), `eval_runner.py` (`run_vertex_eval_search`/
+`run_vertex_eval_answer`, parallel copies of `eval/runner.py::run_eval()`'s
+body per the project's established "duplicate the runner, don't force a
+Protocol over both providers" convention), `upload.py` (manifest-building +
+GCS upload, Protocol-faked). New scripts: `scripts/vertex_upload_corpus.py`,
+`scripts/run_vertex_eval.py --mode search|answer|both`,
+`scripts/compare_vertex.py`. New `tests/vertex/` suite: 38 unit tests against
+duplicated fakes, zero real-API/model dependency in the default `pytest -q`
+run (220 passed, 6 deselected `slow` — unchanged from before this stretch
+goal; no existing package file outside `config.py`'s one-line `AppConfig`
+wiring was touched).
+
+**GCP provisioning (manual, narratively documented — no IaC, matching Step
+8's precedent):** new project resources in the existing `rag-with-receipts`
+project — GCS bucket `rag-with-receipts-vertex-corpus`, Discovery Engine data
+store `rag-receipts-corpus` (global, `CONTENT_REQUIRED`, `SOLUTION_TYPE_SEARCH`)
+and engine `rag-receipts-search-app` (`SEARCH_TIER_ENTERPRISE` +
+`SEARCH_ADD_ON_LLM`, required for the Answer API). Confirmed via live pricing
+research before provisioning: Vertex AI Search is pure usage-based pricing
+with **no Enterprise-tier minimum commitment** (the cost-risk flagged in the
+original plan) — $1.50/1,000 standard search queries, $4/1,000 with
+generative answers, 10,000 free queries/month. This comparison's ~122 total
+queries (55 search + ~67 answer, the extra from one quota-triggered retry)
+cost $0.
+
+**A real secret-handling mistake happened mid-session and is recorded here
+rather than smoothed over.** While wiring up the Anthropic API key for the
+live eval run, an early command echoed the key's actual value into the tool
+output / conversation transcript (`echo "...set: ${VAR:+yes}${VAR:-no}"`
+interpolated the real value instead of just a yes/no check). The user caught
+this immediately and redirected: pull secrets from GCP Secret Manager
+(`anthropic-api-key`, already provisioned in Step 8) scoped to the single
+command's child process via command substitution
+(`ANTHROPIC_API_KEY="$(gcloud secrets versions access ...)" python ...`),
+never echoed, never exported persistently into the shell session. The
+leaked-key moment was flagged to the user directly with a rotation
+recommendation rather than left unmentioned. Lesson applied for the rest of
+the session and worth carrying into any future secret-handling: redact by
+construction (never pass a real secret through a command whose output you
+intend to print or log), not by remembering not to look at it.
+
+**ADC (Application Default Credentials) setup needed a real person in the
+loop, not something this session could complete alone.** `gcloud auth
+application-default login` requires an interactive browser consent flow and a
+pasted verification code — this session surfaced the exact command (with the
+`CLOUDSDK_PYTHON` workaround Step 8 already documented for this machine's
+Windows Python-stub issue) and the user ran it themselves. Data store/engine
+creation itself used `gcloud auth print-access-token` (the CLI's own user
+credentials) rather than ADC, since ADC wasn't fixed yet at that point in the
+session — both credential paths authenticate as the same account
+(`daniel.lofeodo@gmail.com`) once ADC was corrected.
+
+**Three real API-shape findings surfaced only by running against the live
+data store, not from documentation** (the project's established
+verify-before-trust discipline, same pattern as Steps 1/6/7/8's live-only
+catches):
+1. `document.struct_data` on a real `SearchServiceClient.search()` response
+   is a proto-plus `MapComposite`, not the protobuf `Struct` type the
+   original code assumed (`MessageToDict`-compatible) — `dict(struct_data)`
+   round-trips correctly, `MessageToDict` crashes on it. Fixed in
+   `resolve.py::struct_to_dict`.
+2. The Answer API's `citations`/`references`/`grounding_score` fields are all
+   empty/zero unless the request explicitly sets
+   `answer_generation_spec.include_citations=True` and
+   `grounding_spec.include_grounding_supports=True` — neither is on by
+   default. A reference's `chunk_id` also lives one level deeper than
+   assumed (`reference.chunk_info.document_metadata.struct_data`, not
+   `reference.struct_data`). Fixed in `answer_client.py`, original guessed
+   paths kept as fallbacks rather than deleted.
+3. **Vertex's Answer API has no structured abstention signal.** Confirmed
+   against a genuine out-of-corpus question (Cook's Assistant quest):
+   `answer_skipped_reasons` stayed empty, and Vertex instead wrote a full
+   prose "there is no information regarding..." answer as normal non-empty
+   `answer_text`. There is no equivalent of this project's own
+   forced-tool-schema `Generator.answerable` flag to read off this API.
+   `answerable=bool(answer_text)` is a known-imprecise heuristic, documented
+   in the module docstring and `compare_vertex.py`'s `methodology_notes`
+   (`config_b_abstention_asymmetry`) rather than patched with fragile
+   text-matching on Vertex's phrasing — the same "don't vibes-tune around a
+   model/API limitation" discipline Step 6 applied to its NLI
+   false-positive-on-`contradicted` finding.
+
+**Two more real bugs caught by running the full batch, not just the
+spot-checks:**
+- Discovery Engine's Answer API enforces a **10 LLM-requests/minute project
+  quota** ("LLM query requests (search summarization, multi-turn search) per
+  minute") — undocumented ahead of time, hit mid-batch at request #12 (~55s
+  in) on the first full run. Fixed: `VertexAnswerer` now paces calls
+  (`min_seconds_between_calls=6.5s`, i.e. 60s/10 + margin) and retries with
+  backoff on `ResourceExhausted` as a safety net.
+- The first full config-B run produced **recall values above 1.0** (up to
+  8.0) — caught by the same "a metric outside its possible range is a bug,
+  not a finding" discipline Step 7 applied to its GPU-contention catch.
+  Root cause: Vertex's Answer API legitimately cites the same `chunk_id`
+  multiple times, once per claim/sentence it supports (one real answer cited
+  a single chunk 8 times); `score_retrieval()`/`recall_at_k()` assume a
+  deduplicated retrieved-chunk list, true for `Retriever`/`VertexRetriever`
+  but not for "every chunk a citation points at." Fixed with
+  `_dedupe_cited_chunks()` (dedupe by chunk_id, keep first-occurrence order
+  so MRR still reflects earliest cited position) before scoring config B's
+  retrieval. Config B was re-run cleanly after the fix rather than patching
+  the stale JSON by hand, consistent with Step 9's own precedent.
+
+**Real results, full 55-question gold set, 0 errors in both configs**
+(`results/vertex_search_eval.json`, `results/vertex_answer_eval.json`,
+`results/vertex_comparison.json`):
+
+| Metric | Baseline (ours) | Config A (Vertex Search) | Config B (Vertex Answer) |
+|---|---|---|---|
+| Retrieval hit rate | 0.96 | **0.98** | 0.96 |
+| Retrieval recall | 0.88 | **0.96** | 0.94 |
+| Retrieval MRR | 0.752 | 0.823 | **0.858** |
+| Correctness accuracy | 0.836 | **0.927** | 0.855 |
+| Grounded rate (our checker) | 0.948 | **0.968** | 0.838 |
+| Vertex's own grounding_score | — | — | 0.688 |
+| End-to-end latency (p50 / p95) | 3.26s / 7.58s | 5.02s / 9.31s | **6.39s / 8.88s** |
+
+**The headline finding, stated plainly: Vertex's managed retrieval (config A)
+beat the hand-built pipeline on every retrieval and correctness metric
+measured, with no tradeoff among them** — not a cherry-picked result, the
+same "Pareto-dominates" shape Step 7's reranker sweep found, just pointing
+the other direction this time. This is reported honestly rather than
+downplayed. It does **not** undercut the project's own thesis, for two
+reasons made structural in the comparison's own design, not argued after the
+fact: (1) config A's retrieval advantage was measured on a corpus Vertex
+never had to chunk itself — the exact internals-hiding this project's
+pipeline exists to demonstrate were kept out of what's being compared here;
+(2) config A is still routed through this project's own `Generator`/`Judge`/
+`GroundingChecker` — it's a managed-retrieval-plus-hand-built-everything-else
+hybrid, not evidence that the fully-managed product alone matches this
+result. Config B (the actual fully-managed product, end-to-end) is the more
+relevant comparison for the thesis: it edges the baseline on raw correctness
+accuracy (0.855 vs 0.836) but scores meaningfully lower on grounded rate
+(0.838 vs 0.948) and is slower end-to-end (6.39s vs 3.26s p50) — and its
+correctness number is itself **confirmed, not just suspected, to be distorted
+by finding 3's no-abstention-signal gap**: all 5 deliberately-unanswerable
+gold questions scored `incorrectly_answered` for config B (zero
+`correct_abstention`), versus the baseline's documented 5/5
+`correct_abstention` on the same 5 questions (Steps 5/6). Had config B
+abstained on those 5 the way the baseline does, its accuracy would be
+(47+5)/55 = 0.945 — higher than both the baseline and config A — meaning the
+*actual* generation-quality gap between config B and the baseline is
+currently invisible inside a measurement artifact of the missing abstention
+signal, not a real correctness difference this comparison can isolate as
+reported.
+
+_Status: complete on `feat/vertex-comparison`. README gained a "Vertex AI
+Search comparison" subsection under Benchmarks with the headline table and
+all four methodology asymmetries. The Discovery Engine data store, engine,
+and GCS bucket were torn down after these numbers were captured and
+committed — this was a one-time measurement, not a second production
+surface, consistent with the project's zero/near-zero recurring cost stance
+everywhere else. Tell the user before starting the next stretch goal
+(Haiku-vs-Sonnet generation comparison, per the checklist order)._
