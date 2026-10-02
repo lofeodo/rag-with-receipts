@@ -29,7 +29,7 @@ from typing import Any, Callable, Protocol
 import pandas as pd
 
 from rag_receipts.generation.models import Citation, GeneratedAnswer
-from rag_receipts.retrieval.pipeline import load_metadata
+from rag_receipts.vectorstore.faiss_store import load_metadata
 from rag_receipts.vertex.config import VertexConfig
 from rag_receipts.vertex.resolve import resolve_chunk, struct_to_dict
 

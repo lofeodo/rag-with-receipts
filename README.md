@@ -259,6 +259,46 @@ it across the full batch. Pricing ($2/$10 per 1M input/output tokens for
 Sonnet 5, $1/$5 for Haiku 4.5) is Anthropic's first-party API rate captured
 2026-10-02.
 
+### pgvector / Cloud SQL backend (stretch goal)
+
+The vector store is a config-driven, swappable backend (`indexing.vector_index:
+faiss | pgvector`) behind a small `VectorStore` Protocol — FAISS (in-process,
+the default) and pgvector on Cloud SQL (a managed Postgres database, network
+-backed) both satisfy the same interface, and `Retriever.from_config` is the
+single place that picks one.
+
+**This is deliberately not a retrieval-quality comparison.** pgvector is
+configured for exact nearest-neighbor search (no HNSW/IVFFlat index) over the
+same embeddings FAISS already has, which is mathematically guaranteed to
+retrieve the same chunks for the same query — there's no quality question to
+measure here, unlike the reranker sweep or the Vertex AI Search comparison
+above. A real run against the live 55-question gold set confirmed that
+guarantee holds in practice, not just in theory:
+
+| Metric | Value |
+|---|---|
+| Set match (chunk_ids) | 55/55 |
+| Order match | 55/55 |
+| Max score diff (FAISS vs. pgvector) | 1.71e-07 |
+
+What *does* genuinely differ is latency — a network round trip to Cloud SQL
+vs. an in-process FAISS lookup — measured with the exact same code path
+against both backends:
+
+| Stage | FAISS p50 | pgvector p50 |
+|---|---|---|
+| dense_search_s | 1.3ms | 98.2ms |
+| retrieval_total_s | 333ms | 471ms |
+| end_to_end_s | 2884ms | 3010ms |
+
+The dense-search stage alone is ~75x slower over the network, but end-to-end
+only grows ~4% because Claude generation dominates total latency regardless of
+vector-store backend — the same finding Step 7 made about reranker latency.
+The Cloud SQL instance was provisioned, measured, and torn down within this
+stretch goal's session (no ongoing cost); the live Cloud Run deployment stays
+on FAISS. Full detail, including two real Postgres-permission gotchas hit
+while provisioning, in CLAUDE.md's status note.
+
 ## Deployment
 
 A live version runs on GCP Cloud Run:

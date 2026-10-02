@@ -16,7 +16,7 @@ from typing import Any, Callable, Iterable, Protocol
 import pandas as pd
 
 from rag_receipts.retrieval.models import RetrievedChunk
-from rag_receipts.retrieval.pipeline import load_metadata
+from rag_receipts.vectorstore.faiss_store import load_metadata
 from rag_receipts.vertex.config import VertexConfig
 from rag_receipts.vertex.resolve import resolve_chunk, struct_to_dict
 

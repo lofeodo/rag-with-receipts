@@ -36,6 +36,10 @@ vertex = [
     "google-cloud-discoveryengine",
     "google-cloud-storage",
 ]
+pgvector = [
+    "cloud-sql-python-connector[pg8000]",
+    "pgvector",
+]
 eval = [
     "anthropic",
     "tqdm",

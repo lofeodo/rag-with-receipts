@@ -1,0 +1,396 @@
+{
+  "questions_checked": 55,
+  "top_k": 30,
+  "set_match_count": 55,
+  "order_match_count": 55,
+  "tie_flip_count": 0,
+  "real_divergence_count": 0,
+  "max_score_diff_overall": 1.7103872285151311e-07,
+  "per_question": [
+    {
+      "id": "q001",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.638100401636706e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q002",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.082695829829788e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q003",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.94171545695599e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q004",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.2730323195597748e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q005",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.2552964301359992e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q006",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 9.664176703338967e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q007",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.684267127634371e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q008",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.4566430983631307e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q009",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 9.198105899166364e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q010",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.764041465296856e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q011",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.665084871850581e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q012",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.2299081031397208e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q013",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.901654075492814e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q014",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.544093061362389e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q015",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.0899185631796371e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q016",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.01993731425199e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q017",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 6.830080878650335e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q018",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.1660985085108e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q019",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.5212295700894884e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q020",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.7041017685848203e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q021",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.157024888877373e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q022",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.801326540324283e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q023",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 9.480143325912849e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q024",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.0903241054460722e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q025",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 9.237466025435737e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q026",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.7103872285151311e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q027",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.3709538648765118e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q028",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.195718903536431e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q029",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 5.6446376794916375e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q030",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.2834396723171437e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q031",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.234721293742808e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q032",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.0580134346405146e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q033",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.418459901931129e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q034",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.3562028933211678e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q035",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.2559663997713244e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q036",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.850632415846604e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q037",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.650800842335826e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q038",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.615222546470847e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q039",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.520199651889214e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q040",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 9.030089165307231e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q041",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.807268003785396e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q042",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.303817395332146e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q043",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.225210350952466e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q044",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.0827630281262657e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q045",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 8.638933357563161e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q046",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.1916507125508957e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q047",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.977376981216366e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q048",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.6712205586078e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q049",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.2923575498646755e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q050",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.755992503799547e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q051",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 7.40720853542598e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q052",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.1164285518283634e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q053",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 6.619607495483848e-08,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q054",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.0870542788143922e-07,
+      "order_mismatch_type": null
+    },
+    {
+      "id": "q055",
+      "set_match": true,
+      "order_match": true,
+      "max_score_diff": 1.4568035389128653e-07,
+      "order_mismatch_type": null
+    }
+  ]
+}

@@ -33,11 +33,11 @@ from rag_receipts.config import load_config
 from rag_receipts.eval.dataset import load_eval_questions
 from rag_receipts.eval.retrieval_metrics import aggregate_retrieval_scores, score_retrieval
 from rag_receipts.indexing.embedder import Embedder
-from rag_receipts.indexing.faiss_index import load_index
 from rag_receipts.retrieval.config import RerankerConfig
-from rag_receipts.retrieval.pipeline import load_metadata, run_retrieval_with_timing
+from rag_receipts.retrieval.pipeline import run_retrieval_with_timing
 from rag_receipts.retrieval.reranker import Reranker
 from rag_receipts.telemetry.timing import summarize_durations
+from rag_receipts.vectorstore.faiss_store import FaissVectorStore
 
 CANDIDATES = [
     "BAAI/bge-reranker-base",  # current default/baseline
@@ -55,9 +55,7 @@ def main() -> None:
     questions = load_eval_questions(cfg.eval.dataset_path)
     print(f"Loaded {len(questions)} questions from {cfg.eval.dataset_path}")
 
-    index_dir = Path(cfg.indexing.output.index_dir)
-    index = load_index(index_dir / cfg.indexing.output.index_filename)
-    metadata = load_metadata(index_dir / cfg.indexing.output.metadata_filename)
+    vector_store = FaissVectorStore.from_config(cfg.indexing)
     embedder = Embedder.from_config(cfg.indexing.embedding)
 
     records = []
@@ -77,8 +75,7 @@ def main() -> None:
         for question in tqdm(questions, desc=model_name):
             chunks, timing = run_retrieval_with_timing(
                 question.question,
-                index=index,
-                metadata=metadata,
+                vector_store=vector_store,
                 embedder=embedder,
                 reranker=reranker,
                 config=cfg.retrieval,
