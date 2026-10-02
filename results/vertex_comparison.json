@@ -1,0 +1,106 @@
+{
+  "methodology_notes": {
+    "chunking_asymmetry": "Vertex AI Search ingested this project's already-chunked 955 objects (one GCS object per existing chunk_id), not raw pages - so Vertex's results reflect its retrieval/ranking quality only, not its own chunking/segmentation. This was a deliberate choice to keep retrieval scoring an exact chunk_id match against the existing gold set; it means this comparison does not measure 'point Vertex at raw documents and let it chunk,' which is how Vertex AI Search is normally used.",
+    "latency_split_asymmetry": "The baseline's latency is staged (embed_query / dense_search / rerank / generate, each measured separately - see results/latency_report.json). Vertex's Search API (config A) and Answer API (config B) each expose only one end-to-end wall-clock number per call - there is no way to recover Vertex's internal retrieval/ranking/generation split from the outside. Vertex's numbers below are end-to-end only; do not compare them against a single baseline stage in isolation.",
+    "config_b_retrieval_asymmetry": "Config B's retrieval precision/recall/MRR/hit-rate are scored against the chunk_ids Vertex's Answer API actually cited, not a separately exposed ranked search-results list (the Answer API doesn't expose one the way the Search API does). This is a narrower signal than the baseline's or config A's full top-k - treat config B's retrieval numbers as 'what Vertex chose to cite,' not 'everything it retrieved.'",
+    "config_b_abstention_asymmetry": "Confirmed live against a true out-of-corpus question: Vertex's Answer API has no structured abstention signal - a query it can't answer still gets a normal non-empty answer_text (prose explaining no information was found), and answer_skipped_reasons stays empty. Our own pipeline's Generator returns an explicit answerable=false via a forced tool schema; Vertex has no equivalent. Config B's answerable flag is therefore a bool(answer_text) heuristic, not a verified equivalent signal - expect config B's correctness breakdown to show more 'incorrectly_answered' on the deliberately unanswerable gold questions than the baseline does, as an artifact of this gap rather than a true hallucination-rate difference."
+  },
+  "retrieval": {
+    "baseline": {
+      "hit_rate": 0.96,
+      "mean_recall": 0.88,
+      "mean_mrr": 0.7516666666666668,
+      "mean_precision": 0.21600000000000005
+    },
+    "config_a_vertex_search": {
+      "hit_rate": 0.98,
+      "mean_recall": 0.96,
+      "mean_mrr": 0.8226666666666668,
+      "mean_precision": 0.14955555555555555
+    },
+    "config_b_vertex_answer": {
+      "hit_rate": 0.96,
+      "mean_recall": 0.94,
+      "mean_mrr": 0.8583333333333333,
+      "mean_precision": 0.6035238095238094
+    }
+  },
+  "correctness_accuracy": {
+    "baseline": 0.8363636363636363,
+    "config_a_vertex_search": 0.9272727272727272,
+    "config_b_vertex_answer": 0.8545454545454545
+  },
+  "grounding": {
+    "baseline": {
+      "grounded_rate": 0.948051948051948,
+      "contradicted_rate": 0.05194805194805195,
+      "ungrounded_rate": 0.0,
+      "fully_grounded_answer_rate": 0.9090909090909091
+    },
+    "config_a_vertex_search": {
+      "grounded_rate": 0.9680851063829787,
+      "contradicted_rate": 0.02127659574468085,
+      "ungrounded_rate": 0.010638297872340425,
+      "fully_grounded_answer_rate": 0.9361702127659575
+    },
+    "config_b_vertex_answer": {
+      "grounded_rate": 0.8384146341463414,
+      "contradicted_rate": 0.11890243902439024,
+      "ungrounded_rate": 0.042682926829268296,
+      "fully_grounded_answer_rate": 0.6346153846153846
+    },
+    "config_b_vertex_self_reported_grounding_score": 0.6880000000000001
+  },
+  "latency": {
+    "baseline_staged": {
+      "embed_query_s": {
+        "p50": 0.07960349999484606,
+        "p95": 0.15361662000068463,
+        "mean": 0.07672063818264922,
+        "count": 55
+      },
+      "dense_search_s": {
+        "p50": 0.0002690000110305846,
+        "p95": 0.0006818799884058532,
+        "mean": 0.000340707272566347,
+        "count": 55
+      },
+      "rerank_s": {
+        "p50": 0.2755507999972906,
+        "p95": 0.3397658899979433,
+        "mean": 0.2628052854550664,
+        "count": 55
+      },
+      "retrieval_total_s": {
+        "p50": 0.3493740000121761,
+        "p95": 0.4251765699940734,
+        "mean": 0.33986663091028196,
+        "count": 55
+      },
+      "generate_s": {
+        "p50": 2.917869900004007,
+        "p95": 7.224083629998494,
+        "mean": 3.3817979109060783,
+        "count": 55
+      },
+      "end_to_end_s": {
+        "p50": 3.2557008000148926,
+        "p95": 7.577417200026683,
+        "mean": 3.72166454181636,
+        "count": 55
+      }
+    },
+    "config_a_vertex_search_end_to_end": {
+      "p50": 5.017573099998117,
+      "p95": 9.309546450001651,
+      "mean": 5.250142054545392,
+      "count": 55
+    },
+    "config_b_vertex_answer_end_to_end": {
+      "p50": 6.386457900000096,
+      "p95": 8.883649040001908,
+      "mean": 6.594038216363697,
+      "count": 55
+    }
+  }
+}

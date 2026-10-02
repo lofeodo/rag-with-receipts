@@ -1,0 +1,8 @@
+{
+  "chunk_count": 955,
+  "bucket": "rag-with-receipts-vertex-corpus",
+  "prefix": "corpus",
+  "manifest_uri": "gs://rag-with-receipts-vertex-corpus/corpus/manifest.jsonl",
+  "import_operation_name": "projects/374659103328/locations/global/collections/default_collection/dataStores/rag-receipts-corpus/branches/0/operations/import-documents-4766284254842191578",
+  "document_count_after_import": 955
+}

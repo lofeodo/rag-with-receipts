@@ -122,6 +122,87 @@ value out of 55 samples, and `generate_s` in particular varies run to run
 since generation isn't temperature-pinned (adaptive thinking doesn't accept
 sampling params on this model).
 
+### Vertex AI Search comparison (stretch goal)
+
+This project uses Cloud Run/GCS/Artifact Registry as deployment substrate but
+hand-builds the retrieval/generation pipeline itself rather than using a
+fully-managed RAG product, on the argument that chunking, embedding choice, a
+local vector store, reranking, per-stage latency, and a grounding check are
+exactly the internals a managed service hides (see `CLAUDE.md`'s "Why not a
+fully-managed RAG service?" section for the full argument). This section
+backs that argument with real numbers: Vertex AI Search (Discovery Engine)
+was provisioned over the same 955-chunk corpus and measured against the
+hand-built pipeline on the same 55-question gold set, two ways:
+
+- **Config A (retrieval-only):** Vertex's Search API → our own
+  Generator/Judge/GroundingChecker. Isolates retrieval quality on equal
+  footing against the hand-built `Retriever`.
+- **Config B (fully managed):** Vertex's own Answer API end-to-end
+  (retrieval + generation + its own citations), run through our
+  `GroundingChecker` too for a same-method comparison, alongside Vertex's
+  self-reported `grounding_score`.
+
+| Metric | Baseline (ours) | Config A (Vertex Search) | Config B (Vertex Answer) |
+|---|---|---|---|
+| Retrieval hit rate | 0.96 | **0.98** | 0.96 |
+| Retrieval recall | 0.88 | **0.96** | 0.94 |
+| Retrieval MRR | 0.752 | 0.823 | **0.858** |
+| Correctness accuracy | 0.836 | **0.927** | 0.855 |
+| Grounded rate (our checker) | 0.948 | **0.968** | 0.838 |
+| Vertex's own grounding_score | — | — | 0.688 |
+| End-to-end latency (p50 / p95) | 3.26s / 7.58s | 5.02s / 9.31s | **6.39s / 8.88s** |
+
+Vertex's managed retrieval (config A) scored *better* than the hand-built
+pipeline on every retrieval and correctness metric measured here — a genuine,
+not-cherry-picked result. It's also slower end-to-end and, as the asymmetries
+below make clear, wasn't exercising the part of the job (chunking) this
+project argues is worth doing by hand.
+
+**Four structural asymmetries, carried verbatim into
+`results/vertex_comparison.json`'s `methodology_notes` field, limit how far
+this comparison generalizes:**
+
+1. **Chunking wasn't compared.** Vertex ingested this project's *already-chunked*
+   955 objects (one GCS object per existing `chunk_id`), not raw pages — so
+   config A/B measure Vertex's retrieval/ranking quality only, not its own
+   chunking. This was necessary to score exact `chunk_id` matches against the
+   existing gold set, but it means "point Vertex at raw documents and let it
+   chunk" — the normal way to use the product — isn't what's measured here.
+2. **Latency isn't apples-to-apples.** The baseline exposes staged latency
+   (embed/dense/rerank/generate). Vertex's Search and Answer APIs each expose
+   only one end-to-end number per call, with no internal stage split visible
+   from outside. Don't compare Vertex's end-to-end number against a single
+   baseline stage.
+3. **Config B's retrieval numbers mean something narrower.** They're scored
+   against the chunk_ids Vertex's Answer API actually *cited* (deduplicated —
+   a cited chunk legitimately repeats once per claim it supports, which
+   inflated recall above 1.0 before that was caught and fixed), not a
+   separately exposed ranked search-results list. Treat it as "what Vertex
+   chose to cite," not "everything it retrieved."
+4. **Config B has no clean abstention signal, and this measurably distorts
+   its correctness number.** Vertex's Answer API doesn't refuse or flag
+   unanswerable queries the way this project's own forced-tool-schema
+   `Generator` does — confirmed against a real out-of-corpus question, it
+   writes a prose "no information found" answer as normal non-empty text,
+   and `answer_skipped_reasons` stays empty. Concretely: all 5 of the gold
+   set's deliberately-unanswerable questions scored `incorrectly_answered`
+   for config B (vs. the baseline's 5/5 `correct_abstention` on the same
+   questions). Had config B abstained correctly, its accuracy would be
+   0.945 — above both the baseline and config A — so the correctness gap
+   reported above is currently an artifact of this missing signal, not a
+   measured generation-quality difference.
+
+Two more real findings from provisioning, not polished away: Discovery
+Engine's Answer API enforces an undocumented-ahead-of-time 10 LLM-requests/
+minute project quota (hit mid-run; `VertexAnswerer` now paces and retries
+around it), and `document.struct_data` on a live response is a proto-plus
+`MapComposite`, not the protobuf `Struct` the public docs implied — both
+required fixing against the live API, not just its documentation. Direct
+query cost for this comparison (55 search + ~67 answer calls, the extra from
+one quota-triggered retry) was $0 — comfortably inside Vertex AI Search's
+10,000-free-queries/month tier. The data store, engine, and GCS bucket were
+torn down immediately after these numbers were captured.
+
 ## Deployment
 
 A live version runs on GCP Cloud Run:

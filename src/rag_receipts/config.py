@@ -19,6 +19,7 @@ from rag_receipts.grounding.config import GroundingConfig, _build_grounding_conf
 from rag_receipts.indexing.config import IndexingConfig, _build_indexing_config
 from rag_receipts.ingestion.config import CorpusConfig, IngestionConfig, _build_ingestion_config
 from rag_receipts.retrieval.config import RetrievalConfig, _build_retrieval_config
+from rag_receipts.vertex.config import VertexConfig, _build_vertex_config
 
 
 @dataclass
@@ -30,6 +31,7 @@ class AppConfig:
     generation: GenerationConfig = field(default_factory=GenerationConfig)
     eval: EvalConfig = field(default_factory=EvalConfig)
     grounding: GroundingConfig = field(default_factory=GroundingConfig)
+    vertex: VertexConfig = field(default_factory=VertexConfig)
 
 
 def load_config(path: str | Path) -> AppConfig:
@@ -41,6 +43,7 @@ def load_config(path: str | Path) -> AppConfig:
     generation = _build_generation_config(raw.get("generation", {}))
     eval_config = _build_eval_config(raw.get("eval", {}))
     grounding = _build_grounding_config(raw.get("grounding", {}))
+    vertex = _build_vertex_config(raw.get("vertex", {}))
     return AppConfig(
         corpus=corpus,
         ingestion=ingestion,
@@ -49,4 +52,5 @@ def load_config(path: str | Path) -> AppConfig:
         generation=generation,
         eval=eval_config,
         grounding=grounding,
+        vertex=vertex,
     )
