@@ -58,10 +58,6 @@ quantified comparison against the managed alternative.
       the same page as the live demo, below the query UI — a condensed, lower-detail
       README-equivalent rather than a duplicate of it. Also add a prominent GitHub button/link
       on the page pointing at the repo.
-- [ ] Stretch — Live query metrics dashboard: charts on the demo page that update as a visitor
-      issues real queries against `/query`, tracking per-stage latency (and other metrics worth
-      surfacing live) with a running mean and variance/spread — not just the static historical
-      benchmarks from the panel above.
 - [ ] Stretch — Aesthetic pass on the demo site: once the benchmarks panel, GitHub button, and
       live dashboard above all exist, iterate on the whole page's visual design via MCP
       (browser tooling, screenshot-and-adjust) until it reads as a cohesive, polished piece of
