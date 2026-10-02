@@ -1,6 +1,8 @@
 """Latency instrumentation (Step 7): per-stage p50/p95/mean over the hot path -
-query embedding, dense FAISS search, cross-encoder reranking, and Claude generation -
-run against the real 55-question gold set, writing results/latency_report.json.
+query embedding, dense/vector-store search, cross-encoder reranking, and Claude
+generation - run against the real 55-question gold set, writing
+results/latency_report.json (or results/latency_report_{vector_index}.json
+when --vector-index overrides the configured backend).
 
 Model loading (Retriever.from_config / Generator.from_config) happens once, outside
 the timed loop, and is deliberately excluded from the per-stage stats - it's a
@@ -8,11 +10,19 @@ cold-start concern for Step 8's deploy, not a per-query latency number.
 
 The reranker-choice question ("which model, at what latency/precision tradeoff") is
 NOT answered here - that's scripts/sweep_reranker.py's job. This script measures the
-pipeline as currently configured in config.yaml.
+pipeline as currently configured in config.yaml (or as overridden by --vector-index).
+
+--vector-index {faiss,pgvector} (pgvector stretch goal): overrides
+config.indexing.vector_index before constructing Retriever, so the exact same
+measurement code path runs against both backends - running literally the same
+code, not a separate script per backend, is itself part of what makes the
+faiss-vs-pgvector latency comparison apples-to-apples. Omitting the flag keeps
+today's default behavior (output path, backend) byte-for-byte unchanged.
 
 Usage:
     python scripts/measure_latency.py
     python scripts/measure_latency.py --config config/config.yaml
+    python scripts/measure_latency.py --vector-index pgvector
 """
 
 from __future__ import annotations
@@ -35,7 +45,13 @@ def main() -> None:
     config_path = "config/config.yaml"
     if "--config" in sys.argv:
         config_path = sys.argv[sys.argv.index("--config") + 1]
+    vector_index_override = None
+    if "--vector-index" in sys.argv:
+        vector_index_override = sys.argv[sys.argv.index("--vector-index") + 1]
+
     cfg = load_config(config_path)
+    if vector_index_override is not None:
+        cfg.indexing.vector_index = vector_index_override
 
     questions = load_eval_questions(cfg.eval.dataset_path)
     print(f"Loaded {len(questions)} questions from {cfg.eval.dataset_path}")
@@ -79,7 +95,11 @@ def main() -> None:
         "stages": summary,
     }
 
-    output_path = Path("results/latency_report.json")
+    output_path = Path(
+        f"results/latency_report_{cfg.indexing.vector_index}.json"
+        if vector_index_override is not None
+        else "results/latency_report.json"
+    )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
