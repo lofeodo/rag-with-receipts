@@ -10,13 +10,9 @@ from rag_receipts.indexing.config import EmbeddingConfig
 from rag_receipts.indexing.embedder import Embedder
 from rag_receipts.indexing.faiss_index import build_flat_ip_index
 from rag_receipts.retrieval.config import RerankerConfig, RetrievalConfig
-from rag_receipts.retrieval.pipeline import (
-    Retriever,
-    dense_search,
-    run_retrieval,
-    run_retrieval_with_timing,
-)
+from rag_receipts.retrieval.pipeline import Retriever, run_retrieval, run_retrieval_with_timing
 from rag_receipts.retrieval.reranker import Reranker
+from rag_receipts.vectorstore.faiss_store import FaissVectorStore
 
 
 class ScriptedEncoder:
@@ -39,36 +35,17 @@ def _embedder(model=None):
     return Embedder(config=EmbeddingConfig(), model=model or FakeEncoder())
 
 
-def test_dense_search_shapes_and_descending_order():
-    embeddings = np.eye(4, dtype="float32")
-    index = build_flat_ip_index(embeddings)
-
-    scores, ids = dense_search(index, embeddings[1:2], top_k=4)
-
-    assert scores.shape == (1, 4)
-    assert ids.shape == (1, 4)
-    assert ids[0][0] == 1
-    assert list(scores[0]) == sorted(scores[0], reverse=True)
-
-
-def test_dense_search_returns_minus_one_padding_when_top_k_exceeds_corpus():
-    embeddings = np.eye(3, dtype="float32")
-    index = build_flat_ip_index(embeddings)
-
-    scores, ids = dense_search(index, embeddings[0:1], top_k=5)
-
-    assert list(ids[0][3:]) == [-1, -1]
+def _store(embeddings: np.ndarray, metadata: pd.DataFrame) -> FaissVectorStore:
+    return FaissVectorStore(index=build_flat_ip_index(embeddings), metadata=metadata)
 
 
 def test_run_retrieval_filters_minus_one_ids_without_error():
     embeddings = np.eye(3, dtype="float32")
-    index = build_flat_ip_index(embeddings)
     metadata = make_chunks_df(3)
 
     result = run_retrieval(
         "some query",
-        index=index,
-        metadata=metadata,
+        vector_store=_store(embeddings, metadata),
         embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0])),
         reranker=_reranker(),
         config=RetrievalConfig(top_k_dense=10, top_k_final=5),
@@ -81,7 +58,6 @@ def test_run_retrieval_sorts_by_rerank_score_not_dense_score():
     # A is closer to the query vector (higher dense score) but shares no words
     # with the query text; B is further in vector space but shares every word.
     embeddings = np.array([[1.0, 0.0], [0.9, np.sqrt(1 - 0.9**2)]], dtype="float32")
-    index = build_flat_ip_index(embeddings)
     metadata = pd.DataFrame(
         [
             {
@@ -109,8 +85,7 @@ def test_run_retrieval_sorts_by_rerank_score_not_dense_score():
 
     result = run_retrieval(
         "abyssal whip special attack",
-        index=index,
-        metadata=metadata,
+        vector_store=_store(embeddings, metadata),
         embedder=_embedder(ScriptedEncoder([1.0, 0.0])),
         reranker=_reranker(),
         config=RetrievalConfig(top_k_dense=2, top_k_final=2),
@@ -126,12 +101,10 @@ def test_run_retrieval_truncates_to_top_k_final_and_keeps_original_dense_rank():
     n = 5
     embeddings = np.eye(n, dtype="float32")
     metadata = make_chunks_df(n)
-    index = build_flat_ip_index(embeddings)
 
     result = run_retrieval(
         "zzz nonexistent query words",  # shares no words with any chunk text -> rerank ties
-        index=index,
-        metadata=metadata,
+        vector_store=_store(embeddings, metadata),
         embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0, 0.0, 0.0])),
         reranker=_reranker(),
         config=RetrievalConfig(top_k_dense=n, top_k_final=2),
@@ -147,12 +120,10 @@ def test_run_retrieval_final_rank_is_1_indexed_contiguous():
     n = 5
     embeddings = np.eye(n, dtype="float32")
     metadata = make_chunks_df(n)
-    index = build_flat_ip_index(embeddings)
 
     result = run_retrieval(
         "zzz nonexistent query words",
-        index=index,
-        metadata=metadata,
+        vector_store=_store(embeddings, metadata),
         embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0, 0.0, 0.0])),
         reranker=_reranker(),
         config=RetrievalConfig(top_k_dense=n, top_k_final=n),
@@ -165,12 +136,10 @@ def test_run_retrieval_carries_citation_fields():
     n = 3
     embeddings = np.eye(n, dtype="float32")
     metadata = make_chunks_df(n)
-    index = build_flat_ip_index(embeddings)
 
     result = run_retrieval(
         "some query",
-        index=index,
-        metadata=metadata,
+        vector_store=_store(embeddings, metadata),
         embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0])),
         reranker=_reranker(),
         config=RetrievalConfig(top_k_dense=n, top_k_final=n),
@@ -189,13 +158,12 @@ def test_run_retrieval_carries_citation_fields():
 
 
 def test_run_retrieval_empty_result_when_no_valid_ids():
-    index = build_flat_ip_index(np.zeros((0, 4), dtype="float32"))
     metadata = make_chunks_df(3)
+    store = _store(np.zeros((0, 4), dtype="float32"), metadata)
 
     result = run_retrieval(
         "some query",
-        index=index,
-        metadata=metadata,
+        vector_store=store,
         embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0, 0.0])),
         reranker=_reranker(),
         config=RetrievalConfig(top_k_dense=3, top_k_final=3),
@@ -208,21 +176,18 @@ def test_run_retrieval_with_timing_returns_same_chunks_as_run_retrieval():
     n = 3
     embeddings = np.eye(n, dtype="float32")
     metadata = make_chunks_df(n)
-    index = build_flat_ip_index(embeddings)
     config = RetrievalConfig(top_k_dense=n, top_k_final=n)
 
     chunks, timing = run_retrieval_with_timing(
         "some query",
-        index=index,
-        metadata=metadata,
+        vector_store=_store(embeddings, metadata),
         embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0])),
         reranker=_reranker(),
         config=config,
     )
     from_run_retrieval = run_retrieval(
         "some query",
-        index=index,
-        metadata=metadata,
+        vector_store=_store(embeddings, metadata),
         embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0])),
         reranker=_reranker(),
         config=config,
@@ -238,13 +203,12 @@ def test_run_retrieval_with_timing_returns_same_chunks_as_run_retrieval():
 
 
 def test_run_retrieval_with_timing_empty_result_has_zero_rerank_time():
-    index = build_flat_ip_index(np.zeros((0, 4), dtype="float32"))
     metadata = make_chunks_df(3)
+    store = _store(np.zeros((0, 4), dtype="float32"), metadata)
 
     chunks, timing = run_retrieval_with_timing(
         "some query",
-        index=index,
-        metadata=metadata,
+        vector_store=store,
         embedder=_embedder(ScriptedEncoder([1.0, 0.0, 0.0, 0.0])),
         reranker=_reranker(),
         config=RetrievalConfig(top_k_dense=3, top_k_final=3),
@@ -259,13 +223,15 @@ def test_retriever_retrieve_with_timing_delegates_to_function():
     n = 3
     embeddings = np.eye(n, dtype="float32")
     metadata = make_chunks_df(n)
-    index = build_flat_ip_index(embeddings)
     embedder = _embedder(FakeEncoder(dim=n))
     reranker = _reranker()
     config = RetrievalConfig(top_k_dense=n, top_k_final=2)
 
     retriever = Retriever(
-        config=config, index=index, metadata=metadata, embedder=embedder, reranker=reranker
+        config=config,
+        vector_store=_store(embeddings, metadata),
+        embedder=embedder,
+        reranker=reranker,
     )
 
     chunks, timing = retriever.retrieve_with_timing("some query")
@@ -278,18 +244,16 @@ def test_retriever_retrieve_delegates_to_run_retrieval():
     n = 3
     embeddings = np.eye(n, dtype="float32")
     metadata = make_chunks_df(n)
-    index = build_flat_ip_index(embeddings)
     embedder = _embedder(FakeEncoder(dim=n))
     reranker = _reranker()
     config = RetrievalConfig(top_k_dense=n, top_k_final=2)
+    store = _store(embeddings, metadata)
 
-    retriever = Retriever(
-        config=config, index=index, metadata=metadata, embedder=embedder, reranker=reranker
-    )
+    retriever = Retriever(config=config, vector_store=store, embedder=embedder, reranker=reranker)
 
     from_retriever = retriever.retrieve("some query")
     from_function = run_retrieval(
-        "some query", index=index, metadata=metadata, embedder=embedder, reranker=reranker, config=config
+        "some query", vector_store=store, embedder=embedder, reranker=reranker, config=config
     )
 
     assert [r.chunk_id for r in from_retriever] == [r.chunk_id for r in from_function]

@@ -1,59 +1,60 @@
 """Dense search + cross-encoder rerank orchestration (Step 3).
 
-Retriever separates expensive load-once state (FAISS index, metadata, embedding
-model, reranker model) from cheap per-query retrieval, so Step 4/5/8 can construct
-one Retriever and call .retrieve() in a loop instead of reloading models per call.
+Retriever separates expensive load-once state (vector store, embedding model,
+reranker model) from cheap per-query retrieval, so Step 4/5/8 can construct
+one Retriever and call .retrieve() in a loop instead of reloading models per
+call. The vector store backend (FAISS by default, pgvector as a config-driven
+swap - see CLAUDE.md's pgvector stretch goal status note) is selected once in
+Retriever.from_config and is opaque to everything below that point - this
+module only ever talks to the VectorStore Protocol, never to faiss/pg8000
+directly.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
-
-import faiss
-import numpy as np
-import pandas as pd
 
 from rag_receipts.config import AppConfig
 from rag_receipts.indexing.embedder import Embedder
-from rag_receipts.indexing.faiss_index import load_index
 from rag_receipts.retrieval.config import RetrievalConfig
 from rag_receipts.retrieval.models import RetrievedChunk
 from rag_receipts.retrieval.reranker import Reranker, rerank_text
 from rag_receipts.telemetry.models import RetrievalTiming
 from rag_receipts.telemetry.timing import Stopwatch
+from rag_receipts.vectorstore.base import VectorStore
+from rag_receipts.vectorstore.faiss_store import FaissVectorStore
 
 
-def load_metadata(metadata_path: Path) -> pd.DataFrame:
-    if not metadata_path.exists():
-        raise FileNotFoundError(f"{metadata_path} not found - run scripts/build_index.py first")
-    return pd.read_parquet(metadata_path)
+def build_vector_store(config: AppConfig) -> VectorStore:
+    """Dispatch point for the pgvector stretch goal's config-driven swap.
 
-
-def dense_search(
-    index: faiss.Index, query_vectors: np.ndarray, top_k: int
-) -> tuple[np.ndarray, np.ndarray]:
-    """Thin pass-through to index.search. (scores, ids), each shape (n_queries, top_k).
-
-    ids contains -1 padding in trailing columns when top_k > index.ntotal - callers
-    must filter these before indexing into metadata.
+    PgvectorStore is imported lazily so that the (optional, pgvector extra)
+    Cloud SQL Connector dependency is never required for the default
+    indexing.vector_index=faiss path.
     """
-    return index.search(np.ascontiguousarray(query_vectors, dtype="float32"), top_k)
+    if config.indexing.vector_index == "faiss":
+        return FaissVectorStore.from_config(config.indexing)
+    if config.indexing.vector_index == "pgvector":
+        from rag_receipts.vectorstore.pgvector_store import PgvectorStore
+
+        return PgvectorStore.from_config(config.indexing.pgvector)
+    raise ValueError(
+        f"Unknown indexing.vector_index={config.indexing.vector_index!r}; "
+        f"expected 'faiss' or 'pgvector'"
+    )
 
 
 def run_retrieval(
     query: str,
     *,
-    index: faiss.Index,
-    metadata: pd.DataFrame,
+    vector_store: VectorStore,
     embedder: Embedder,
     reranker: Reranker,
     config: RetrievalConfig,
 ) -> list[RetrievedChunk]:
     chunks, _timing = run_retrieval_with_timing(
         query,
-        index=index,
-        metadata=metadata,
+        vector_store=vector_store,
         embedder=embedder,
         reranker=reranker,
         config=config,
@@ -64,8 +65,7 @@ def run_retrieval(
 def run_retrieval_with_timing(
     query: str,
     *,
-    index: faiss.Index,
-    metadata: pd.DataFrame,
+    vector_store: VectorStore,
     embedder: Embedder,
     reranker: Reranker,
     config: RetrievalConfig,
@@ -74,14 +74,12 @@ def run_retrieval_with_timing(
     (Step 7) - used by scripts/measure_latency.py and scripts/sweep_reranker.py.
     run_retrieval is a thin wrapper around this that discards the timing."""
     with Stopwatch() as embed_sw:
-        query_vecs = embedder.encode_queries([query])
+        query_vec = embedder.encode_queries([query])[0]
 
     with Stopwatch() as dense_sw:
-        scores, ids = dense_search(index, query_vecs, config.top_k_dense)
-    dense_scores, dense_ids = scores[0], ids[0]
+        hits = vector_store.search(query_vec, config.top_k_dense)
 
-    valid = [(score, idx) for score, idx in zip(dense_scores, dense_ids) if idx != -1]
-    if not valid:
+    if not hits:
         timing = RetrievalTiming(
             embed_query_s=embed_sw.elapsed_seconds,
             dense_search_s=dense_sw.elapsed_seconds,
@@ -90,29 +88,26 @@ def run_retrieval_with_timing(
         )
         return [], timing
 
-    rows = metadata.iloc[[int(idx) for _, idx in valid]].reset_index(drop=True)
-    passages = [rerank_text(row.page_title, row.section_path, row.text) for row in rows.itertuples()]
+    passages = [rerank_text(hit.page_title, hit.section_path, hit.text) for hit in hits]
     with Stopwatch() as rerank_sw:
         rerank_scores = reranker.score(query, passages)
 
     candidates = [
         RetrievedChunk(
-            chunk_id=row.chunk_id,
-            page_title=row.page_title,
-            url=row.url,
-            section_path=row.section_path,
-            heading_anchor=row.heading_anchor,
-            source_type=row.source_type,
-            text=row.text,
-            token_count=int(row.token_count),
-            dense_score=float(dense_score),
+            chunk_id=hit.chunk_id,
+            page_title=hit.page_title,
+            url=hit.url,
+            section_path=hit.section_path,
+            heading_anchor=hit.heading_anchor,
+            source_type=hit.source_type,
+            text=hit.text,
+            token_count=hit.token_count,
+            dense_score=hit.score,
             rerank_score=float(rerank_score),
             dense_rank=dense_rank,
             final_rank=0,
         )
-        for dense_rank, ((dense_score, _idx), row, rerank_score) in enumerate(
-            zip(valid, rows.itertuples(), rerank_scores), start=1
-        )
+        for dense_rank, (hit, rerank_score) in enumerate(zip(hits, rerank_scores), start=1)
     ]
 
     candidates.sort(key=lambda c: c.rerank_score, reverse=True)
@@ -135,25 +130,18 @@ class Retriever:
     .retrieve() does zero I/O or model loading per call."""
 
     config: RetrievalConfig
-    index: faiss.Index
-    metadata: pd.DataFrame
+    vector_store: VectorStore
     embedder: Embedder
     reranker: Reranker
 
     @classmethod
     def from_config(cls, config: AppConfig) -> "Retriever":
-        index_dir = Path(config.indexing.output.index_dir)
-        index_path = index_dir / config.indexing.output.index_filename
-        if not index_path.exists():
-            raise FileNotFoundError(f"{index_path} not found - run scripts/build_index.py first")
-        index = load_index(index_path)
-        metadata = load_metadata(index_dir / config.indexing.output.metadata_filename)
+        vector_store = build_vector_store(config)
         embedder = Embedder.from_config(config.indexing.embedding)
         reranker = Reranker.from_config(config.retrieval.reranker)
         return cls(
             config=config.retrieval,
-            index=index,
-            metadata=metadata,
+            vector_store=vector_store,
             embedder=embedder,
             reranker=reranker,
         )
@@ -161,8 +149,7 @@ class Retriever:
     def retrieve(self, query: str) -> list[RetrievedChunk]:
         return run_retrieval(
             query,
-            index=self.index,
-            metadata=self.metadata,
+            vector_store=self.vector_store,
             embedder=self.embedder,
             reranker=self.reranker,
             config=self.config,
@@ -171,8 +158,7 @@ class Retriever:
     def retrieve_with_timing(self, query: str) -> tuple[list[RetrievedChunk], RetrievalTiming]:
         return run_retrieval_with_timing(
             query,
-            index=self.index,
-            metadata=self.metadata,
+            vector_store=self.vector_store,
             embedder=self.embedder,
             reranker=self.reranker,
             config=self.config,

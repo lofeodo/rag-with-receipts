@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 from rag_receipts.config import load_config
-from rag_receipts.retrieval.pipeline import load_metadata
+from rag_receipts.vectorstore.faiss_store import load_metadata
 from rag_receipts.vertex.upload import upload_corpus_to_gcs
 
 
