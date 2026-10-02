@@ -10,6 +10,9 @@
 # startup - this keeps the locked runtime-shape decision true even on a brand
 # new container: the only network calls in the hot path are GCS (index pull)
 # and the Anthropic API, never Hugging Face Hub.
+#
+# results/ is baked in too (small, committed JSON) so GET /benchmarks has
+# something to read in the deployed container, not just in local dev.
 
 FROM python:3.11-slim
 
@@ -26,6 +29,7 @@ COPY pyproject.toml ./
 COPY src/ ./src/
 COPY config/ ./config/
 COPY static/ ./static/
+COPY results/ ./results/
 
 RUN pip install -e ".[index,serve,gcp]"
 
