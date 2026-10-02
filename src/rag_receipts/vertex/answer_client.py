@@ -21,6 +21,7 @@ returns - sidesteps uncertainty about Vertex's returned passage text entirely.
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Protocol
@@ -122,12 +123,25 @@ def _build_citations(answer: Any, metadata: pd.DataFrame) -> tuple[list[Citation
 
 @dataclass
 class VertexAnswerer:
-    """Mirrors VertexRetriever's load-once/query-cheap shape."""
+    """Mirrors VertexRetriever's load-once/query-cheap shape.
+
+    min_seconds_between_calls/max_retry_attempts default to values that keep
+    this comfortably under a real, confirmed-live quota: the Answer API's
+    "LLM query requests (search summarization, multi-turn search) per minute"
+    limit is 10/min per project (hit mid-batch on 2026-10-02 at request #12,
+    ~55s in - the default project quota, not something this project
+    requested or can see documented ahead of time). _throttle() paces calls
+    to stay under that; _call_with_retry() is a backoff safety net for
+    whatever jitter/other callers still push it over.
+    """
 
     config: VertexConfig
     client: VertexAnswerClientLike
     metadata: pd.DataFrame
     request_factory: Callable[[str], Any] = field(default=None)  # type: ignore[assignment]
+    min_seconds_between_calls: float = 6.5  # 60s / 10 requests-per-minute quota, +margin
+    max_retry_attempts: int = 4
+    _last_call_at: float = field(default=0.0, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.request_factory is None:
@@ -141,9 +155,31 @@ class VertexAnswerer:
         metadata = load_metadata(index_metadata_path)
         return cls(config=config, client=client, metadata=metadata)
 
+    def _throttle(self) -> None:
+        if self.min_seconds_between_calls <= 0:
+            return
+        elapsed = time.monotonic() - self._last_call_at
+        wait = self.min_seconds_between_calls - elapsed
+        if wait > 0:
+            time.sleep(wait)
+        self._last_call_at = time.monotonic()
+
+    def _call_with_retry(self, request: Any) -> Any:
+        from google.api_core.exceptions import ResourceExhausted
+
+        for attempt in range(self.max_retry_attempts):
+            self._throttle()
+            try:
+                return self.client.answer_query(request)
+            except ResourceExhausted:
+                if attempt == self.max_retry_attempts - 1:
+                    raise
+                time.sleep(15 * (attempt + 1))
+        raise AssertionError("unreachable")  # max_retry_attempts >= 1 enforced by callers
+
     def answer(self, query: str) -> tuple[GeneratedAnswer, float | None]:
         request = self.request_factory(query)
-        response = self.client.answer_query(request)
+        response = self._call_with_retry(request)
 
         answer = getattr(response, "answer", None)
         if answer is None:
