@@ -177,6 +177,25 @@ def test_run_vertex_eval_answer_correct_abstention_needs_no_judge_call():
     assert judge.calls == []
 
 
+def test_run_vertex_eval_answer_dedupes_repeated_citations_before_scoring_retrieval():
+    """A chunk cited multiple times (once per claim/sentence it supports) must
+    not inflate recall above 1.0 - the real bug this test guards against,
+    found running against the live Vertex Answer API (q002 cited one chunk 8
+    times, recall came back 8.0 before the fix)."""
+    q = _question("q1", answerable=True, gold_chunk_ids=["Test_page__000"])
+    chunk = make_chunks(1)[0]
+    citations = [Citation(chunk_id=chunk.chunk_id, claim=f"claim {i}", chunk=chunk) for i in range(5)]
+    answerer = FakeVertexAnswerer({"q1": (_vertex_answer("q1", answerable=True, citations=citations), None)})
+    judge = FakeJudge({"q1": _verdict("correct")})
+
+    results = run_vertex_eval_answer(
+        [q], vertex_answerer=answerer, judge=judge, grounding_checker=FakeGroundingChecker()
+    )
+
+    assert results[0].retrieval.recall == 1.0
+    assert results[0].retrieval.retrieved_chunk_ids == ["Test_page__000"]
+
+
 def test_run_vertex_eval_answer_both_answerable_calls_judge():
     q = _question("q1", answerable=True)
     chunk = make_chunks(1)[0]

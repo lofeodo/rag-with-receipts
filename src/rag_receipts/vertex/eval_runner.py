@@ -24,6 +24,25 @@ from rag_receipts.vertex.models import VertexEvalResult
 from rag_receipts.vertex.search_client import VertexRetriever
 
 
+def _dedupe_cited_chunks(generated: GeneratedAnswer) -> list:
+    """score_retrieval()/recall_at_k() assume a deduplicated retrieved-chunk
+    list (true for Retriever/VertexRetriever, which each return at most one
+    RetrievedChunk per distinct chunk_id) - but Vertex's Answer API legitimately
+    cites the same chunk_id multiple times, once per claim/sentence it
+    supports. Confirmed live (2026-10-02): q002 cited one chunk 8 times across
+    different sentences, producing recall > 1.0 (8/1) before this fix. Dedupes
+    by chunk_id, keeping first-occurrence order so MRR still reflects the
+    earliest cited position."""
+    seen: set[str] = set()
+    deduped = []
+    for citation in generated.citations:
+        if citation.chunk_id in seen:
+            continue
+        seen.add(citation.chunk_id)
+        deduped.append(citation.chunk)
+    return deduped
+
+
 def _compute_grounding(
     generated: GeneratedAnswer | None, grounding_checker: GroundingChecker
 ) -> AnswerGrounding | None:
@@ -145,12 +164,13 @@ def run_vertex_eval_answer(
 ) -> list[VertexEvalResult]:
     """Config B: no Retriever/Generator call at all - Vertex's Answer API owns
     retrieval+generation end-to-end. Retrieval precision is scored against the
-    chunk_ids Vertex actually cited (via each Citation's resolved .chunk), not
-    a separate ranked search-results list - the Answer API doesn't expose one
-    the way the Search API does, so "what was retrieved" here means "what was
-    cited," a narrower signal than config A/baseline's full top-k. This
-    asymmetry must be stated wherever config B's retrieval numbers are
-    reported (see compare_vertex.py's methodology_notes)."""
+    *distinct* chunk_ids Vertex actually cited (via _dedupe_cited_chunks - a
+    cited chunk can and does repeat across claims, see that function's
+    docstring), not a separate ranked search-results list - the Answer API
+    doesn't expose one the way the Search API does, so "what was retrieved"
+    here means "what was cited," a narrower signal than config A/baseline's
+    full top-k. This asymmetry must be stated wherever config B's retrieval
+    numbers are reported (see compare_vertex.py's methodology_notes)."""
     results: list[VertexEvalResult] = []
     for question in questions:
         try:
@@ -171,7 +191,7 @@ def run_vertex_eval_answer(
             continue
 
         retrieval_score = (
-            score_retrieval([c.chunk for c in generated.citations], question.gold_chunk_ids)
+            score_retrieval(_dedupe_cited_chunks(generated), question.gold_chunk_ids)
             if question.answerable
             else None
         )
