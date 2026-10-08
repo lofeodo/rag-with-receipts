@@ -1,8 +1,8 @@
 # RAG With Receipts
 
-**AI answers you can verify. Every claim comes with a receipt: the exact source passage it came from, automatically checked to confirm the source really says it.**
+**A RAG system that shows its receipts: every design choice is backed by a measured number, not a claim.**
 
-A production-style retrieval-augmented generation (RAG) system over the [Old School RuneScape Wiki](https://oldschool.runescape.wiki/). It's built to show the parts of RAG that usually get skipped: a hand-labelled golden dataset, a full evaluation harness, measured optimizations, and deployment on GCP.
+Golden dataset, evaluation harness, per-stage latency, a reranker sweep, a managed-service benchmark, a vector-database swap, and a model cost comparison. Built over the [Old School RuneScape Wiki](https://oldschool.runescape.wiki/) to answer questions with cited sources, and to prove how well it does it.
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](#)
 [![Claude](https://img.shields.io/badge/LLM-Claude-D97757)](#)
@@ -22,15 +22,9 @@ A production-style retrieval-augmented generation (RAG) system over the [Old Sch
 > **Q:** What are the steps to complete the Cook's Assistant quest? *(not in the corpus)*
 > **A:** *"The retrieved chunks do not contain any information about the Cook's Assistant quest..."* It declines instead of guessing.
 
-**A receipt is three things:**
+Every answer cites the exact passage behind each claim, cited sources are checked against what was actually retrieved, and a second model confirms the source supports the claim. When the sources don't have the answer, it says so instead of guessing.
 
-1. **A citation:** each claim points to the exact source passage it was drawn from.
-2. **A validity check:** the cited passage must be one that was actually retrieved, so an invented source is caught.
-3. **A support check:** a second model confirms the passage really says what the claim says.
-
-If the sources don't contain the answer, it says so instead of guessing.
-
-## Results at a glance
+## The receipts: results at a glance
 
 Measured on a **55-question hand-written golden dataset** (70% single-hop, 30% multi-hop, 5 deliberately unanswerable).
 
@@ -123,7 +117,7 @@ Design details: **[docs/architecture.md](docs/architecture.md)**.
 | **Tool use / structured output** | Citations returned through a forced tool schema and validated |
 | **Engineering rigor** | 246 tests, benchmarks checked against bugs (a GPU-contention latency artifact, recall above 1.0), caveats reported honestly |
 
-## Side experiments
+## More receipts: side experiments
 
 | Experiment | Finding |
 |---|---|
