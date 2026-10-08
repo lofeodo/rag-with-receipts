@@ -34,21 +34,31 @@ Measured on a **55-question hand-written golden dataset** (70% single-hop, 30% m
 
 **Single-hop questions are solved; multi-hop is the open problem.** The multi-hop gap is mostly a retrieval-recall issue, not a reasoning one.
 
-![Answer correctness by question type](docs/img/chart_correctness.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/chart_correctness_dark.svg">
+  <img alt="Answer correctness by question type" src="docs/img/chart_correctness.svg">
+</picture>
 
 **A measured optimization:** the smallest reranker beat the default on accuracy *and* ran 5x faster.
 
-![Reranker comparison: hit rate and latency](docs/img/chart_reranker.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/chart_reranker_dark.svg">
+  <img alt="Reranker comparison: hit rate and latency" src="docs/img/chart_reranker.svg">
+</picture>
 
 **Where the time goes:** the LLM call dominates, so retrieval tuning has already hit diminishing returns.
 
-![Per-stage latency](docs/img/chart_latency.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/chart_latency_dark.svg">
+  <img alt="Per-stage latency" src="docs/img/chart_latency.svg">
+</picture>
 
 Full tables, caveats and methodology: **[docs/benchmarks.md](docs/benchmarks.md)**.
 
 ## How it works
 
 ```mermaid
+%%{init: {"flowchart": {"subGraphTitleMargin": {"top": 12, "bottom": 12}, "padding": 16}}}%%
 flowchart TB
     subgraph BUILD["Build once (offline)"]
         direction LR
