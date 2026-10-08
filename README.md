@@ -1,4 +1,6 @@
-# RAG With Receipts
+<a href="https://rag-receipts-api-374659103328.northamerica-northeast1.run.app">
+  <img alt="RAG With Receipts: try the live demo" src="docs/img/banner.svg">
+</a>
 
 **A RAG system that shows its receipts: every design choice is backed by a measured number, not a claim.**
 
@@ -11,8 +13,6 @@ Golden dataset, evaluation harness, per-stage latency, a reranker sweep, a manag
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 **[Live demo](https://rag-receipts-api-374659103328.northamerica-northeast1.run.app)** · [Benchmarks](docs/benchmarks.md) · [Architecture](docs/architecture.md) · [Experiments](docs/experiments.md)
-
-![Demo page](docs/img/demo.png)
 
 ## What it does
 
