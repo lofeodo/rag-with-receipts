@@ -70,14 +70,14 @@ flowchart TB
     FIND --> ANSWER
     ANSWER -.-> MEASURE
 
-    classDef node fill:#ece9ff,stroke:#6d5bd0,color:#1f2430,stroke-width:1.5px
-    classDef key fill:#6d5bd0,stroke:#4b3bb0,color:#ffffff,stroke-width:1.5px
+    classDef node fill:#5b4bc4,stroke:#8f84e8,color:#ffffff,stroke-width:1.5px
+    classDef key fill:#1f9d6b,stroke:#5fd0a0,color:#ffffff,stroke-width:1.5px
     class W,C,E,V,Q,S,R,G,K,D,J node
     class A key
-    style BUILD fill:#f6f7fb,stroke:#d7dbe6,color:#1f2430
-    style FIND fill:#f6f7fb,stroke:#d7dbe6,color:#1f2430
-    style ANSWER fill:#f6f7fb,stroke:#d7dbe6,color:#1f2430
-    style MEASURE fill:#f6f7fb,stroke:#d7dbe6,color:#1f2430
+    style BUILD fill:transparent,stroke:#8b93a7,stroke-dasharray:4 4
+    style FIND fill:transparent,stroke:#8b93a7,stroke-dasharray:4 4
+    style ANSWER fill:transparent,stroke:#8b93a7,stroke-dasharray:4 4
+    style MEASURE fill:transparent,stroke:#8b93a7,stroke-dasharray:4 4
 ```
 
 | Step | What happens | Why it matters |
