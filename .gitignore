@@ -33,3 +33,6 @@ htmlcov/
 .DS_Store
 .vscode/
 .idea/
+
+# Playwright MCP browser artifacts (screenshots, snapshots, console logs)
+.playwright-mcp/
