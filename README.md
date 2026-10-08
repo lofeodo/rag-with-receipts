@@ -1,6 +1,6 @@
 # RAG With Receipts
 
-**Ask a question, get an answer where every claim links to the exact source passage, and an automatic check that the source really says it.**
+**AI answers you can verify. Every claim comes with a receipt: the exact source passage it came from, automatically checked to confirm the source really says it.**
 
 A production-style retrieval-augmented generation (RAG) system over the [Old School RuneScape Wiki](https://oldschool.runescape.wiki/). It's built to show the parts of RAG that usually get skipped: a hand-labelled golden dataset, a full evaluation harness, measured optimizations, and deployment on GCP.
 
@@ -22,7 +22,13 @@ A production-style retrieval-augmented generation (RAG) system over the [Old Sch
 > **Q:** What are the steps to complete the Cook's Assistant quest? *(not in the corpus)*
 > **A:** *"The retrieved chunks do not contain any information about the Cook's Assistant quest..."* It declines instead of guessing.
 
-Every answer carries its citations, every citation is verified to be a real retrieved passage, and a second model checks that the passage supports the claim.
+**A receipt is three things:**
+
+1. **A citation:** each claim points to the exact source passage it was drawn from.
+2. **A validity check:** the cited passage must be one that was actually retrieved, so an invented source is caught.
+3. **A support check:** a second model confirms the passage really says what the claim says.
+
+If the sources don't contain the answer, it says so instead of guessing.
 
 ## Results at a glance
 
