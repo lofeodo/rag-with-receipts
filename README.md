@@ -34,57 +34,50 @@ Measured on a **55-question hand-written golden dataset** (70% single-hop, 30% m
 
 **Single-hop questions are solved; multi-hop is the open problem.** The multi-hop gap is mostly a retrieval-recall issue, not a reasoning one.
 
-```mermaid
-xychart-beta
-    title "Answer correctness by question type (%)"
-    x-axis ["Single-hop (n=35)", "Multi-hop (n=15)", "Overall (n=55)"]
-    y-axis "Accuracy" 0 --> 100
-    bar [100, 47, 84]
-```
+![Answer correctness by question type](docs/img/chart_correctness.svg)
 
 **A measured optimization:** the smallest reranker beat the default on accuracy *and* ran 5x faster.
 
-```mermaid
-xychart-beta
-    title "Reranker sweep: rerank latency, p50 (ms, lower is better)"
-    x-axis ["bge-base (old default)", "bge-v2-m3", "MiniLM (adopted)"]
-    y-axis "ms" 0 --> 3000
-    bar [552, 2775, 111]
-```
-
-| Reranker | Hit rate | Rerank p50 |
-|---|:---:|:---:|
-| `bge-reranker-base` (old default) | 0.90 | 552 ms |
-| `bge-reranker-v2-m3` | 0.98 | 2775 ms |
-| **`ms-marco-MiniLM-L-6-v2` (adopted)** | **0.96** | **111 ms** |
+![Reranker comparison: hit rate and latency](docs/img/chart_reranker.svg)
 
 **Where the time goes:** the LLM call dominates, so retrieval tuning has already hit diminishing returns.
 
-```mermaid
-xychart-beta
-    title "Per-stage latency, p50 (ms)"
-    x-axis ["Embed query", "Vector search", "Rerank", "LLM generation"]
-    y-axis "ms" 0 --> 3000
-    bar [80, 0.3, 276, 2918]
-```
+![Per-stage latency](docs/img/chart_latency.svg)
 
 Full tables, caveats and methodology: **[docs/benchmarks.md](docs/benchmarks.md)**.
 
 ## How it works
 
 ```mermaid
-flowchart LR
-    subgraph OFFLINE["Build once"]
-        W["OSRS Wiki<br/>110 pages"] --> C["Chunk by heading<br/>955 chunks"] --> E["Embed<br/>bge-large"] --> V[("Vector index<br/>FAISS or pgvector")]
+flowchart TB
+    subgraph BUILD["Build once (offline)"]
+        direction LR
+        W["OSRS Wiki<br/>110 pages"] --> C["Chunk by heading<br/>955 chunks"] --> E["Embed<br/>bge-large"] --> V[("Vector index<br/>FAISS / pgvector")]
     end
-    subgraph ONLINE["Every question"]
-        Q["Question"] --> S["Search<br/>top 30"] --> R["Rerank<br/>top 5"] --> G["Claude answers<br/>with citations"] --> K["Grounding check<br/>NLI + overlap"] --> A["Cited answer"]
+    subgraph FIND["Find sources"]
+        direction LR
+        Q["Question"] --> S["Search<br/>top 30"] --> R["Rerank<br/>top 5"]
     end
-    V -.-> S
-    subgraph MEASURE["Measure"]
+    subgraph ANSWER["Answer and verify"]
+        direction LR
+        G["Claude answers<br/>with citations"] --> K["Grounding check<br/>NLI + overlap"] --> A["Cited answer"]
+    end
+    subgraph MEASURE["Measure (offline)"]
+        direction LR
         D["55-question<br/>golden set"] --> J["LLM judge +<br/>retrieval metrics"]
     end
-    A -.-> J
+    BUILD -.-> FIND
+    FIND --> ANSWER
+    ANSWER -.-> MEASURE
+
+    classDef node fill:#ece9ff,stroke:#6d5bd0,color:#1f2430,stroke-width:1.5px
+    classDef key fill:#6d5bd0,stroke:#4b3bb0,color:#ffffff,stroke-width:1.5px
+    class W,C,E,V,Q,S,R,G,K,D,J node
+    class A key
+    style BUILD fill:#f6f7fb,stroke:#d7dbe6,color:#1f2430
+    style FIND fill:#f6f7fb,stroke:#d7dbe6,color:#1f2430
+    style ANSWER fill:#f6f7fb,stroke:#d7dbe6,color:#1f2430
+    style MEASURE fill:#f6f7fb,stroke:#d7dbe6,color:#1f2430
 ```
 
 | Step | What happens | Why it matters |
