@@ -1,370 +1,141 @@
 # RAG With Receipts
 
-A retrieval-augmented generation pipeline over a scoped slice of the [Old School RuneScape
-Wiki](https://oldschool.runescape.wiki/), built to demonstrate retrieval accuracy, grounded
-and cited answers, and latency-optimized inference — not just chat-with-a-doc.
+**Ask a question, get an answer where every claim links to the exact source passage, and an automatic check that the source really says it.**
 
-**Status:** complete and live on Cloud Run — see [Benchmarks](#benchmarks) for
-measured numbers and [Deployment](#deployment) for the live URL.
+A production-style retrieval-augmented generation (RAG) system over the [Old School RuneScape Wiki](https://oldschool.runescape.wiki/). It's built to show the parts of RAG that usually get skipped: a hand-labelled golden dataset, a full evaluation harness, measured optimizations, and deployment on GCP.
 
-## Why the OSRS Wiki
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](#)
+[![Claude](https://img.shields.io/badge/LLM-Claude-D97757)](#)
+[![Cloud Run](https://img.shields.io/badge/Deployed-GCP%20Cloud%20Run-4285F4?logo=googlecloud&logoColor=white)](docs/deployment.md)
+[![Vector DB](https://img.shields.io/badge/Vector%20DB-FAISS%20%7C%20pgvector-336791?logo=postgresql&logoColor=white)](docs/experiments.md#pgvector-on-cloud-sql-vs-faiss)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-Chosen for a corpus that's deeply cross-referenced and numerically dense (exact XP values,
-requirements, drop mechanics), which makes for a stronger eval set — both for multi-hop
-retrieval questions and for the hallucination/grounding check. Content is CC BY-NC-SA 3.0;
-used here for non-commercial, personal portfolio purposes.
+**[Live demo](https://rag-receipts-api-374659103328.northamerica-northeast1.run.app)** · [Benchmarks](docs/benchmarks.md) · [Architecture](docs/architecture.md) · [Experiments](docs/experiments.md)
 
-## License
+![Demo page](docs/img/demo.png)
 
-This project's code is MIT-licensed (see [LICENSE](LICENSE)). That covers the
-pipeline, scripts, and config only — it does not relicense the OSRS Wiki
-content itself, which remains CC BY-NC-SA 3.0, non-commercial, and attributed,
-as described above.
+## What it does
 
-## Architecture
+> **Q:** What items are required to start Monkey Madness I?
+> **A:** A gold bar, five empty inventory slots, a ball of wool, monkey bones or a Karamja corpse, and five bananas. *[cites `Monkey_Madness_I__003`, the exact chunk it came from]*
+>
+> **Q:** What are the steps to complete the Cook's Assistant quest? *(not in the corpus)*
+> **A:** *"The retrieved chunks do not contain any information about the Cook's Assistant quest..."* It declines instead of guessing.
 
-Two offline stages build the index once; four online stages run per query;
-`eval`/`telemetry` measure the pipeline and `api` serves it.
+Every answer carries its citations, every citation is verified to be a real retrieved passage, and a second model checks that the passage supports the claim.
+
+## Results at a glance
+
+Measured on a **55-question hand-written golden dataset** (70% single-hop, 30% multi-hop, 5 deliberately unanswerable).
+
+| Retrieval hit rate | Answer correctness | Claims grounded in sources | Unanswerable questions refused | p50 end-to-end latency |
+|:---:|:---:|:---:|:---:|:---:|
+| **96%** | **84%** | **95%** | **4 of 5** | **3.3 s** |
+
+**Single-hop questions are solved; multi-hop is the open problem.** The multi-hop gap is mostly a retrieval-recall issue, not a reasoning one.
+
+```mermaid
+xychart-beta
+    title "Answer correctness by question type (%)"
+    x-axis ["Single-hop (n=35)", "Multi-hop (n=15)", "Overall (n=55)"]
+    y-axis "Accuracy" 0 --> 100
+    bar [100, 47, 84]
+```
+
+**A measured optimization:** the smallest reranker beat the default on accuracy *and* ran 5x faster.
+
+```mermaid
+xychart-beta
+    title "Reranker sweep: rerank latency, p50 (ms, lower is better)"
+    x-axis ["bge-base (old default)", "bge-v2-m3", "MiniLM (adopted)"]
+    y-axis "ms" 0 --> 3000
+    bar [552, 2775, 111]
+```
+
+| Reranker | Hit rate | Rerank p50 |
+|---|:---:|:---:|
+| `bge-reranker-base` (old default) | 0.90 | 552 ms |
+| `bge-reranker-v2-m3` | 0.98 | 2775 ms |
+| **`ms-marco-MiniLM-L-6-v2` (adopted)** | **0.96** | **111 ms** |
+
+**Where the time goes:** the LLM call dominates, so retrieval tuning has already hit diminishing returns.
+
+```mermaid
+xychart-beta
+    title "Per-stage latency, p50 (ms)"
+    x-axis ["Embed query", "Vector search", "Rerank", "LLM generation"]
+    y-axis "ms" 0 --> 3000
+    bar [80, 0.3, 276, 2918]
+```
+
+Full tables, caveats and methodology: **[docs/benchmarks.md](docs/benchmarks.md)**.
+
+## How it works
 
 ```mermaid
 flowchart LR
-    ING["Ingestion<br/>fetch + parse + chunk"] --> IDX["Indexing<br/>embed + FAISS"]
-    Q["Query"] --> RET["Retrieval + rerank<br/>dense top-k, cross-encoder"]
-    IDX -.-> RET
-    RET --> GEN["Generation<br/>Claude + citations"] --> VER["Grounding check<br/>+ answer"]
+    subgraph OFFLINE["Build once"]
+        W["OSRS Wiki<br/>110 pages"] --> C["Chunk by heading<br/>955 chunks"] --> E["Embed<br/>bge-large"] --> V[("Vector index<br/>FAISS or pgvector")]
+    end
+    subgraph ONLINE["Every question"]
+        Q["Question"] --> S["Search<br/>top 30"] --> R["Rerank<br/>top 5"] --> G["Claude answers<br/>with citations"] --> K["Grounding check<br/>NLI + overlap"] --> A["Cited answer"]
+    end
+    V -.-> S
+    subgraph MEASURE["Measure"]
+        D["55-question<br/>golden set"] --> J["LLM judge +<br/>retrieval metrics"]
+    end
+    A -.-> J
 ```
 
-| Stage | Key design choice | Package |
+| Step | What happens | Why it matters |
 |---|---|---|
-| Ingestion | MediaWiki API fetch over a scoped corpus (combat category + 2 skill-training guides + 1 questline + its one-hop-linked item/monster pages); header-aware chunking, ~380 target tokens | [`src/rag_receipts/ingestion/`](src/rag_receipts/ingestion/) |
-| Indexing | Local `BAAI/bge-large-en-v1.5` embeddings; FAISS flat index, in-process, zero recurring cost | [`src/rag_receipts/indexing/`](src/rag_receipts/indexing/) |
-| Retrieval | Dense top-30 → cross-encoder rerank to top-5; reranker is `ms-marco-MiniLM-L-6-v2`, adopted after a measured sweep (Pareto-dominates the original default) | [`src/rag_receipts/retrieval/`](src/rag_receipts/retrieval/) |
-| Generation | Claude Sonnet 5, forced tool-use for structured per-claim citations, hallucinated-citation validation against the retrieved set | [`src/rag_receipts/generation/`](src/rag_receipts/generation/) |
-| Grounding check | NLI cross-encoder entailment/contradiction + lexical overlap per citation, combined into a grounded/contradicted/ungrounded verdict | [`src/rag_receipts/grounding/`](src/rag_receipts/grounding/) |
-| Eval harness *(offline)* | LLM-as-judge correctness + retrieval metrics + grounding, run over a 55-question hand-authored gold set | [`src/rag_receipts/eval/`](src/rag_receipts/eval/) |
-| Telemetry *(offline)* | Per-stage p50/p95/mean latency instrumentation on the real hot path | [`src/rag_receipts/telemetry/`](src/rag_receipts/telemetry/) |
-| API *(serving)* | FastAPI wrapper (`/query`, `/livez`, `/readyz`) deployed on Cloud Run — see [Deployment](#deployment) | [`src/rag_receipts/api/`](src/rag_receipts/api/) |
+| Chunk | Split by wiki heading, tables kept as rows | Keeps facts intact and citable |
+| Embed + search | Local `bge-large` embeddings, vector search | No per-query embedding API cost |
+| Rerank | Cross-encoder rescores the top 30 | Fixes the order the vector search gets wrong |
+| Generate | Claude must answer through a citation schema | Citations are structured data, not free text |
+| Verify | Cited IDs are checked against what was retrieved; an NLI model checks entailment | Catches fabricated and unsupported claims |
+| Abstain | If the sources don't answer it, say so | Refusing beats hallucinating |
 
-## Benchmarks
+Design details: **[docs/architecture.md](docs/architecture.md)**.
 
-All numbers below are from one clean run of the full 55-question hand-authored
-gold set (`data/eval/qa_pairs.json`), under the pipeline's current default
-config (`ms-marco-MiniLM-L-6-v2` reranker). Reproduce with
-`python scripts/run_eval.py` / `python scripts/measure_latency.py`.
+## Skills demonstrated
 
-### Retrieval
-
-| | Overall | Single-hop (n=35) | Multi-hop (n=15) |
-|---|---|---|---|
-| Hit rate | 0.96 | 0.97 | 0.93 |
-| Recall | 0.88 | 0.97 | 0.67 |
-| MRR | 0.75 | 0.81 | 0.61 |
-
-Precision (not shown) is deliberately low by construction — the denominator
-is `top_k_final=5` against a 1-2-chunk gold set, so even perfect retrieval
-can't clear ~0.2-0.4.
-
-### Correctness (LLM-as-judge)
-
-| | Overall | Single-hop | Multi-hop |
-|---|---|---|---|
-| Accuracy | 0.84 | 1.00 | 0.47 |
-
-Two caveats worth reading before trusting the multi-hop number: it's n=15,
-small enough that a couple of borderline verdicts move it several points —
-treat it as "meaningfully worse than single-hop," not a precise figure.
-And the gap is dominantly a **retrieval** story, not a reasoning failure:
-most non-fully-correct multi-hop cases trace back to the retrieved top-k
-missing one of two gold chunks, with generation correctly declining rather
-than fabricating the missing fact.
-
-### Grounding (citation-level entailment + overlap check)
-
-| Grounded | Contradicted | Ungrounded | Fully-grounded answers |
-|---|---|---|---|
-| 0.95 | 0.05 | 0.00 | 0.91 |
-
-(77 citations checked across 44 answers.) Read `contradicted` as "flagged
-for human review," not "confirmed error" — manual inspection found the
-flagged cases were false positives from the general-domain NLI model
-misreading this corpus's flattened-table/telegraphic chunk style, not real
-contradictions.
-
-### Reranker sweep (what justified the current default)
-
-| Model | Recall | Hit rate | MRR | Rerank p50 | Rerank p95 |
-|---|---|---|---|---|---|
-| `bge-reranker-base` (original default) | 0.83 | 0.90 | 0.70 | 552ms | 567ms |
-| `bge-reranker-v2-m3` (stronger) | 0.90 | 0.98 | 0.84 | 2775ms | 3331ms |
-| **`ms-marco-MiniLM-L-6-v2` (adopted)** | **0.88** | **0.96** | **0.75** | **111ms** | **128ms** |
-
-The adopted model Pareto-dominates the original default: higher recall,
-hit-rate, and MRR, *and* ~5x lower rerank latency (552ms→111ms p50) — not a
-tradeoff call.
-`bge-reranker-v2-m3` is more accurate still, but at a ~26x latency cost over
-the adopted default that isn't justified once end-to-end latency is already
-dominated by generation (see below).
-
-### Latency (per-stage, local GPU)
-
-| Stage | p50 | p95 |
-|---|---|---|
-| embed_query | 80ms | 154ms |
-| dense_search | 0.3ms | 0.7ms |
-| rerank | 276ms | 340ms |
-| retrieval_total | 349ms | 425ms |
-| generate | 2918ms | 7224ms |
-| end_to_end | 3256ms | 7577ms |
-
-Generation (the Claude API round-trip) dominates end-to-end latency, not
-retrieval. Treat p95 as directional, not precise — it's the ~52nd-highest
-value out of 55 samples, and `generate_s` in particular varies run to run
-since generation isn't temperature-pinned (adaptive thinking doesn't accept
-sampling params on this model).
-
-### Vertex AI Search comparison (stretch goal)
-
-This project uses Cloud Run/GCS/Artifact Registry as deployment substrate but
-hand-builds the retrieval/generation pipeline itself rather than using a
-fully-managed RAG product, on the argument that chunking, embedding choice, a
-local vector store, reranking, per-stage latency, and a grounding check are
-exactly the internals a managed service hides (see `CLAUDE.md`'s "Why not a
-fully-managed RAG service?" section for the full argument). This section
-backs that argument with real numbers: Vertex AI Search (Discovery Engine)
-was provisioned over the same 955-chunk corpus and measured against the
-hand-built pipeline on the same 55-question gold set, two ways:
-
-- **Config A (retrieval-only):** Vertex's Search API → our own
-  Generator/Judge/GroundingChecker. Isolates retrieval quality on equal
-  footing against the hand-built `Retriever`.
-- **Config B (fully managed):** Vertex's own Answer API end-to-end
-  (retrieval + generation + its own citations), run through our
-  `GroundingChecker` too for a same-method comparison, alongside Vertex's
-  self-reported `grounding_score`.
-
-| Metric | Baseline (ours) | Config A (Vertex Search) | Config B (Vertex Answer) |
-|---|---|---|---|
-| Retrieval hit rate | 0.96 | **0.98** | 0.96 |
-| Retrieval recall | 0.88 | **0.96** | 0.94 |
-| Retrieval MRR | 0.752 | 0.823 | **0.858** |
-| Correctness accuracy | 0.836 | **0.927** | 0.855 |
-| Grounded rate (our checker) | 0.948 | **0.968** | 0.838 |
-| Vertex's own grounding_score | — | — | 0.688 |
-| End-to-end latency (p50 / p95) | 3.26s / 7.58s | 5.02s / 9.31s | **6.39s / 8.88s** |
-
-Vertex's managed retrieval (config A) scored *better* than the hand-built
-pipeline on every retrieval and correctness metric measured here — a genuine,
-not-cherry-picked result. It's also slower end-to-end and, as the asymmetries
-below make clear, wasn't exercising the part of the job (chunking) this
-project argues is worth doing by hand.
-
-**Four structural asymmetries, carried verbatim into
-`results/vertex_comparison.json`'s `methodology_notes` field, limit how far
-this comparison generalizes:**
-
-1. **Chunking wasn't compared.** Vertex ingested this project's *already-chunked*
-   955 objects (one GCS object per existing `chunk_id`), not raw pages — so
-   config A/B measure Vertex's retrieval/ranking quality only, not its own
-   chunking. This was necessary to score exact `chunk_id` matches against the
-   existing gold set, but it means "point Vertex at raw documents and let it
-   chunk" — the normal way to use the product — isn't what's measured here.
-2. **Latency isn't apples-to-apples.** The baseline exposes staged latency
-   (embed/dense/rerank/generate). Vertex's Search and Answer APIs each expose
-   only one end-to-end number per call, with no internal stage split visible
-   from outside. Don't compare Vertex's end-to-end number against a single
-   baseline stage.
-3. **Config B's retrieval numbers mean something narrower.** They're scored
-   against the chunk_ids Vertex's Answer API actually *cited* (deduplicated —
-   a cited chunk legitimately repeats once per claim it supports, which
-   inflated recall above 1.0 before that was caught and fixed), not a
-   separately exposed ranked search-results list. Treat it as "what Vertex
-   chose to cite," not "everything it retrieved."
-4. **Config B has no clean abstention signal, and this measurably distorts
-   its correctness number.** Vertex's Answer API doesn't refuse or flag
-   unanswerable queries the way this project's own forced-tool-schema
-   `Generator` does — confirmed against a real out-of-corpus question, it
-   writes a prose "no information found" answer as normal non-empty text,
-   and `answer_skipped_reasons` stays empty. Concretely: all 5 of the gold
-   set's deliberately-unanswerable questions scored `incorrectly_answered`
-   for config B (vs. the baseline's 5/5 `correct_abstention` on the same
-   questions). Had config B abstained correctly, its accuracy would be
-   0.945 — above both the baseline and config A — so the correctness gap
-   reported above is currently an artifact of this missing signal, not a
-   measured generation-quality difference.
-
-Two more real findings from provisioning, not polished away: Discovery
-Engine's Answer API enforces an undocumented-ahead-of-time 10 LLM-requests/
-minute project quota (hit mid-run; `VertexAnswerer` now paces and retries
-around it), and `document.struct_data` on a live response is a proto-plus
-`MapComposite`, not the protobuf `Struct` the public docs implied — both
-required fixing against the live API, not just its documentation. Direct
-query cost for this comparison (55 search + ~67 answer calls, the extra from
-one quota-triggered retry) was $0 — comfortably inside Vertex AI Search's
-10,000-free-queries/month tier. The data store, engine, and GCS bucket were
-torn down immediately after these numbers were captured.
-
-### Haiku vs Sonnet generation comparison (stretch goal)
-
-Generation model is a config parameter, not hardcoded (see Architecture
-above) — this swaps only that one parameter and re-runs the full 55-question
-gold set, holding retrieval, the LLM-as-judge model (always Sonnet 5, so
-grading itself doesn't become a second variable), and the grounding checker
-fixed, to isolate what the generation model alone changes.
-
-| Metric | Claude Sonnet 5 | Claude Haiku 4.5 |
-|---|---|---|
-| Correctness accuracy | **0.836** | 0.818 |
-| — single-hop (n=35) | **1.000** | 0.971 |
-| — multi-hop (n=15) | **0.467** | 0.400 |
-| Grounded rate | 0.951 | **0.973** |
-| Latency p50 / p95 | 2.55s / 6.17s | **2.38s / 3.90s** |
-| Generation + judge cost (55 questions) | $0.683 | **$0.348** |
-
-Retrieval metrics are identical across both arms (same `Retriever`, same
-questions) — confirms the two runs are isolating the generation model and
-nothing else, not just claimed.
-
-**The honest read: this is not a clean win for either model.** Sonnet 5 is
-marginally more accurate overall, but the gap (0.836 vs 0.818, ~1 extra
-question out of 55) is within the non-determinism band this project has
-already documented for ungrounded generation calls (Steps 5-7) — not a
-confident win. Haiku 4.5 is *more* often correctly grounded (0.973 vs 0.951)
-despite being the cheaper model, meaningfully faster at the tail (p95 3.90s
-vs 6.17s, driven by Sonnet's adaptive-thinking overhead), and costs roughly
-half as much for generation + judging combined. The two models also fail
-differently, not just by a different amount: Sonnet produced 1 hallucinated
-answer on a question it should have abstained on
-(`incorrectly_answered: 1`) and 0 for Haiku, while Haiku incorrectly
-abstained more often than Sonnet (5 vs 3) — i.e. Haiku is the more
-conservative of the two, never answering when it shouldn't but giving up
-slightly more often when it could have answered. For a project framed around
-grounded, cited answers over raw correctness, Haiku 4.5 is a genuinely
-reasonable default candidate on this corpus, not just a cheaper fallback —
-though Sonnet 5 remains the production default here since this comparison
-alone isn't a strong enough signal to change a locked decision.
-
-Every parameter sent to the API is logged per arm in
-`results/generation_model_comparison.json`'s `request_config` field (model,
-`max_tokens`, the forced `tool_choice` schema, and explicit notes on two real
-asymmetries that exist *despite* sending an identical request to both
-models): neither call sets `thinking`, but Sonnet 5 runs adaptive thinking by
-default when it's omitted while Haiku 4.5 runs no thinking at all; and
-neither call pins `temperature`/`top_p`/`top_k`, because Sonnet 5 would
-reject them outright (sampling params 400 while adaptive thinking is active)
-while Haiku 4.5 would accept them — the two models aren't equally capable of
-being made deterministic, so neither is pinned rather than pinning one and
-not the other. A live smoke test confirmed Haiku 4.5 accepts the same forced
-`tool_choice` schema Sonnet 5 uses for structured citations before trusting
-it across the full batch. Pricing ($2/$10 per 1M input/output tokens for
-Sonnet 5, $1/$5 for Haiku 4.5) is Anthropic's first-party API rate captured
-2026-10-02.
-
-### pgvector / Cloud SQL backend (stretch goal)
-
-The vector store is a config-driven, swappable backend (`indexing.vector_index:
-faiss | pgvector`) behind a small `VectorStore` Protocol — FAISS (in-process,
-the default) and pgvector on Cloud SQL (a managed Postgres database, network
--backed) both satisfy the same interface, and `Retriever.from_config` is the
-single place that picks one.
-
-**This is deliberately not a retrieval-quality comparison.** pgvector is
-configured for exact nearest-neighbor search (no HNSW/IVFFlat index) over the
-same embeddings FAISS already has, which is mathematically guaranteed to
-retrieve the same chunks for the same query — there's no quality question to
-measure here, unlike the reranker sweep or the Vertex AI Search comparison
-above. A real run against the live 55-question gold set confirmed that
-guarantee holds in practice, not just in theory:
-
-| Metric | Value |
+| Skill | Evidence in this repo |
 |---|---|
-| Set match (chunk_ids) | 55/55 |
-| Order match | 55/55 |
-| Max score diff (FAISS vs. pgvector) | 1.71e-07 |
+| **Golden datasets** | 55 hand-authored Q/A pairs with gold chunk IDs, single/multi-hop split and unanswerable cases, validated against the real corpus |
+| **Evaluation frameworks** | LLM-as-judge correctness, retrieval hit rate / recall / MRR, citation-level grounding, all broken down by question type |
+| **Embeddings and retrieval** | Header-aware chunking, local `bge-large` embeddings, dense retrieval, cross-encoder reranking |
+| **Latency optimization** | Per-stage p50/p95 instrumentation; a reranker sweep that cut rerank time 5x with higher accuracy |
+| **Hallucination control** | Forced tool-use citations, hallucinated-citation detection, NLI grounding check, abstention on unanswerable questions |
+| **Vector databases** | FAISS and **pgvector on Cloud SQL** behind one swappable interface; verified to return identical results (55/55) |
+| **MLOps / cloud** | Docker, GCP Cloud Run, Artifact Registry, GCS, Secret Manager, Cloud Logging, scale-to-zero |
+| **Build vs buy** | Benchmarked against managed Vertex AI Search on the same data and questions |
+| **LLM cost/quality tradeoffs** | Haiku vs Sonnet on accuracy, grounding, latency and cost |
+| **Tool use / structured output** | Citations returned through a forced tool schema and validated |
+| **Engineering rigor** | 246 tests, benchmarks checked against bugs (a GPU-contention latency artifact, recall above 1.0), caveats reported honestly |
 
-What *does* genuinely differ is latency — a network round trip to Cloud SQL
-vs. an in-process FAISS lookup — measured with the exact same code path
-against both backends:
+## Side experiments
 
-| Stage | FAISS p50 | pgvector p50 |
-|---|---|---|
-| dense_search_s | 1.3ms | 98.2ms |
-| retrieval_total_s | 333ms | 471ms |
-| end_to_end_s | 2884ms | 3010ms |
-
-The dense-search stage alone is ~75x slower over the network, but end-to-end
-only grows ~4% because Claude generation dominates total latency regardless of
-vector-store backend — the same finding Step 7 made about reranker latency.
-The Cloud SQL instance was provisioned, measured, and torn down within this
-stretch goal's session (no ongoing cost); the live Cloud Run deployment stays
-on FAISS. Full detail, including two real Postgres-permission gotchas hit
-while provisioning, in CLAUDE.md's status note.
-
-## Deployment
-
-A live version runs on GCP Cloud Run:
-**https://rag-receipts-api-374659103328.northamerica-northeast1.run.app**
-
-The service is public but gated by a shared demo key (`/query` requires an
-`X-Demo-Key` header) — paste it into the "Demo key" field on the page. Don't
-have one? Email [daniel.lofeodo@gmail.com](mailto:daniel.lofeodo@gmail.com)
-to request it.
-
-### GCP resources used
-
-| Resource | Role |
+| Experiment | Finding |
 |---|---|
-| Cloud Run | Serves the FastAPI app (`src/rag_receipts/api/`); scales to zero when idle, `max-instances=2` |
-| Artifact Registry | Hosts the built container image |
-| Cloud Build | Builds the image (embedding + reranker models baked in at build time) and pushes it |
-| GCS | Holds `faiss.index` / `index_metadata.parquet`, pulled on cold start |
-| Secret Manager | `anthropic-api-key`, `demo-api-key` |
-| Cloud Logging | Captures stdout, including one structured JSON line per `/query` request with the full per-stage timing breakdown |
+| **Vertex AI Search vs this pipeline** | The managed retrieval scored higher on retrieval and correctness, but wasn't tested on chunking, and has no abstention signal. [Details](docs/experiments.md#vertex-ai-search-vs-hand-built) |
+| **Haiku 4.5 vs Sonnet 5** | About the same accuracy; Haiku better grounded, faster at the tail, half the cost. [Details](docs/experiments.md#haiku-45-vs-sonnet-5) |
+| **pgvector on Cloud SQL vs FAISS** | Identical retrieval; vector search about 75x slower over the network but only 4% slower end to end. [Details](docs/experiments.md#pgvector-on-cloud-sql-vs-faiss) |
 
-### Running locally
+## Docs
 
-```
-docker build -t rag-receipts-api .
-docker run -p 8080:8080 \
-  -e ANTHROPIC_API_KEY=sk-ant-... \
-  -v "$(pwd)/data/index:/app/data/index:ro" \
-  rag-receipts-api
-```
+| | |
+|---|---|
+| [Architecture](docs/architecture.md) | Design choices per stage, corpus scope, why not a managed RAG service |
+| [Benchmarks](docs/benchmarks.md) | Every metric table with methodology and caveats |
+| [Experiments](docs/experiments.md) | Vertex AI Search, Haiku vs Sonnet, pgvector |
+| [Deployment](docs/deployment.md) | GCP setup, redeploy commands, Cloud Run vs local latency |
+| [Running locally](docs/running-locally.md) | Docker, scripts, install notes |
 
-Then open `http://localhost:8080/` (no `DEMO_API_KEY` set locally, so `/query`
-is open) or hit `/livez`, `/readyz`, `/query` directly.
+## Live demo access
 
-### Redeploying
+The demo is public but gated by a shared key to bound API cost. Email [daniel.lofeodo@gmail.com](mailto:daniel.lofeodo@gmail.com) to request one. The benchmarks panel on the page is open without it.
 
-```
-gcloud builds submit --tag northamerica-northeast1-docker.pkg.dev/rag-with-receipts/rag-receipts/api:latest \
-  --project rag-with-receipts
+## License and attribution
 
-gcloud run deploy rag-receipts-api \
-  --image=northamerica-northeast1-docker.pkg.dev/rag-with-receipts/rag-receipts/api:latest \
-  --region=northamerica-northeast1 --project=rag-with-receipts \
-  --allow-unauthenticated \
-  --set-secrets=ANTHROPIC_API_KEY=anthropic-api-key:latest,DEMO_API_KEY=demo-api-key:latest \
-  --set-env-vars=INDEX_GCS_BUCKET=rag-with-receipts-index \
-  --max-instances=2 --memory=4Gi --cpu=2 --timeout=60 --cpu-boost
-```
-
-### A note on latency: Cloud Run vs. local hardware
-
-The latency table above was measured on local hardware with a GPU (RTX
-3060). Cloud Run has no GPU, so all inference runs on its allocated 2 vCPUs
-— and the gap is larger than "CPU vs GPU" alone would suggest. A few real
-timed `/query` calls against the live deployment (steady-state, after the
-first cold-start call):
-
-| Stage | Local GPU (`measure_latency.py`) | Local Docker, CPU | Cloud Run, 2 vCPU |
-|---|---|---|---|
-| embed_query | 80ms p50 | ~100ms | ~500ms |
-| rerank | 276ms p50 (MiniLM) | ~700ms | ~5000ms |
-| generate | 2918ms p50 | ~3400ms | ~3400ms |
-| total | 3256ms p50 | ~4200ms | ~9000ms |
-
-Rerank is the stage that degrades the most on Cloud Run — about 7x slower
-than the same model on the same machine's CPU outside a container, and ~18x
-slower than the local-GPU number measured here. Not chased further here;
-candidates for a future pass: tuning `OMP_NUM_THREADS`/torch thread count
-for the 2-vCPU environment, or bumping Cloud Run's CPU allocation.
+Code is MIT-licensed ([LICENSE](LICENSE)). The corpus is content from the [OSRS Wiki](https://oldschool.runescape.wiki/), licensed CC BY-NC-SA 3.0 and used here for non-commercial, portfolio purposes. The MIT license does not cover it.
