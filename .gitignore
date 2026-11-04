@@ -17,7 +17,9 @@ data/raw/*
 data/processed/*
 !data/processed/ingest_stats.json
 !data/processed/index_stats.json
-data/index/
+data/index/*
+!data/index/faiss.index
+!data/index/index_metadata.parquet
 
 # Model caches
 .cache/
