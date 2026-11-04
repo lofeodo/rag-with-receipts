@@ -10,14 +10,13 @@ pattern for the committed results/*.json files (see benchmarks.py).
 
 create_app() takes retriever/generator directly so tests can inject fakes
 and skip the real model-loading path in `lifespan` entirely - `app`
-(module-level, for uvicorn) uses the real pipeline via config.yaml + GCS.
+(module-level, for uvicorn) uses the real pipeline via config.yaml and the
+local data/index/ files (or a GCS pull if INDEX_GCS_BUCKET is set).
 
-Access control: the deployed service is public (`--allow-unauthenticated`),
-gated by a shared secret (DEMO_API_KEY, see _check_demo_key) rather than
-per-user auth - native Cloud Run IAP was tried first but requires the GCP
-project to belong to an Organization (this account has none), so a shared
-demo key is the fallback that still lets a recruiter self-serve the live URL
-without per-account setup.
+Access control: /query is open unless DEMO_API_KEY is set, in which case it
+requires a matching X-Demo-Key header (see _check_demo_key). That gate
+protected the former public Cloud Run demo (see docs/deployment.md); the app
+now runs locally and leaves it off by default.
 """
 
 from __future__ import annotations

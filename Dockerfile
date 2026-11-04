@@ -1,18 +1,12 @@
-# RAG With Receipts - Cloud Run image (Step 8).
+# RAG With Receipts - self-contained local image.
 #
-# Cloud Run has no GPU, so torch is installed explicitly from the CPU-only wheel
-# index first (same lesson as CLAUDE.md's Step 2 status note, applied the other
-# direction: there the fix was getting a CUDA wheel on a GPU box; here there is
-# no GPU at all, so CPU-only is the correct install, not a fallback).
+# Everything the app needs is baked in: the CPU-only torch wheel, the
+# embedding and reranker models (read from config.yaml), the FAISS index and
+# its metadata (committed under data/index/), the demo page and the committed
+# benchmark results. The only network call at query time is the Anthropic API.
 #
-# The embedding and reranker models are baked into the image at build time
-# (see the HF_HOME cache step below) rather than downloaded at container
-# startup - this keeps the locked runtime-shape decision true even on a brand
-# new container: the only network calls in the hot path are GCS (index pull)
-# and the Anthropic API, never Hugging Face Hub.
-#
-# results/ is baked in too (small, committed JSON) so GET /benchmarks has
-# something to read in the deployed container, not just in local dev.
+# Run it with `docker compose up` (reads ANTHROPIC_API_KEY from .env).
+# See docs/running-locally.md.
 
 FROM python:3.11-slim
 
@@ -23,20 +17,18 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# CPU-only wheel: the container has no GPU, and the default PyPI wheel on
+# Linux would pull in several GB of CUDA libraries for nothing.
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 COPY pyproject.toml ./
 COPY src/ ./src/
 COPY config/ ./config/
-COPY static/ ./static/
-COPY results/ ./results/
 
-RUN pip install -e ".[index,serve,gcp]"
+RUN pip install -e ".[index,serve]"
 
-# Bake the embedding + reranker models (read straight from config.yaml, so the
-# image always matches whatever models are actually configured - no separate
-# hardcoded model list to drift out of sync, as happened when Step 7 changed
-# the default reranker).
+# Bake the embedding + reranker models, read straight from config.yaml so the
+# image always matches whatever models are configured.
 RUN python -c "\
 import yaml; \
 from sentence_transformers import SentenceTransformer, CrossEncoder; \
@@ -45,10 +37,12 @@ SentenceTransformer(cfg['indexing']['embedding_model']); \
 CrossEncoder(cfg['retrieval']['reranker_model']); \
 print('models cached')"
 
-# Set only now (not during the bake step above, which needs network to
-# actually populate the cache) - forces every runtime model load to use the
-# baked cache with zero Hugging Face Hub calls, not just a cache hit after a
-# version-check network round trip.
+COPY static/ ./static/
+COPY results/ ./results/
+COPY data/index/ ./data/index/
+
+# Set only after the bake step: every runtime model load uses the baked cache
+# with zero Hugging Face Hub calls.
 ENV HF_HUB_OFFLINE=1
 
 EXPOSE 8080

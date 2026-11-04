@@ -21,7 +21,7 @@ ACCENT = "#8b7df0"
 ACCENT_DEEP = "#6d5bd0"
 
 PILLS_ROW1 = ["Cited answers", "Golden dataset", "Eval harness", "Reranking"]
-PILLS_ROW2 = ["Latency tuned", "FAISS + pgvector", "GCP Cloud Run"]
+PILLS_ROW2 = ["Latency tuned", "FAISS + pgvector", "Docker"]
 
 
 def pill(x, y, label):
@@ -94,13 +94,13 @@ def build(summary, latency):
         f'stroke="#ffffff" stroke-opacity="0.55" stroke-width="2"/>'
         f'<circle cx="98" cy="{cta_y + 31}" r="15" fill="#ffffff"/>'
         f'<path d="M93 {cta_y + 22} L106 {cta_y + 31} L93 {cta_y + 40} Z" fill="{ACCENT_DEEP}"/>'
-        f'<text x="128" y="{cta_y + 40}" font-size="24" font-weight="800" fill="#ffffff">Try the live demo</text>'
+        f'<text x="128" y="{cta_y + 40}" font-size="24" font-weight="800" fill="#ffffff">Run it locally</text>'
         f'<path d="M345 {cta_y + 31} h20 m-8 -8 l8 8 l-8 8" fill="none" stroke="#ffffff" '
         f'stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'
     )
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
-        f'font-family="{SANS}" role="img" aria-label="RAG With Receipts: try the live demo">'
+        f'font-family="{SANS}" role="img" aria-label="RAG With Receipts: run it locally">'
         f"<defs>"
         f'<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">'
         f'<stop offset="0" stop-color="#0d1117"/><stop offset="1" stop-color="#1c1745"/></linearGradient>'

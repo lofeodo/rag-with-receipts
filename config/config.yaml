@@ -57,7 +57,7 @@ indexing:
     # Stretch goal: pgvector-on-Cloud-SQL swappable backend. Exact nearest-neighbor
     # search only (no ivfflat/hnsw index) so results match FAISS exactly - see
     # CLAUDE.md status note. Provisioned only for the duration of this stretch
-    # goal's demo, then torn down - the live Cloud Run deployment stays on faiss.
+    # goal's demo, then torn down - the served app stays on faiss.
     enabled_for_build: false                # safety: build_index_pgvector.py refuses to run unless true
     project_id: rag-with-receipts
     region: northamerica-northeast1

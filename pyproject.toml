@@ -28,6 +28,7 @@ serve = [
     "uvicorn",
     "anthropic",
     "pyyaml",  # rag_receipts.config.load_config
+    "python-dotenv",  # lets `uvicorn --env-file .env` read local secrets
 ]
 gcp = [
     "google-cloud-storage",

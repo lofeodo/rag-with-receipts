@@ -1,8 +1,10 @@
 # CLAUDE.md — RAG With Receipts
 
 Portfolio RAG project (1-week timeline) demonstrating retrieval accuracy, grounded/cited
-answers, and latency-optimized inference — not basic chat-with-a-doc. Deployed on GCP
-Cloud Run.
+answers, and latency-optimized inference — not basic chat-with-a-doc. Runs locally
+(Docker or uvicorn, see `docs/running-locally.md`). It was deployed on GCP Cloud Run
+from Oct to Nov 2026; that deployment and the whole GCP project were deleted on
+2026-11-04 to stop hosting costs (see "Post-project — GCP retired" below).
 
 ## Locked decisions
 
@@ -14,7 +16,7 @@ Cloud Run.
 | Reranker | Local cross-encoder. **Updated in Step 7**: `ms-marco-MiniLM-L-6-v2` (originally the "faster" sweep candidate) replaced `bge-reranker-base` as the default after the measured sweep found it Pareto-dominates the original baseline on this corpus — higher recall/hit-rate/MRR *and* ~4x lower rerank latency. See Step 7 status note for the full comparison, including the stronger `bge-reranker-v2-m3` variant that was measured but not adopted. |
 | Generation + judge model | Claude Sonnet 5 for both, exposed as a config parameter (not hardcoded). **Stretch:** Haiku-vs-Sonnet generation comparison (latency/cost/correctness table), not a core metric. |
 | Runtime shape | Embedding model, reranker, and FAISS index all run in-process inside the Cloud Run container. Only network hops in the hot path: the Claude generation call, and (only if the hosted-embedding stretch is adopted) the embedding call. |
-| GCP deploy | Cloud Run (container, scales to zero) + Artifact Registry (image) + GCS (index artifacts, pulled on cold start) + Secret Manager (Anthropic key) + Cloud Logging (latency metrics). |
+| GCP deploy | **Retired 2026-11-04** (project deleted; local hosting only). Was: Cloud Run (container, scales to zero) + Artifact Registry (image) + GCS (index artifacts, pulled on cold start) + Secret Manager (Anthropic key) + Cloud Logging (latency metrics). |
 | Eval question mix | ~70% single-hop / extractive, ~30% multi-hop / synthesis (deliberately — single-hop questions don't discriminate between good and mediocre retrieval; multi-hop questions punish a pipeline that retrieves one relevant chunk and stops). User writes 30–50 Q/A pairs by hand. |
 
 ### Why not a fully-managed RAG service (Vertex AI RAG Engine / Vertex AI Search)?
@@ -37,9 +39,9 @@ quantified comparison against the managed alternative.
 - [x] **Step 5 — Eval harness** ← 55-question gold set, real run complete: correctness accuracy 0.80 (single-hop 0.97, multi-hop 0.33), retrieval hit rate 0.90. See status note below.
 - [x] **Step 6 — Grounding / hallucination check** ← NLI cross-encoder + lexical overlap per citation, wired into the eval harness: 96.0% grounded, 4.0% flagged contradicted (all 3 flagged cases manually confirmed as false positives). See status note below.
 - [x] **Step 7 — Latency instrumentation + one measured optimization (reranker sweep)** ← per-stage p50/p95 measured on the real hot path; reranker sweep found `ms-marco-MiniLM-L-6-v2` Pareto-dominates the original `bge-reranker-base` default (higher recall/hit-rate/MRR AND ~4x faster) — adopted as the new default. See status note below.
-- [x] Step 8 — GCP deployment ← live on Cloud Run at
-      `rag-receipts-api-374659103328.northamerica-northeast1.run.app`, gated by a shared
-      demo key (pivoted from the original IAP plan — see status note below).
+- [x] Step 8 — GCP deployment ← was live on Cloud Run, gated by a shared demo key
+      (pivoted from the original IAP plan — see status note below). **Retired
+      2026-11-04**: GCP project deleted, app now hosted locally only.
 - [x] **Step 9 — README polish** ← Architecture/Benchmarks sections written, stale
       pre-reranker-swap artifacts regenerated, MIT LICENSE added. See status note below.
 - [x] **Stretch — Vertex AI Search benchmark comparison** ← real run against the live
@@ -1637,3 +1639,23 @@ remains worth a quick confirmation on the next real deploy.
 _Status: complete on `feat/benchmarks-panel`. Tell the user before starting
 the next stretch goal (aesthetic pass on the demo site, per the checklist
 order)._
+
+### Post-project — GCP retired, local hosting (2026-11-04)
+
+The author decided hosting wasn't worth the cost and asked for everything on GCP to be
+removed, keeping only the GitHub repo. Done:
+- `gcloud projects delete rag-with-receipts` (account `daniel.lofeodo@gmail.com`; note the
+  machine's *active* gcloud account is a different one, so commands pass `--account`).
+  This removed the Cloud Run service, Artifact Registry repo (~4 GB of images), both GCS
+  buckets and both Secret Manager secrets in one go and stopped billing. Recoverable with
+  `gcloud projects undelete rag-with-receipts` until about 2026-12-04.
+- The FAISS index + metadata (`data/index/`, ~4.3 MB) are now committed, since the GCS
+  bucket was their only distribution path; a fresh clone runs with no rebuild.
+- Dockerfile is now self-contained (bakes models, index, static page, results; no `gcp`
+  extra) and `docker-compose.yml` + `.env.example` give a one-command local run.
+  `python-dotenv` added to the `serve` extra so `uvicorn --env-file .env` works.
+- Demo page's "Demo key" field removed. The server-side `DEMO_API_KEY` gate and the
+  `INDEX_GCS_BUCKET` pull code remain, both off when their env var is unset.
+- README: banner/badge/links point to a new "Run it locally" section; `docs/deployment.md`
+  rewritten as a record of the retired deployment; `docs/running-locally.md` rewritten.
+- GitHub repo homepage field (previously the Cloud Run URL) cleared.
