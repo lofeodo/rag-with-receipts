@@ -95,15 +95,6 @@
   }
   .github-link:hover { border-color: var(--border-strong); background: var(--surface-2); }
 
-  .key-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.6rem;
-  }
-  .key-row label { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
-  .key-row input { flex: 1; max-width: 260px; }
-  .key-hint { color: var(--muted); font-size: 0.82rem; margin: 0 0 1.75rem; }
 
   form { display: flex; gap: 0.6rem; margin-bottom: 2rem; }
   input[type=text], input[type=password] {
@@ -280,14 +271,6 @@
     </p>
   </header>
 
-  <div class="key-row">
-    <label for="key-input">Demo key</label>
-    <input id="key-input" type="password" autocomplete="off" placeholder="paste the key you were given" />
-  </div>
-  <div class="key-hint">
-    Don't have a key? Email <a href="mailto:daniel.lofeodo@gmail.com">daniel.lofeodo@gmail.com</a> to request one.
-  </div>
-
   <form id="query-form">
     <input id="query-input" type="text" autocomplete="off"
            placeholder="e.g. What items are required to start Monkey Madness I?" />
@@ -310,19 +293,11 @@
 <script>
   const form = document.getElementById('query-form');
   const input = document.getElementById('query-input');
-  const keyInput = document.getElementById('key-input');
   const button = document.getElementById('submit-btn');
   const status = document.getElementById('status');
   const result = document.getElementById('result');
 
-  try {
-    const savedKey = localStorage.getItem('demoKey');
-    if (savedKey) keyInput.value = savedKey;
-  } catch (err) { /* private browsing / storage disabled - fine, just won't persist */ }
 
-  keyInput.addEventListener('change', () => {
-    try { localStorage.setItem('demoKey', keyInput.value); } catch (err) { /* ignore */ }
-  });
 
   function escapeHtml(s) {
     const d = document.createElement('div');
@@ -620,13 +595,12 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Demo-Key': keyInput.value,
         },
         body: JSON.stringify({ query }),
       });
 
       if (resp.status === 401) {
-        throw new Error('Missing or incorrect demo key.');
+        throw new Error('This server requires a DEMO_API_KEY; unset it in .env for local use.');
       }
       if (!resp.ok) {
         const body = await resp.json().catch(() => ({}));
