@@ -148,7 +148,15 @@ docker compose up --build
 
 Open **http://localhost:8080**, ask a question, and scroll down for the benchmarks panel. The first build takes a few minutes (it bakes the embedding and reranker models into the image).
 
-No Docker? `pip install -e ".[index,serve]"` then `uvicorn rag_receipts.api.app:app --port 8080 --env-file .env`. Full guide, API routes and how to rebuild the index from scratch: **[docs/running-locally.md](docs/running-locally.md)**.
+No Docker? Use a conda env (after the `.env` step above):
+
+```
+conda create -n rag-with-receipts python=3.11 -y
+conda run -n rag-with-receipts pip install -e ".[index,serve]"
+conda run -n rag-with-receipts --no-capture-output uvicorn rag_receipts.api.app:app --port 8080 --env-file .env
+```
+
+Full guide, API routes and how to rebuild the index from scratch: **[docs/running-locally.md](docs/running-locally.md)**.
 
 ## License and attribution
 
