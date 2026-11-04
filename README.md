@@ -142,7 +142,23 @@ Everything runs on your machine, including the prebuilt search index (committed 
 ```
 git clone https://github.com/lofeodo/rag-with-receipts.git
 cd rag-with-receipts
-cp .env.example .env        # then set ANTHROPIC_API_KEY in .env
+```
+
+Copy the example env file, then set `ANTHROPIC_API_KEY` in `.env`:
+
+```
+copy .env.example .env
+```
+(`cmd`)
+
+```
+cp .env.example .env
+```
+(`bash`)
+
+Start it:
+
+```
 docker compose up --build
 ```
 
@@ -152,8 +168,8 @@ No Docker? Use a conda env (after the `.env` step above):
 
 ```
 conda create -n rag-with-receipts python=3.11 -y
-conda run -n rag-with-receipts pip install -e ".[index,serve]"
-conda run -n rag-with-receipts --no-capture-output uvicorn rag_receipts.api.app:app --port 8080 --env-file .env
+conda run -n rag-with-receipts python -m pip install -e ".[index,serve]"
+conda run -n rag-with-receipts --no-capture-output python -m uvicorn rag_receipts.api.app:app --port 8080 --env-file .env
 ```
 
 Full guide, API routes and how to rebuild the index from scratch: **[docs/running-locally.md](docs/running-locally.md)**.

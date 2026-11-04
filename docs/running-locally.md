@@ -5,8 +5,14 @@ The app runs entirely on your machine: the embedding model, reranker and FAISS i
 ## 1. Add your API key
 
 ```
+copy .env.example .env
+```
+(`cmd`)
+
+```
 cp .env.example .env
 ```
+(`bash`)
 
 Open `.env` and set `ANTHROPIC_API_KEY`. Leave `DEMO_API_KEY` empty; when it is set, `/query` requires a matching `X-Demo-Key` header and the demo page doesn't send one.
 
@@ -26,15 +32,15 @@ Python 3.11 in a conda env named after the project. All commands run through `co
 
 ```
 conda create -n rag-with-receipts python=3.11 -y
-conda run -n rag-with-receipts pip install -e ".[index,serve]"
-conda run -n rag-with-receipts --no-capture-output uvicorn rag_receipts.api.app:app --port 8080 --env-file .env
+conda run -n rag-with-receipts python -m pip install -e ".[index,serve]"
+conda run -n rag-with-receipts --no-capture-output python -m uvicorn rag_receipts.api.app:app --port 8080 --env-file .env
 ```
 
 `--no-capture-output` streams the server log to your terminal; without it `conda run` holds output until the process exits.
 
 Open **http://localhost:8080**. The first start downloads the embedding model (`bge-large`, ~1.3 GB) and the reranker from Hugging Face; later starts use the cache.
 
-On Windows, `pip install torch` gives a CPU-only wheel. To use an NVIDIA GPU, install torch from the CUDA index first (`conda run -n rag-with-receipts pip install torch --index-url https://download.pytorch.org/whl/cu121`), then install the project.
+On Windows, `pip install torch` gives a CPU-only wheel. To use an NVIDIA GPU, install torch from the CUDA index first (`conda run -n rag-with-receipts python -m pip install torch --index-url https://download.pytorch.org/whl/cu121`), then install the project.
 
 ## What's served
 
@@ -46,8 +52,7 @@ On Windows, `pip install torch` gives a CPU-only wheel. To use an NVIDIA GPU, in
 | `/livez`, `/readyz` | Liveness, and readiness (503 until the models and index are loaded) |
 
 ```
-curl -s localhost:8080/query -H "Content-Type: application/json" \
-  -d '{"query": "What items are required to start Monkey Madness I?"}'
+curl -s localhost:8080/query -H "Content-Type: application/json" -d "{\"query\": \"What items are required to start Monkey Madness I?\"}"
 ```
 
 `/query` is rate-limited per IP (10 requests per 5 minutes by default). Change it with `RATE_LIMIT_MAX_REQUESTS` and `RATE_LIMIT_WINDOW_SECONDS` in `.env`.
@@ -66,9 +71,9 @@ Optional: the committed index is all you need to run the app. Each step has a sc
 | Measure latency | `conda run -n rag-with-receipts python scripts/measure_latency.py` |
 | Reranker sweep | `conda run -n rag-with-receipts python scripts/sweep_reranker.py` |
 
-Install the extras you need: `conda run -n rag-with-receipts pip install -e ".[ingest,index,eval,serve,dev]"`. Scripts read `ANTHROPIC_API_KEY` from the environment, never from config.
+Install the extras you need: `conda run -n rag-with-receipts python -m pip install -e ".[ingest,index,eval,serve,dev]"`. Scripts read `ANTHROPIC_API_KEY` from the environment, never from config.
 
-Tests: `conda run -n rag-with-receipts pytest -q`. Tests marked `slow` load real models or call real APIs and are skipped by default (`conda run -n rag-with-receipts pytest -m slow` runs them).
+Tests: `conda run -n rag-with-receipts python -m pytest -q`. Tests marked `slow` load real models or call real APIs and are skipped by default (`conda run -n rag-with-receipts python -m pytest -m slow` runs them).
 
 ## Windows / Git Bash gotchas
 
