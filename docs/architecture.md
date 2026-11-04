@@ -22,7 +22,7 @@ flowchart LR
 | Grounding check | NLI cross-encoder entailment/contradiction + lexical overlap per citation | [`grounding/`](../src/rag_receipts/grounding/) |
 | Eval harness | LLM-as-judge correctness + retrieval metrics + grounding over a 55-question gold set | [`eval/`](../src/rag_receipts/eval/) |
 | Telemetry | Per-stage p50/p95/mean latency on the real hot path | [`telemetry/`](../src/rag_receipts/telemetry/) |
-| API | FastAPI (`/query`, `/livez`, `/readyz`, `/benchmarks`) on Cloud Run, see [deployment.md](deployment.md) | [`api/`](../src/rag_receipts/api/) |
+| API | FastAPI (`/query`, `/livez`, `/readyz`, `/benchmarks`) served locally, see [running-locally.md](running-locally.md) (previously on Cloud Run: [deployment.md](deployment.md)) | [`api/`](../src/rag_receipts/api/) |
 
 ## Corpus
 

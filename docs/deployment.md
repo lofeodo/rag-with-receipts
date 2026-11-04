@@ -1,36 +1,19 @@
-# Deployment (GCP Cloud Run)
+# Past deployment (GCP Cloud Run, retired)
 
-Live: **https://rag-receipts-api-374659103328.northamerica-northeast1.run.app**
+From October to November 2026 the app ran on GCP Cloud Run as a public demo. It has been shut down and the GCP project deleted to stop hosting costs; the project now runs locally only (see [running-locally.md](running-locally.md)). This page records how it was deployed and what the deployment taught.
 
-The service is public but gated by a shared demo key (`/query` requires an `X-Demo-Key` header). Paste it into the "Demo key" field on the page. To request one, email [daniel.lofeodo@gmail.com](mailto:daniel.lofeodo@gmail.com).
+**Access model.** `/query` was gated by a shared demo key (`X-Demo-Key` header, checked against the `DEMO_API_KEY` env var) plus a per-IP rate limiter, to bound API cost. The original plan was Cloud Run's native IAP, open to any Google account, but `gcloud iap oauth-brands create` failed with "Project must belong to an organization", and personal GCP projects have none. Even with an org, that brand is internal-only. The key check is still in the code and stays off unless `DEMO_API_KEY` is set.
 
-**Why a shared key and not IAP?** The original plan was Cloud Run's native IAP, open to any Google account. `gcloud iap oauth-brands create` failed with "Project must belong to an organization", and personal GCP projects have none. Even with an org, that brand is internal-only. A shared key plus a per-IP rate limiter was the fallback.
-
-## GCP resources
+## GCP resources (all deleted)
 
 | Resource | Role |
 |---|---|
-| Cloud Run | Serves the FastAPI app (`src/rag_receipts/api/`); scales to zero, `max-instances=2` |
-| Artifact Registry | Hosts the container image |
-| Cloud Build | Builds the image (embedding and reranker models baked in at build time) |
-| GCS | Holds `faiss.index` and `index_metadata.parquet`, pulled on cold start |
+| Cloud Run | Served the FastAPI app (`src/rag_receipts/api/`); scaled to zero, `max-instances=2` |
+| Artifact Registry | Hosted the container image |
+| Cloud Build | Built the image (embedding and reranker models baked in at build time) |
+| GCS | Held `faiss.index` and `index_metadata.parquet`, pulled on cold start (the index is now committed under `data/index/`) |
 | Secret Manager | `anthropic-api-key`, `demo-api-key` |
-| Cloud Logging | Captures stdout, including one structured JSON line per `/query` with full per-stage timing |
-
-## Redeploying
-
-```
-gcloud builds submit --tag northamerica-northeast1-docker.pkg.dev/rag-with-receipts/rag-receipts/api:latest \
-  --project rag-with-receipts
-
-gcloud run deploy rag-receipts-api \
-  --image=northamerica-northeast1-docker.pkg.dev/rag-with-receipts/rag-receipts/api:latest \
-  --region=northamerica-northeast1 --project=rag-with-receipts \
-  --allow-unauthenticated \
-  --set-secrets=ANTHROPIC_API_KEY=anthropic-api-key:latest,DEMO_API_KEY=demo-api-key:latest \
-  --set-env-vars=INDEX_GCS_BUCKET=rag-with-receipts-index \
-  --max-instances=2 --memory=4Gi --cpu=2 --timeout=60 --cpu-boost
-```
+| Cloud Logging | Captured stdout, including one structured JSON line per `/query` with full per-stage timing |
 
 ## Latency: Cloud Run vs local hardware
 

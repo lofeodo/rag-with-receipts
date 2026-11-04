@@ -1,5 +1,5 @@
-<a href="https://rag-receipts-api-374659103328.northamerica-northeast1.run.app">
-  <img alt="RAG With Receipts: try the live demo" src="docs/img/banner.svg">
+<a href="#run-it-locally">
+  <img alt="RAG With Receipts: run it locally" src="docs/img/banner.svg">
 </a>
 
 **A RAG system that shows its receipts: every design choice is backed by a measured number, not a claim.**
@@ -8,11 +8,11 @@ Golden dataset, evaluation harness, per-stage latency, a reranker sweep, a manag
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](#)
 [![Claude](https://img.shields.io/badge/LLM-Claude-D97757)](#)
-[![Cloud Run](https://img.shields.io/badge/Deployed-GCP%20Cloud%20Run-4285F4?logo=googlecloud&logoColor=white)](docs/deployment.md)
+[![Docker](https://img.shields.io/badge/Runs-locally%20with%20Docker-2496ED?logo=docker&logoColor=white)](#run-it-locally)
 [![Vector DB](https://img.shields.io/badge/Vector%20DB-FAISS%20%7C%20pgvector-336791?logo=postgresql&logoColor=white)](docs/experiments.md#pgvector-on-cloud-sql-vs-faiss)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-**[Live demo](https://rag-receipts-api-374659103328.northamerica-northeast1.run.app)** · [Benchmarks](docs/benchmarks.md) · [Architecture](docs/architecture.md) · [Experiments](docs/experiments.md)
+**[Run it locally](#run-it-locally)** · [Benchmarks](docs/benchmarks.md) · [Architecture](docs/architecture.md) · [Experiments](docs/experiments.md)
 
 ## What it does
 
@@ -111,7 +111,7 @@ Design details: **[docs/architecture.md](docs/architecture.md)**.
 | **Latency optimization** | Per-stage p50/p95 instrumentation; a reranker sweep that cut rerank time 5x with higher accuracy |
 | **Hallucination control** | Forced tool-use citations, hallucinated-citation detection, NLI grounding check, abstention on unanswerable questions |
 | **Vector databases** | FAISS and **pgvector on Cloud SQL** behind one swappable interface; verified to return identical results (55/55) |
-| **MLOps / cloud** | Docker, GCP Cloud Run, Artifact Registry, GCS, Secret Manager, Cloud Logging, scale-to-zero |
+| **MLOps / cloud** | Docker; previously deployed on GCP Cloud Run with Artifact Registry, GCS, Secret Manager and Cloud Logging ([retired](docs/deployment.md)) |
 | **Build vs buy** | Benchmarked against managed Vertex AI Search on the same data and questions |
 | **LLM cost/quality tradeoffs** | Haiku vs Sonnet on accuracy, grounding, latency and cost |
 | **Tool use / structured output** | Citations returned through a forced tool schema and validated |
@@ -132,12 +132,23 @@ Design details: **[docs/architecture.md](docs/architecture.md)**.
 | [Architecture](docs/architecture.md) | Design choices per stage, corpus scope, why not a managed RAG service |
 | [Benchmarks](docs/benchmarks.md) | Every metric table with methodology and caveats |
 | [Experiments](docs/experiments.md) | Vertex AI Search, Haiku vs Sonnet, pgvector |
-| [Deployment](docs/deployment.md) | GCP setup, redeploy commands, Cloud Run vs local latency |
-| [Running locally](docs/running-locally.md) | Docker, scripts, install notes |
+| [Past deployment](docs/deployment.md) | The retired GCP Cloud Run setup, Cloud Run vs local latency |
+| [Running locally](docs/running-locally.md) | Docker or Python setup, API routes, rebuilding the pipeline |
 
-## Live demo access
+## Run it locally
 
-The demo is public but gated by a shared key to bound API cost. Email [daniel.lofeodo@gmail.com](mailto:daniel.lofeodo@gmail.com) to request one. The benchmarks panel on the page is open without it.
+Everything runs on your machine, including the prebuilt search index (committed under `data/index/`). You only need [Docker](https://docs.docker.com/get-docker/) and an [Anthropic API key](https://console.anthropic.com/).
+
+```
+git clone https://github.com/lofeodo/rag-with-receipts.git
+cd rag-with-receipts
+cp .env.example .env        # then set ANTHROPIC_API_KEY in .env
+docker compose up --build
+```
+
+Open **http://localhost:8080**, ask a question, and scroll down for the benchmarks panel. The first build takes a few minutes (it bakes the embedding and reranker models into the image).
+
+No Docker? `pip install -e ".[index,serve]"` then `uvicorn rag_receipts.api.app:app --port 8080 --env-file .env`. Full guide, API routes and how to rebuild the index from scratch: **[docs/running-locally.md](docs/running-locally.md)**.
 
 ## License and attribution
 
