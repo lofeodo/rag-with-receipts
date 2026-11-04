@@ -5,14 +5,9 @@ The app runs entirely on your machine: the embedding model, reranker and FAISS i
 ## 1. Add your API key
 
 ```
-copy .env.example .env
+[cmd]: copy .env.example .env
+[bash]: cp .env.example .env
 ```
-(`cmd`)
-
-```
-cp .env.example .env
-```
-(`bash`)
 
 Open `.env` and set `ANTHROPIC_API_KEY`. Leave `DEMO_API_KEY` empty; when it is set, `/query` requires a matching `X-Demo-Key` header and the demo page doesn't send one.
 

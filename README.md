@@ -147,14 +147,9 @@ cd rag-with-receipts
 Copy the example env file, then set `ANTHROPIC_API_KEY` in `.env`:
 
 ```
-copy .env.example .env
+[cmd]: copy .env.example .env
+[bash]: cp .env.example .env
 ```
-(`cmd`)
-
-```
-cp .env.example .env
-```
-(`bash`)
 
 Start it:
 
