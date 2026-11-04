@@ -6,7 +6,8 @@ __pycache__/
 .ruff_cache/
 .git/
 .github/
-data/
+data/*
+!data/index/
 tests/
 scripts/
 docs/
